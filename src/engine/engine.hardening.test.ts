@@ -10,7 +10,7 @@ import type { EngineResult, GameEvent, GameState } from './types';
  * kick/leave paths, bot creation, and the event ring buffer.
  */
 
-const data = (e: GameEvent) => e.data as Record<string, any>;
+const data = (e: GameEvent) => e.data as Record<string, unknown>;
 const types = (evs: GameEvent[]) => evs.map((e) => e.type);
 const eventsOf = (state: GameState, type: string) =>
   state.events.filter((e) => e.type === type);
@@ -781,7 +781,7 @@ describe('full-hand event stream', () => {
     expect(data(evs[23]).board).toHaveLength(5);
     expect(data(evs[30])).toMatchObject({ handNo: 1, kind: 'showdown' });
     expect(data(evs[30]).board).toHaveLength(5);
-    expect(data(evs[30]).pots[0].amount).toBe(12);
+    expect((data(evs[30]).pots as { amount: number }[])[0].amount).toBe(12);
 
     // Nobody busted; the showdown pause is exactly 5s with no rebuy window.
     expect(types(evs)).not.toContain('player-busted');

@@ -10,12 +10,20 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 
 - **6-seat no-limit Texas Hold'em** with a correct rules engine: heads-up blinds, big-blind option, min-raise and short all-in rules, layered side pots with refunds, dead-button rotation, showdown order with auto-muck, odd-chip splits
 - **NPC bots** with personalities (tightness / aggression / bluff frequency) that decide from a redacted view — structurally unable to cheat — and that defend properly against relentless betting
-- **Invite-link multiplayer**: name-only entry, host approval of seats, per-game signed httpOnly cookie identity — a refresh or dropped connection restores your seat
+- **Top-ups (rebuys)**: busted players can re-buy on a decaying schedule (host-configurable, off in quick play); a game-deciding bust holds the table briefly so the loser can re-enter
+- **Live hand labels**: your nameplate names your made hand as it develops — "Pair of Sixes", "Flush, Ace High" — like a casino video poker machine
+- **Invite-link multiplayer**: name-only entry, host approval of seats, per-game signed httpOnly cookie identity — a refresh or dropped connection restores your seat; your name is remembered for the next game
 - **Real-time** via Server-Sent Events with reconnect and mobile-background resync; sub-second updates
 - **Turn timers** (20s + 10s time bank, host-configurable) with auto check/fold, away state, and "I'm back"
 - **Host controls**: approve/deny seats, pause, kick, add/remove bots, end game (with final standings screen)
 - **Guests can leave any time** — big Leave button; everyone else is notified
 - Responsive: portrait-first phone layout and desktop oval table; animated cards, chips, pot, and winner banners
+
+## Screenshots
+
+![Gameplay — the oval table mid-hand](docs/gameplay.png)
+
+![Live hand label under your seat](docs/hand-label-closeup.png)
 
 ## Stack
 

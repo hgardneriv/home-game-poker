@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useRememberedName } from '@/hooks/useRememberedName';
 
 export function CreateGame() {
   const router = useRouter();
-  const [name, setName] = useState('');
+  const [name, setName] = useRememberedName();
   const [mode, setMode] = useState<'quick' | 'friends'>('quick');
   // Numeric fields stay as raw strings while editing (so the field can be
   // emptied on mobile); they're parsed with defaults on submit.

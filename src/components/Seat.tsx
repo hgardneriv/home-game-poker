@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import type { GameApi } from '@/hooks/useGame';
+import { handLabel } from '@/engine/hand-label';
 import { PlayingCard } from './PlayingCard';
 
 export function Seat({
@@ -46,6 +47,14 @@ export function Seat({
   const revealed = hand?.result?.revealed[player.id];
   const showCards = isYou ? hand?.myCards : revealed;
   const description = hand?.result?.descriptions[player.id];
+
+  // Casino-machine courtesy: name your made hand as it develops. Hero only —
+  // opponents have no face-up cards mid-hand, and showdown reveals already
+  // get descriptions from the result.
+  const liveLabel =
+    isYou && hand && state.phase === 'playing' && inHand && !folded
+      ? handLabel(hand.myCards ?? [], hand.board)
+      : null;
 
   const timerFraction = (() => {
     if (!isActing || !hand?.actionDeadline) return null;
@@ -142,6 +151,14 @@ export function Seat({
           </div>
         )}
       </div>
+
+      {/* Live made-hand label (phase 'playing' only — never fights the
+          showdown description below). */}
+      {liveLabel && (
+        <div className="z-10 mt-0.5 whitespace-nowrap rounded bg-black/60 px-1.5 text-[10px] font-medium text-emerald-300">
+          {liveLabel}
+        </div>
+      )}
 
       {/* Showdown hand description */}
       {description && isWinner && (
