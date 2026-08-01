@@ -30,7 +30,7 @@ export interface ClientGameState {
   hand: ClientHand | null;
   nextHandAt: number | null;
   pauseAfterHand: boolean;
-  endedReason: 'host' | 'lastPlayer' | null;
+  endedReason: 'host' | 'lastPlayer' | 'humansOut' | null;
   events: GameEvent[];
   now: number;
 }
