@@ -10,7 +10,7 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 
 - **6-seat no-limit Texas Hold'em** with a correct rules engine: heads-up blinds, big-blind option, min-raise and short all-in rules, layered side pots with refunds, dead-button rotation, showdown order with auto-muck, odd-chip splits
 - **NPC bots** with personalities (tightness / aggression / bluff frequency) that decide from a redacted view — structurally unable to cheat — and that defend properly against relentless betting
-- **Top-ups (rebuys)**: busted players can re-buy on a decaying schedule (host-configurable, off in quick play); a game-deciding bust holds the table briefly so the loser can re-enter
+- **Top-ups (rebuys)**: off by default; the host can allow a decaying rebuy schedule. Off in quick play. A game-deciding bust holds the table briefly so the loser can re-enter when top-ups are enabled
 - **Live hand labels**: your nameplate names your made hand as it develops — "Pair of Sixes", "Flush, Ace High" — like a casino video poker machine
 - **Invite-link multiplayer**: name-only entry, host approval of seats, per-game signed httpOnly cookie identity — a refresh or dropped connection restores your seat; your name is remembered for the next game
 - **Real-time** via Server-Sent Events with reconnect and mobile-background resync; sub-second updates
@@ -44,6 +44,10 @@ For real-Redis local dev: `vercel env pull .env.local` (project must be linked w
 Required env in production: `SESSION_SECRET`, plus `KV_REST_API_URL` / `KV_REST_API_TOKEN` (auto-provisioned by the Upstash Marketplace integration).
 
 ## Deploy
+
+Pushing `master` deploys production via Vercel’s GitHub integration. Confirm at https://home-game-poker-kappa.vercel.app.
+
+If a Git deploy does not start, fall back to:
 
 ```bash
 vercel deploy --prod
