@@ -269,8 +269,8 @@ export function Table({ game }: { game: GameApi }) {
         )}
       </AnimatePresence>
 
-      {/* Dealer button */}
-      {hand && (
+      {/* Dealer button — hero's D lives beside their cards in Seat. */}
+      {hand && state.players[state.yourId ?? '']?.seat !== hand.buttonSeat && (
         <motion.div
           layout
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
@@ -291,6 +291,8 @@ export function Table({ game }: { game: GameApi }) {
         {hand &&
           !result &&
           Object.entries(hand.committed).map(([playerId, amount]) => {
+            // Hero's bet sits beside their cards in Seat — not in the D-button lane.
+            if (playerId === state.yourId) return null;
             const seat = state.players[playerId]?.seat;
             if (amount <= 0 || seat === null || seat === undefined) return null;
             return (
