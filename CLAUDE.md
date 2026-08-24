@@ -4,6 +4,10 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
+## Audits
+
+- [2026-08-24 code, security & mobile-readiness audit](docs/audits/2026-08-24-code-security-mobile-audit.md) — code-structure/complexity, security findings (ranked), coverage + mutation-testing (CRAP-style) risk read, and the iPhone-app gap analysis. Includes a reusable methodology section for re-running the same three-pronged audit on another repo.
+
 ## Deployment (live)
 
 - **Production:** https://home-game-poker-kappa.vercel.app
