@@ -11,7 +11,8 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 - **6-seat no-limit Texas Hold'em** with a correct rules engine: heads-up blinds, big-blind option, min-raise and short all-in rules, layered side pots with refunds, dead-button rotation, showdown order with auto-muck, odd-chip splits
 - **NPC bots** with personalities (tightness / aggression / bluff frequency) that decide from a redacted view — structurally unable to cheat — and that defend properly against relentless betting
 - **Top-ups (rebuys)**: off by default; the host can allow a decaying rebuy schedule. Off in quick play. A game-deciding bust holds the table briefly so the loser can re-enter when top-ups are enabled
-- **Live hand labels**: your nameplate names your made hand as it develops — "Pair of Sixes", "Flush, Ace High" — like a casino video poker machine
+- **Live hand labels**: as your hand develops, an emerald caption floats on the felt above your cards — "Pair of Twos", "Three of a Kind, Kings", "Full House, Aces over Kings" — like a casino video poker machine. Showdown winners get the same label in amber
+- **Bot games end with you**: in a table of bots (quick play), the game is over the moment the last human busts with no re-buy left — you get the standings, not a bot-only spectator mode
 - **Invite-link multiplayer**: name-only entry, host approval of seats, per-game signed httpOnly cookie identity — a refresh or dropped connection restores your seat; your name is remembered for the next game
 - **Real-time** via Server-Sent Events with reconnect and mobile-background resync; sub-second updates
 - **Turn timers** (20s + 10s time bank, host-configurable) with auto check/fold, away state, and "I'm back"
@@ -21,9 +22,14 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 
 ## Screenshots
 
-![Gameplay — the oval table mid-hand](docs/gameplay.png)
+Live gameplay on a phone. Your made hand is named on the felt above the cards; the dealer button and your street bet sit to the right of the hole cards so a long caption never covers them.
 
-![Live hand label under your seat](docs/hand-label-closeup.png)
+![Gameplay — flop, pair of twos, your turn](docs/gameplay.png)
+
+| Pair of Twos | Three of a Kind, Kings | Full House, Aces over Kings |
+| :---: | :---: | :---: |
+| <img src="docs/hand-label-closeup.png" alt="Hero seat — Pair of Twos labeled above 4♥ 2♣, dealer button to the right" width="220"> | <img src="docs/hand-three-kings.png" alt="Flop trips — pocket kings plus a king, $4 bet and D to the right of the cards" width="180"> | <img src="docs/hand-full-house.png" alt="Flop full house — pocket aces with ace-king-king, $6 bet and D to the right" width="180"> |
+| Hole 4♥ 2♣, flop T♣ 2♠ K♣. | Pocket kings, flop K♣ 7♠ 4♦. | Pocket aces, flop A♣ K♥ K♦. |
 
 ## Stack
 
