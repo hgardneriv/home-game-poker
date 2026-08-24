@@ -10,10 +10,13 @@ export function Seat({
   game,
   seatIndex,
   playerId,
+  visualSlot,
 }: {
   game: GameApi;
   seatIndex: number;
   playerId: string | null;
+  /** 0 = hero (bottom), 2 = upper-left, 3 = top, 4 = upper-right. */
+  visualSlot: number;
 }) {
   const state = game.state!;
   const hand = state.hand;
@@ -70,11 +73,14 @@ export function Seat({
         ? 'BB'
         : null;
 
-  // Hero bet + dealer button sit to the right of the hole cards, under the
-  // caption — clear of a long label. D sits above the bet chip.
-  const heroBet =
-    isYou && hand && !hand.result ? (hand.committed[player.id] ?? 0) : 0;
-  const heroIsDealer = isYou && !!hand && hand.buttonSeat === seatIndex;
+  // Hero + the top trio (10 / 12 / 2 o'clock) keep bet + D beside the
+  // hole cards so they don't float toward the pot / wordmark. Upper-right
+  // mirrors the bottom-right seat (chips on the felt side of the cards).
+  const chipsBesideCards = isYou || visualSlot === 2 || visualSlot === 3 || visualSlot === 4;
+  const chipSide = visualSlot === 4 ? 'left' : 'right';
+  const seatBet =
+    chipsBesideCards && hand && !hand.result ? (hand.committed[player.id] ?? 0) : 0;
+  const seatIsDealer = chipsBesideCards && !!hand && hand.buttonSeat === seatIndex;
 
   return (
     <motion.div
@@ -105,6 +111,10 @@ export function Seat({
       <div
         className={`relative z-0 flex gap-0.5 ${showCards ? 'mb-1' : '-mb-2'} ${
           folded ? 'opacity-70 grayscale' : ''
+        } ${
+          !(inHand && !folded) && (seatBet > 0 || seatIsDealer)
+            ? 'min-h-8 min-w-[3.5rem]'
+            : ''
         }`}
       >
         {inHand && !folded && !showCards && (
@@ -119,17 +129,25 @@ export function Seat({
             <PlayingCard card={showCards[1]} size={isYou ? 'md' : 'sm'} dealt />
           </>
         )}
-        {(heroBet > 0 || heroIsDealer) && (
-          <div className="absolute left-full top-1/2 z-20 ml-4 flex -translate-y-1/2 flex-col items-center gap-1">
-            {heroIsDealer && (
+        {(seatBet > 0 || seatIsDealer) && (
+          <div
+            className={`absolute top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 ${
+              chipSide === 'left'
+                ? 'right-full mr-2'
+                : isYou
+                  ? 'left-full ml-4'
+                  : 'left-full ml-2'
+            }`}
+          >
+            {seatIsDealer && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-black text-black shadow">
                 D
               </span>
             )}
             <AnimatePresence>
-              {heroBet > 0 && (
+              {seatBet > 0 && (
                 <motion.div
-                  key={`${hand?.street}-${heroBet}`}
+                  key={`${hand?.street}-${seatBet}`}
                   initial={{ scale: 0.4, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
@@ -137,7 +155,7 @@ export function Seat({
                 >
                   <div className="flex items-center gap-1 rounded-full bg-black/45 py-0.5 pl-0.5 pr-2 shadow">
                     <span className="inline-block h-4 w-4 rounded-full border-2 border-dashed border-white/70 bg-amber-500 shadow-inner" />
-                    <span className="text-xs font-bold text-amber-300">{heroBet}</span>
+                    <span className="text-xs font-bold text-amber-300">{seatBet}</span>
                   </div>
                 </motion.div>
               )}
