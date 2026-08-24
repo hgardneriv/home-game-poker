@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Table, expectError, legalFor } from './test-utils';
+import { reviewingLastHand } from './types';
 
 // Default layout with zeroRand: button seat 0 (p0), SB seat 1 (p1), BB seat 2 (p2).
 // Preflop order (3-handed): p0 (button/UTG), p1 (SB), p2 (BB).
@@ -224,7 +225,7 @@ describe('side pots and refunds', () => {
     expect(t.stack('p0')).toBe(8); // refund only
   });
 
-  it('a folded contributorâ€™s chips stay in the pot but they cannot win', () => {
+  it('a folded contributor’s chips stay in the pot but they cannot win', () => {
     const t = new Table(3, { stacks: [50, 50, 50] });
     t.start();
     t.rig(
@@ -444,7 +445,7 @@ describe('mid-orbit joiner', () => {
   });
 
   it('a joiner between the button and the due SB waits out the blind arc', () => {
-    // Players at seats 0, 1, 3 â€” seat 2 is an empty gap.
+    // Players at seats 0, 1, 3 — seat 2 is an empty gap.
     const t = new Table(3, { seats: [0, 1, 3] });
     t.start(); // hand 1: button 0, sb 1, bb 3
     expect(t.hand.bbSeat).toBe(3);
@@ -455,7 +456,7 @@ describe('mid-orbit joiner', () => {
     t.foldAround();
 
     // Hand 2: button 1, SB due at 3, BB seat 0. Seat 2 sits in [button, bb):
-    // dealing p9 in would hand them the button before any blind â€” they wait.
+    // dealing p9 in would hand them the button before any blind — they wait.
     t.nextHand();
     expect(t.hand.buttonSeat).toBe(1);
     expect(t.hand.sbSeat).toBe(3);
@@ -463,7 +464,7 @@ describe('mid-orbit joiner', () => {
     expect(t.hand.inHand).not.toContain('p9');
 
     t.foldAround();
-    // Hand 3: button 3, SB due 0, BB 1 â€” seat 2 is past the arc; p9 plays.
+    // Hand 3: button 3, SB due 0, BB 1 — seat 2 is past the arc; p9 plays.
     t.nextHand();
     expect(t.hand.inHand).toContain('p9');
   });
@@ -571,11 +572,142 @@ describe('host ends the game', () => {
     expect(t.state.phase).toBe('ended');
     expect(t.state.endedReason).toBe('host');
     expect(t.state.hand).toBeNull();
-    // Everyone got their committed chips back â€” full buy-ins restored.
+    // Everyone got their committed chips back — full buy-ins restored.
     expect(t.stack('p0')).toBe(20);
     expect(t.stack('p1')).toBe(20);
     expect(t.stack('p2')).toBe(20);
     expectError(t.tryApply({ type: 'endGame', byId: 'p0' }), 'bad-phase');
+  });
+});
+
+describe('last-hand results review', () => {
+  function lastHandEnds(t: Table): void {
+    t.start();
+    t.rig({ p0: ['As', 'Ah'], p1: ['2c', '7d'] }, ['4h', '9s', 'Jd', 'Qc', '6h']);
+    t.act('p0', 'raise', 20);
+    t.act('p1', 'call');
+  }
+
+  it('keeps the finished hand so the table can still show the winner', () => {
+    const t = new Table(2, { config: { topUps: 0 } });
+    lastHandEnds(t);
+    expect(t.state.phase).toBe('ended');
+    expect(t.state.endedReason).toBe('lastPlayer');
+    expect(t.state.hand?.result).not.toBeNull();
+    expect(t.state.resultsShown).toBe(false);
+    expect(reviewingLastHand(t.state)).toBe(true);
+  });
+
+  it('showResults is host-only and flips the standings flag', () => {
+    const t = new Table(2, { config: { topUps: 0 } });
+    lastHandEnds(t);
+    expectError(t.tryApply({ type: 'showResults', byId: 'p1' }), 'not-host');
+    expect(t.state.resultsShown).toBe(false);
+    t.apply({ type: 'showResults', byId: 'p0' });
+    expect(t.state.resultsShown).toBe(true);
+    expect(reviewingLastHand(t.state)).toBe(false);
+    expectError(t.tryApply({ type: 'showResults', byId: 'p0' }), 'bad-phase');
+  });
+
+  it('showResults is rejected while the game is still going', () => {
+    const t = new Table(2);
+    t.start();
+    expectError(t.tryApply({ type: 'showResults', byId: 'p0' }), 'bad-phase');
+    t.act('p0', 'fold');
+    expect(t.state.phase).toBe('hand-over');
+    expectError(t.tryApply({ type: 'showResults', byId: 'p0' }), 'bad-phase');
+  });
+
+  it('host End game mid-hand still jumps straight to standings (no last hand)', () => {
+    const t = new Table(2);
+    t.start();
+    t.apply({ type: 'endGame', byId: 'p0' });
+    expect(t.state.hand).toBeNull();
+    expect(t.state.resultsShown).toBe(false);
+    expectError(t.tryApply({ type: 'showResults', byId: 'p0' }), 'bad-phase');
+  });
+});
+
+describe('hosted rematch', () => {
+  it('Play again resets the same table to lobby with chips restored', () => {
+    const t = new Table(2, { config: { topUps: 0 } });
+    t.start();
+    t.rig({ p0: ['As', 'Ah'], p1: ['2c', '7d'] }, ['4h', '9s', 'Jd', 'Qc', '6h']);
+    t.act('p0', 'raise', 20);
+    t.act('p1', 'call');
+    expect(t.state.phase).toBe('ended');
+
+    t.apply({ type: 'playAgain', playerId: 'p1' });
+    expect(t.state.phase).toBe('lobby');
+    expect(t.state.hand).toBeNull();
+    expect(t.state.endedReason).toBeNull();
+    expect(t.state.resultsShown).toBe(false);
+    expect(t.state.hosted).toBe(true);
+    expect(t.state.prevBbSeat).toBeNull();
+    expect(t.state.seats[0]).toBe('p0');
+    expect(t.state.seats[1]).toBe('p1');
+    expect(t.stack('p0')).toBe(20);
+    expect(t.stack('p1')).toBe(20);
+    expect(t.state.players['p0'].status).toBe('seated');
+    expect(t.state.players['p1'].status).toBe('seated');
+    expect(t.state.players['p0'].hasPlayed).toBe(false);
+    t.apply({ type: 'startGame', byId: 'p0' });
+    expect(t.state.phase).toBe('playing');
+  });
+
+  it('is a no-op once the lobby is already open, and refuses a quick-play table', () => {
+    const t = new Table(2, { config: { topUps: 0 } });
+    t.start();
+    t.apply({ type: 'endGame', byId: 'p0' });
+    t.apply({ type: 'playAgain', playerId: 'p0' });
+    t.apply({ type: 'playAgain', playerId: 'p1' });
+    expect(t.state.phase).toBe('lobby');
+
+    const quick = new Table(2, { config: { topUps: 0 } });
+    quick.state.hosted = false;
+    quick.start();
+    quick.apply({ type: 'endGame', byId: 'p0' });
+    expectError(quick.tryApply({ type: 'playAgain', playerId: 'p0' }), 'bad-phase');
+  });
+
+  it('keeps the hosted setup: top-ups, bots, and blinds', () => {
+    const t = new Table(2, {
+      config: {
+        startingStack: 50,
+        smallBlind: 2,
+        bigBlind: 4,
+        topUps: 2,
+        topUpDecayPct: 25,
+      },
+    });
+    t.apply({ type: 'addBot', byId: 'p0' });
+    t.apply({ type: 'addBot', byId: 'p0' });
+    const bots = t.state.seats.slice(2, 4) as [string, string];
+    t.start();
+    t.apply({ type: 'endGame', byId: 'p0' });
+    const setup = structuredClone(t.state.config);
+    t.apply({ type: 'playAgain', playerId: 'p0' });
+
+    expect(t.state.config).toEqual(setup);
+    expect(t.state.seats.slice(0, 4)).toEqual(['p0', 'p1', bots[0], bots[1]]);
+    expect(t.stack(bots[0])).toBe(50);
+    expect(t.state.config.topUps).toBe(2);
+    expect(t.state.config.bigBlind).toBe(4);
+  });
+
+  it('does not resurrect a kicked player, and ignores bots as the clicker', () => {
+    const t = new Table(2);
+    t.apply({ type: 'addBot', byId: 'p0' });
+    const botId = t.state.seats[2]!;
+    t.start();
+    t.apply({ type: 'kick', byId: 'p0', playerId: 'p1' });
+    t.apply({ type: 'endGame', byId: 'p0' });
+    expectError(t.tryApply({ type: 'playAgain', playerId: botId }), 'illegal-move');
+    t.apply({ type: 'playAgain', playerId: 'p0' });
+    expect(t.state.players['p1'].status).toBe('kicked');
+    expect(t.state.seats[1]).toBeNull();
+    expect(t.state.players[botId].status).toBe('seated');
+    expect(t.stack(botId)).toBe(20);
   });
 });
 

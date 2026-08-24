@@ -66,6 +66,8 @@ export function createGame(opts: {
   hostName: string;
   config?: Partial<TableConfig>;
   now: number;
+  /** Invite-link table. Default true; quick play passes false. */
+  hosted?: boolean;
 }): GameState {
   const config = normalizeConfig(opts.config ?? {});
   const host: Player = {
@@ -89,6 +91,7 @@ export function createGame(opts: {
     phase: 'lobby',
     config,
     hostId: opts.hostId,
+    hosted: opts.hosted !== false,
     players: { [opts.hostId]: host },
     seats: [opts.hostId, null, null, null, null, null],
     seatRequests: [],
@@ -97,6 +100,7 @@ export function createGame(opts: {
     nextHandAt: null,
     pauseAfterHand: false,
     endedReason: null,
+    resultsShown: false,
     events: [],
     eventSeq: 0,
     createdAt: opts.now,
@@ -308,6 +312,54 @@ export function applyAction(prev: GameState, action: Action, ctx: EngineCtx): En
       state.phase = 'hand-over';
       state.nextHandAt = ctx.now + 1500;
       emit(m, 'resumed', {});
+      return done();
+    }
+
+    case 'playAgain': {
+      const player = state.players[action.playerId];
+      if (!player) return fail('unknown-player', 'No such player');
+      if (player.isBot || player.status === 'kicked' || player.status === 'left')
+        return fail('illegal-move', 'Only players at the table can rematch');
+      if (state.hosted === false) return fail('bad-phase', 'Quick play starts a new table');
+      if (state.phase === 'lobby') return done();
+      if (state.phase !== 'ended') return fail('bad-phase', 'Game is still going');
+
+      // Same table, same setup: blinds, top-ups, stacks, timers stay as the
+      // host configured them. Seated bots stay; only chips and phase reset.
+      const buyIn = state.config.startingStack;
+      for (const p of Object.values(state.players)) {
+        if (p.status === 'kicked' || p.status === 'left') continue;
+        p.stack = buyIn;
+        p.totalBuyIn = buyIn;
+        p.topUpsUsed = 0;
+        p.topUpAt = null;
+        p.timeBankMs = state.config.timeBankMs;
+        p.hasPlayed = false;
+        p.status = 'seated';
+        p.lastSeenAt = ctx.now;
+      }
+      state.hand = null;
+      state.prevBbSeat = null;
+      state.nextHandAt = null;
+      state.pauseAfterHand = false;
+      state.endedReason = null;
+      state.resultsShown = false;
+      state.seatRequests = [];
+      state.events = [];
+      state.eventSeq = 0;
+      state.phase = 'lobby';
+      emit(m, 'rematch', {});
+      return done();
+    }
+
+    case 'showResults': {
+      const notHost = requireHost(action.byId);
+      if (notHost) return notHost;
+      if (state.phase !== 'ended') return fail('bad-phase', 'Game is not over');
+      if (state.resultsShown || !state.hand?.result)
+        return fail('bad-phase', 'Results already shown');
+      state.resultsShown = true;
+      emit(m, 'results-shown', {});
       return done();
     }
 

@@ -7,6 +7,15 @@ export type Street = 'preflop' | 'flop' | 'turn' | 'river';
 
 export type GamePhase = 'lobby' | 'playing' | 'hand-over' | 'paused' | 'ended';
 
+/** Night is over, but the last hand is still on the felt awaiting Results. */
+export function reviewingLastHand(state: {
+  phase: GamePhase;
+  resultsShown?: boolean;
+  hand: { result: unknown } | null;
+}): boolean {
+  return state.phase === 'ended' && !state.resultsShown && state.hand?.result != null;
+}
+
 export type PlayerStatus = 'seated' | 'away' | 'busted' | 'kicked' | 'left';
 
 export interface TableConfig {
@@ -135,6 +144,11 @@ export interface GameState {
   phase: GamePhase;
   config: TableConfig;
   hostId: string;
+  /**
+   * Invite-link night (not quick play). When the game ends, Play again
+   * rematches this same table so friends don't need a new SMS.
+   */
+  hosted: boolean;
   players: Record<string, Player>;
   /** length maxSeats; index = seat number; value = playerId or null. */
   seats: (string | null)[];
@@ -148,6 +162,12 @@ export interface GameState {
   pauseAfterHand: boolean;
   /** Why the game ended (set when phase becomes 'ended'). */
   endedReason: 'host' | 'lastPlayer' | 'humansOut' | null;
+  /**
+   * Host (or the solo human at a bot table) has dismissed the last-hand
+   * review and the table should show final standings. Stays false when a
+   * completed hand is still on the felt.
+   */
+  resultsShown: boolean;
   /** Ring buffer of recent events, cap 100. */
   events: GameEvent[];
   eventSeq: number;
@@ -172,6 +192,8 @@ export type Action =
   | { type: 'pause'; byId: string }
   | { type: 'resume'; byId: string }
   | { type: 'endGame'; byId: string }
+  | { type: 'showResults'; byId: string }
+  | { type: 'playAgain'; playerId: string }
   | { type: 'kick'; byId: string; playerId: string }
   | { type: 'leave'; playerId: string }
   | { type: 'addBot'; byId: string }

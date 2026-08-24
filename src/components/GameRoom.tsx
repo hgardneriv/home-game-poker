@@ -12,6 +12,7 @@ import { HistoryDrawer } from './HistoryDrawer';
 import { ToastProvider, useToast } from './Toast';
 import { GameOverScreen } from './GameOverScreen';
 import type { GameApi } from '@/hooks/useGame';
+import { reviewingLastHand } from '@/engine/types';
 
 /** Announces table events (players leaving/being kicked) to everyone else. */
 function EventNotices({ game }: { game: GameApi }) {
@@ -122,9 +123,10 @@ export function GameRoom({ gameId }: { gameId: string }) {
     );
   }
 
-  // The game is over — everyone lands on the final standings.
-  if (state.phase === 'ended') {
-    return <GameOverScreen state={state} />;
+  // Standings wait until the host dismisses the last hand (or there is no
+  // last hand — the host ended mid-session and the unfinished pot was refunded).
+  if (state.phase === 'ended' && !reviewingLastHand(state)) {
+    return <GameOverScreen game={game} />;
   }
 
   const me = state.yourId ? state.players[state.yourId] : null;

@@ -23,6 +23,8 @@ export interface ClientGameState {
   phase: GamePhase;
   config: TableConfig;
   hostId: string;
+  /** Invite-link night. Play again rematches this table. */
+  hosted: boolean;
   yourId: string | null;
   players: Record<string, ClientPlayer>;
   seats: (string | null)[];
@@ -31,6 +33,8 @@ export interface ClientGameState {
   nextHandAt: number | null;
   pauseAfterHand: boolean;
   endedReason: 'host' | 'lastPlayer' | 'humansOut' | null;
+  /** Host dismissed the last-hand review (standings are showing). */
+  resultsShown: boolean;
   events: GameEvent[];
   now: number;
 }
@@ -124,6 +128,7 @@ export function redactForPlayer(state: GameState, playerId: string | null): Clie
     phase: state.phase,
     config: state.config,
     hostId: state.hostId,
+    hosted: state.hosted !== false,
     yourId: playerId,
     players,
     seats: [...state.seats],
@@ -132,6 +137,9 @@ export function redactForPlayer(state: GameState, playerId: string | null): Clie
     nextHandAt: state.nextHandAt,
     pauseAfterHand: state.pauseAfterHand,
     endedReason: state.endedReason,
+    // Missing on pre-deploy Redis states: treat an already-ended night as
+    // already dismissed so a refresh doesn't bounce standings back to the table.
+    resultsShown: state.resultsShown ?? state.phase === 'ended',
     events: state.events,
     now: Date.now(),
   };
