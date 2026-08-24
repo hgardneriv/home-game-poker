@@ -22,14 +22,14 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 
 ## Screenshots
 
-Live gameplay on a phone. Your made hand is named on the felt above the cards; the dealer button and your street bet sit to the right of the hole cards so a long caption never covers them.
+Live gameplay on a phone. The wordmark sits with the board; your made hand is named on the felt above the cards; the dealer button and street bets sit beside the hole cards so a long caption never covers them.
 
-![Gameplay — flop, pair of twos, your turn](docs/gameplay.png)
+![Gameplay — flop, pair of twos, facing a $4 bet](docs/gameplay.png)
 
 | Pair of Twos | Three of a Kind, Kings | Full House, Aces over Kings |
 | :---: | :---: | :---: |
-| <img src="docs/hand-label-closeup.png" alt="Hero seat — Pair of Twos labeled above 4♥ 2♣, dealer button to the right" width="220"> | <img src="docs/hand-three-kings.png" alt="Flop trips — pocket kings plus a king, $4 bet and D to the right of the cards" width="180"> | <img src="docs/hand-full-house.png" alt="Flop full house — pocket aces with ace-king-king, $6 bet and D to the right" width="180"> |
-| Hole 4♥ 2♣, flop T♣ 2♠ K♣. | Pocket kings, flop K♣ 7♠ 4♦. | Pocket aces, flop A♣ K♥ K♦. |
+| <img src="docs/hand-label-closeup.png" alt="Hero seat — Pair of Twos labeled above 4♥ 2♣, dealer button to the right" width="220"> | <img src="docs/hand-three-kings.png" alt="Flop trips — pocket kings plus a king, $4 bet and D beside the cards, opponent called" width="180"> | <img src="docs/hand-full-house.png" alt="Flop full house — pocket aces with ace-king-king, $6 bet and D beside the cards" width="180"> |
+| Hole 4♥ 2♣, flop T♣ 2♠ K♣. Facing $4. | Pocket kings, flop K♣ 7♠ 4♦. $4 out. | Pocket aces, flop A♣ K♥ K♦. $6 out. |
 
 ## Stack
 

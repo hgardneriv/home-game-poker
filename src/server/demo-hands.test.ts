@@ -19,8 +19,9 @@ describe('applyDemoHand', () => {
     expect(hand.buttonSeat).toBe(state.players[hero].seat);
     expect(hand.round.toAct).toBe(hero);
     expect(hand.round.street).toBe('flop');
-    expect(getLegalActions(state, hero)?.canCheck).toBe(true);
-    expect(getLegalActions(state, hero)?.canBet).toBe(true);
+    expect(hand.round.currentBet).toBe(4);
+    expect(getLegalActions(state, hero)?.canCheck).toBe(false);
+    expect(getLegalActions(state, hero)?.callAmount).toBe(4);
   });
 
   it('plants Three of a Kind, Kings with a flop bet out', () => {

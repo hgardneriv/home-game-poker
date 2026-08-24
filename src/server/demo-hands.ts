@@ -18,6 +18,9 @@ interface Setup {
   street: Street;
   /** Street bet already in front of the hero (0 = checked to the button). */
   heroStreetBet: number;
+  /** Flop chips in front of the blinds so the table shows a live street. */
+  sbStreetBet?: number;
+  bbStreetBet?: number;
 }
 
 const SETUPS: Record<DemoHand, Setup> = {
@@ -27,18 +30,22 @@ const SETUPS: Record<DemoHand, Setup> = {
     board: ['Tc', '2s', 'Kc'],
     street: 'flop',
     heroStreetBet: 0,
+    sbStreetBet: 4,
+    bbStreetBet: 4,
   },
   'trips-kings': {
     hole: ['Kh', 'Kd'],
     board: ['Kc', '7s', '4d'],
     street: 'flop',
     heroStreetBet: 4,
+    bbStreetBet: 4,
   },
   'full-house': {
     hole: ['Ah', 'Ad'],
     board: ['Ac', 'Kh', 'Kd'],
     street: 'flop',
     heroStreetBet: 6,
+    bbStreetBet: 6,
   },
 };
 
@@ -124,23 +131,45 @@ export function applyDemoHand(state: GameState, setup: DemoHand, now: number): G
 
   const othersIn = [sb?.id, bb?.id].filter((id): id is string => !!id);
   const streetBet = spec.heroStreetBet;
+  const sbStreet = spec.sbStreetBet ?? 0;
+  const bbStreet = spec.bbStreetBet ?? 0;
   if (streetBet > 0) {
     next.players[heroId].stack -= streetBet;
     hand.totalCommitted[heroId] += streetBet;
   }
+  if (sb && sbStreet > 0) {
+    next.players[sb.id].stack -= sbStreet;
+    hand.totalCommitted[sb.id] += sbStreet;
+  }
+  if (bb && bbStreet > 0) {
+    next.players[bb.id].stack -= bbStreet;
+    hand.totalCommitted[bb.id] += bbStreet;
+  }
+
+  const committed: Record<string, number> = {};
+  if (streetBet > 0) committed[heroId] = streetBet;
+  if (sb && sbStreet > 0) committed[sb.id] = sbStreet;
+  if (bb && bbStreet > 0) committed[bb.id] = bbStreet;
+  const currentBet = Math.max(streetBet, sbStreet, bbStreet);
+  const heroFacesABet = currentBet > streetBet;
+  const acted = [
+    ...(streetBet > 0 ? [heroId] : []),
+    ...(sb && sbStreet > 0 ? [sb.id] : []),
+    ...(bb && bbStreet > 0 ? [bb.id] : []),
+  ];
 
   hand.round = {
     street: spec.street,
-    currentBet: streetBet,
-    lastFullRaiseSize: streetBet > 0 ? streetBet : bbAmt,
-    lastFullRaiseTo: streetBet,
-    committed: streetBet > 0 ? { [heroId]: streetBet } : {},
-    actedSinceFullRaise: streetBet > 0 ? [heroId] : [...othersIn],
-    lastAggressor: streetBet > 0 ? heroId : null,
-    toAct: streetBet > 0 ? (othersIn[0] ?? null) : heroId,
+    currentBet,
+    lastFullRaiseSize: currentBet > 0 ? currentBet : bbAmt,
+    lastFullRaiseTo: currentBet,
+    committed,
+    actedSinceFullRaise: acted,
+    lastAggressor: bb && bbStreet > 0 ? bb.id : streetBet > 0 ? heroId : null,
+    toAct: heroFacesABet ? heroId : streetBet > 0 ? (othersIn[0] ?? null) : heroId,
     actionDeadline: now + 3_600_000,
     timeBankArmed: false,
-    botActAt: streetBet > 0 ? now + 3_600_000 : null,
+    botActAt: heroFacesABet ? null : streetBet > 0 ? now + 3_600_000 : null,
   };
   hand.result = null;
 
