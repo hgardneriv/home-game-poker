@@ -15,7 +15,7 @@ export function Seat({
   game: GameApi;
   seatIndex: number;
   playerId: string | null;
-  /** 0 = hero (bottom), 2 = upper-left, 3 = top, 4 = upper-right. */
+  /** 0 = hero (bottom), 1 = lower-left, 2 = upper-left, 3 = top, 4 = upper-right, 5 = lower-right. */
   visualSlot: number;
 }) {
   const state = game.state!;
@@ -73,14 +73,15 @@ export function Seat({
         ? 'BB'
         : null;
 
-  // Hero + the top trio (10 / 12 / 2 o'clock) keep bet + D beside the
-  // hole cards so they don't float toward the pot / wordmark. Upper-right
-  // mirrors the bottom-right seat (chips on the felt side of the cards).
-  const chipsBesideCards = isYou || visualSlot === 2 || visualSlot === 3 || visualSlot === 4;
-  const chipSide = visualSlot === 4 ? 'left' : 'right';
-  const seatBet =
-    chipsBesideCards && hand && !hand.result ? (hand.committed[player.id] ?? 0) : 0;
-  const seatIsDealer = chipsBesideCards && !!hand && hand.buttonSeat === seatIndex;
+  // Every seat keeps bet + D beside the hole cards. Right-side seats
+  // (2 / 4 o'clock) put chips on the felt side of the cards. The 8 / 4
+  // o'clock seats sit at pot height if the stack is centered on the
+  // cards, so those chips drop to the card bottoms — next to the hand,
+  // under the pot, clear of the nameplate.
+  const chipSide = visualSlot === 4 || visualSlot === 5 ? 'left' : 'right';
+  const lowerWing = visualSlot === 1 || visualSlot === 5;
+  const seatBet = hand && !hand.result ? (hand.committed[player.id] ?? 0) : 0;
+  const seatIsDealer = !!hand && hand.buttonSeat === seatIndex;
 
   return (
     <motion.div
@@ -131,7 +132,9 @@ export function Seat({
         )}
         {(seatBet > 0 || seatIsDealer) && (
           <div
-            className={`absolute top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-1 ${
+            className={`absolute z-20 flex flex-col items-center gap-1 ${
+              lowerWing ? 'bottom-2' : 'top-1/2 -translate-y-1/2'
+            } ${
               chipSide === 'left'
                 ? 'right-full mr-2'
                 : isYou

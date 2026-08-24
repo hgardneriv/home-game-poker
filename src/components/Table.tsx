@@ -59,7 +59,7 @@ const LAYOUTS: Record<string, Point[]> = {
 };
 
 /**
- * Board + pot cluster (and the lerp target for street bets / D).
+ * Board + pot cluster.
  * Kept above geometric center so the pot clears the hero and the
  * wordmark can sit in the open felt under the top seat.
  */
@@ -70,15 +70,6 @@ const CENTERS: Record<string, Point> = {
 
 /** Landscape watermark — same point as the board so the mark sits on the slots. */
 const LOGO_LANDSCAPE: Point = { x: 50, y: 50 };
-
-function lerp(a: Point, b: Point, t: number): Point {
-  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
-}
-
-/** Top trio — bet + D render inside Seat, beside the hole cards. */
-function chipsLiveInSeat(slot: number): boolean {
-  return slot === 2 || slot === 3 || slot === 4;
-}
 
 function FeltLogo() {
   return (
@@ -110,25 +101,6 @@ function FeltLogo() {
         <span className="h-px w-8 bg-amber-200/40 sm:w-12" />
       </div>
     </div>
-  );
-}
-
-function BetChip({ amount, at, center }: { amount: number; at: Point; center: Point }) {
-  return (
-    <motion.div
-      layout
-      initial={{ scale: 0.4, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      exit={{ left: `${center.x}%`, top: `${center.y}%`, opacity: 0, transition: { duration: 0.45 } }}
-      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-      className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-      style={{ left: `${at.x}%`, top: `${at.y}%` }}
-    >
-      <div className="flex items-center gap-1 rounded-full bg-black/45 py-0.5 pl-0.5 pr-2 shadow">
-        <span className="inline-block h-4 w-4 rounded-full border-2 border-dashed border-white/70 bg-amber-500 shadow-inner" />
-        <span className="text-xs font-bold text-amber-300">{amount}</span>
-      </div>
-    </motion.div>
   );
 }
 
@@ -312,47 +284,7 @@ export function Table({ game }: { game: GameApi }) {
         )}
       </AnimatePresence>
 
-      {/* Dealer button — hero + top trio render D beside their cards in Seat. */}
-      {hand &&
-        state.players[state.yourId ?? '']?.seat !== hand.buttonSeat &&
-        !chipsLiveInSeat(slotFor(hand.buttonSeat)) && (
-        <motion.div
-          layout
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="absolute z-10 -translate-x-1/2 -translate-y-1/2"
-          style={(() => {
-            const p = lerp(posFor(hand.buttonSeat), center, 0.22);
-            return { left: `${p.x - 4}%`, top: `${p.y}%` };
-          })()}
-        >
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-[10px] font-black text-black shadow">
-            D
-          </span>
-        </motion.div>
-      )}
-
-      {/* Bet chips between each seat and the pot */}
-      <AnimatePresence>
-        {hand &&
-          !result &&
-          Object.entries(hand.committed).map(([playerId, amount]) => {
-            // Hero + top trio render their bet beside the cards in Seat.
-            if (playerId === state.yourId) return null;
-            const seat = state.players[playerId]?.seat;
-            if (amount <= 0 || seat === null || seat === undefined) return null;
-            if (chipsLiveInSeat(slotFor(seat))) return null;
-            return (
-              <BetChip
-                key={`${playerId}-${hand.street}`}
-                amount={amount}
-                at={lerp(posFor(seat), center, 0.32)}
-                center={center}
-              />
-            );
-          })}
-      </AnimatePresence>
-
-      {/* Seats */}
+      {/* Seats — bet + D render inside Seat, beside each player's cards. */}
       {state.seats.map((playerId, seatIndex) => {
         const pos = posFor(seatIndex);
         return (

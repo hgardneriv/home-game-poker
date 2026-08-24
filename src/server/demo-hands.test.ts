@@ -4,7 +4,7 @@ import { getLegalActions } from '@/engine/betting';
 import { handLabel } from '@/engine/hand-label';
 import { applyDemoHand } from './demo-hands';
 
-function demo(setup: 'pair-twos' | 'trips-kings' | 'full-house') {
+function demo(setup: 'pair-twos' | 'trips-kings' | 'full-house' | 'lower-chips') {
   const t = new Table(6);
   t.start();
   return applyDemoHand(t.state, setup, 2_000_000);
@@ -39,6 +39,20 @@ describe('applyDemoHand', () => {
     const hand = state.hand!;
     expect(handLabel(hand.holeCards[hero], hand.board)).toBe('Full House, Aces over Kings');
     expect(hand.board).toEqual(['Ac', 'Kh', 'Kd']);
+  });
+
+  it('plants street bets on both lower-wing seats and moves the button', () => {
+    const state = demo('lower-chips');
+    const hero = state.hostId;
+    const hand = state.hand!;
+    const heroSeat = state.players[hero].seat!;
+    const left = state.seats[(heroSeat + 1) % 6]!;
+    const right = state.seats[(heroSeat + 5) % 6]!;
+    expect(hand.round.committed[left]).toBe(2);
+    expect(hand.round.committed[right]).toBe(6);
+    expect(hand.buttonSeat).toBe((heroSeat + 5) % 6);
+    expect(hand.folded).not.toContain(left);
+    expect(hand.folded).not.toContain(right);
   });
 
   it('keeps chips conserved against buy-ins', () => {

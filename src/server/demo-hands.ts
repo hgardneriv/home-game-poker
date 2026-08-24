@@ -5,7 +5,7 @@ import type { Card, GameState, Street } from '@/engine/types';
  * 404s unless ALLOW_TABLE_RIG=1. Each layout is a real mid-hand: three
  * players still in, two blinds posted, the rest folded.
  */
-export const DEMO_HANDS = ['pair-twos', 'trips-kings', 'full-house'] as const;
+export const DEMO_HANDS = ['pair-twos', 'trips-kings', 'full-house', 'lower-chips'] as const;
 export type DemoHand = (typeof DEMO_HANDS)[number];
 
 export function isDemoHand(value: string): value is DemoHand {
@@ -21,6 +21,13 @@ interface Setup {
   /** Flop chips in front of the blinds so the table shows a live street. */
   sbStreetBet?: number;
   bbStreetBet?: number;
+  /**
+   * Extra street bets keyed by clockwise offset from the hero
+   * (1 = lower-left / SB, 5 = lower-right). Local chip-park preview.
+   */
+  extraOffsetBets?: Partial<Record<number, number>>;
+  /** Move the dealer button this many seats clockwise from the hero. */
+  buttonOffset?: number;
 }
 
 const SETUPS: Record<DemoHand, Setup> = {
@@ -46,6 +53,15 @@ const SETUPS: Record<DemoHand, Setup> = {
     street: 'flop',
     heroStreetBet: 6,
     bbStreetBet: 6,
+  },
+  // Preflop with chips on both lower-wing seats + D on the right wing.
+  'lower-chips': {
+    hole: ['9c', '6c'],
+    board: [],
+    street: 'preflop',
+    heroStreetBet: 6,
+    extraOffsetBets: { 1: 2, 5: 6 },
+    buttonOffset: 5,
   },
 };
 
@@ -88,7 +104,13 @@ export function applyDemoHand(state: GameState, setup: DemoHand, now: number): G
   const afterButton = clockwise(buttonSeat);
   const sb = afterButton[0];
   const bb = afterButton[1];
-  const liveIds = new Set([heroId, sb?.id, bb?.id].filter(Boolean) as string[]);
+  const extraOffsets = Object.keys(spec.extraOffsetBets ?? {}).map(Number);
+  const extraPlayers = extraOffsets
+    .map((offset) => seated.find((p) => p.seat === (buttonSeat + offset) % max))
+    .filter((p): p is { id: string; seat: number } => !!p);
+  const liveIds = new Set(
+    [heroId, sb?.id, bb?.id, ...extraPlayers.map((p) => p.id)].filter(Boolean) as string[],
+  );
 
   hand.buttonSeat = buttonSeat;
   hand.sbSeat = sb?.seat ?? (buttonSeat + 1) % max;
@@ -150,12 +172,21 @@ export function applyDemoHand(state: GameState, setup: DemoHand, now: number): G
   if (streetBet > 0) committed[heroId] = streetBet;
   if (sb && sbStreet > 0) committed[sb.id] = sbStreet;
   if (bb && bbStreet > 0) committed[bb.id] = bbStreet;
-  const currentBet = Math.max(streetBet, sbStreet, bbStreet);
+  for (const [offsetRaw, amount] of Object.entries(spec.extraOffsetBets ?? {})) {
+    if (!amount || amount <= 0) continue;
+    const target = seated.find((p) => p.seat === (buttonSeat + Number(offsetRaw)) % max);
+    if (!target || target.id === heroId) continue;
+    next.players[target.id].stack -= amount;
+    hand.totalCommitted[target.id] = (hand.totalCommitted[target.id] ?? 0) + amount;
+    committed[target.id] = (committed[target.id] ?? 0) + amount;
+  }
+  const currentBet = Math.max(streetBet, sbStreet, bbStreet, ...Object.values(committed));
   const heroFacesABet = currentBet > streetBet;
   const acted = [
     ...(streetBet > 0 ? [heroId] : []),
     ...(sb && sbStreet > 0 ? [sb.id] : []),
     ...(bb && bbStreet > 0 ? [bb.id] : []),
+    ...extraPlayers.filter((p) => p.id !== heroId && (committed[p.id] ?? 0) > 0).map((p) => p.id),
   ];
 
   hand.round = {
@@ -172,6 +203,10 @@ export function applyDemoHand(state: GameState, setup: DemoHand, now: number): G
     botActAt: heroFacesABet ? null : streetBet > 0 ? now + 3_600_000 : null,
   };
   hand.result = null;
+
+  if (spec.buttonOffset) {
+    hand.buttonSeat = (hero.seat + spec.buttonOffset) % max;
+  }
 
   next.phase = 'playing';
   next.nextHandAt = null;
