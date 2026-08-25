@@ -31,7 +31,7 @@ return 0
 `;
 
 /** Vercel Marketplace provisions KV_REST_API_*; a direct Upstash setup uses UPSTASH_REDIS_REST_*. */
-function redisCreds(): { url: string; token: string } | null {
+export function redisCreds(): { url: string; token: string } | null {
   const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
   return url && token ? { url, token } : null;
@@ -99,7 +99,7 @@ declare global {
 export function getKV(): GameKV {
   if (!globalThis.__gameKV) {
     const creds = redisCreds();
-    if (!creds && process.env.NODE_ENV === 'production') {
+    if (!creds && process.env.NODE_ENV === 'production' && process.env.ALLOW_MEMORY_KV !== '1') {
       throw new Error('Redis env vars (KV_REST_API_URL/TOKEN) are required in production');
     }
     globalThis.__gameKV = creds ? new RedisKV(creds) : new MemoryKV();

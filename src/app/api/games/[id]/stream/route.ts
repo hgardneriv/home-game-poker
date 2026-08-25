@@ -3,6 +3,7 @@ import { withGame } from '@/server/store';
 import { playerIdFromRequest } from '@/server/identity';
 import { redactForPlayer } from '@/server/redact';
 import { dueSweepAction } from '@/server/sweep';
+import { clientIp, rateLimited } from '@/server/ratelimit';
 import type { GameState } from '@/engine/types';
 
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   const { id: gameId } = await params;
+  const blocked = await rateLimited('stream', clientIp(req));
+  if (blocked) return blocked;
   const playerId = playerIdFromRequest(req, gameId);
   const kv = getKV();
 

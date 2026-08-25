@@ -15,6 +15,13 @@ export default defineConfig({
   },
   test: {
     include: ['src/**/*.test.ts'],
-    exclude: ['**/node_modules/**', 'src/engine/fuzz.test.ts'],
+    exclude: [
+      '**/node_modules/**',
+      'src/engine/fuzz.test.ts',
+      // HTTP acceptance includes a live SSE read (~1s); multiplying that
+      // across mutants would dominate the run. Scenario tests remain the
+      // mutation-killing layer; acceptance stays in `npm test`.
+      'src/app/api/games/http.acceptance.test.ts',
+    ],
   },
 });

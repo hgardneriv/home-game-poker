@@ -1,6 +1,7 @@
 import { withGame } from '@/server/store';
 import { playerIdFromRequest } from '@/server/identity';
 import { json, readJson, storeResponse } from '@/server/api';
+import { rateLimited } from '@/server/ratelimit';
 import type { PlayerMove } from '@/engine/types';
 import { getLegalActions } from '@/engine/betting';
 
@@ -24,6 +25,8 @@ export async function POST(
   const playerId = playerIdFromRequest(req, gameId);
   if (!playerId)
     return json({ error: { code: 'unauthorized', message: 'Not in this game' } }, 401);
+  const blocked = await rateLimited('mutate', playerId);
+  if (blocked) return blocked;
 
   const body = await readJson(req);
   const move = String(body.move ?? '');

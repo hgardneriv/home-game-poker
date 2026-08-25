@@ -43,6 +43,8 @@ export function Seat({
   const [landed, setLanded] = useState(!payout);
   const [stackFlash, setStackFlash] = useState(false);
   useEffect(() => {
+    /* Award-key reset is same-turn UI state, not an external sync. */
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!payout || !awardKey) {
       setLanded(true);
       setStackFlash(false);
@@ -50,6 +52,7 @@ export function Seat({
     }
     setLanded(false);
     setStackFlash(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
     const land = window.setTimeout(() => {
       setLanded(true);
       setStackFlash(true);

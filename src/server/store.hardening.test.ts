@@ -103,6 +103,12 @@ describe('getKV', () => {
     vi.stubEnv('NODE_ENV', 'production');
     expect(() => getKV()).toThrow(/KV_REST_API_URL/);
   });
+
+  it('ALLOW_MEMORY_KV opts into MemoryKV in production (e2e / next start)', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv('ALLOW_MEMORY_KV', '1');
+    expect(getKV().constructor.name).toBe('MemoryKV');
+  });
 });
 
 describe('withGame', () => {

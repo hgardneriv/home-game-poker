@@ -1,12 +1,15 @@
 import { createNewGame } from '@/server/store';
 import { buildSetCookie } from '@/server/identity';
 import { json, readJson } from '@/server/api';
+import { clientIp, rateLimited } from '@/server/ratelimit';
 import type { TableConfig } from '@/engine/types';
 
 export const dynamic = 'force-dynamic';
 
 /** Create a game. Body: { name, config?, bots?, quickPlay? }. */
 export async function POST(req: Request): Promise<Response> {
+  const blocked = await rateLimited('create', clientIp(req));
+  if (blocked) return blocked;
   const body = await readJson(req);
   const name = String(body.name ?? '').trim().slice(0, 20);
   if (!name) return json({ error: { code: 'bad-request', message: 'Name required' } }, 400);

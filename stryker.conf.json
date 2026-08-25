@@ -14,7 +14,8 @@
     "src/server/**/*.ts",
     "!src/**/*.test.ts",
     "!src/engine/test-utils.ts",
-    "!src/engine/bot.ts"
+    "!src/engine/bot.ts",
+    "!src/server/demo-hands.ts"
   ],
   "incremental": true,
   "incrementalFile": "reports/stryker-incremental.json",
