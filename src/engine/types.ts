@@ -97,7 +97,10 @@ export interface BettingRound {
 
 export interface HandResult {
   pots: { amount: number; winners: string[]; eligible: string[] }[];
-  /** Cards shown on the felt (losers auto-mucked unless they beat/tie all shown). */
+  /**
+   * Hands required to show under casino auto-muck (winner + any hand that
+   * beat/tied a shown hand). The felt turns every remaining hand via `hands`.
+   */
   revealed: Record<string, [Card, Card]>;
   /**
    * Hole cards of every player who did not fold. Empty on a fold-win.

@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import type { GameApi } from '@/hooks/useGame';
 import { handLabel } from '@/engine/hand-label';
 import { PlayingCard } from './PlayingCard';
+import { faceUpHoleCards } from './seat-cards';
 
 /** Must match PotAward travel in Table — stack pops when the chip arrives. */
 const AWARD_ARRIVE_MS = 1500;
@@ -79,8 +80,7 @@ export function Seat({
   const isWinner =
     (hand?.result?.pots.some((p) => p.winners.includes(player.id)) ?? false) &&
     state.phase !== 'playing';
-  const revealed = hand?.result?.revealed[player.id];
-  const showCards = isYou ? hand?.myCards : revealed;
+  const showCards = faceUpHoleCards(isYou, player.id, hand?.myCards, hand?.result);
   const description = hand?.result?.descriptions[player.id];
 
   // Casino-machine courtesy: name your made hand as it develops. Hero only —
