@@ -783,6 +783,8 @@ describe('full-hand event stream', () => {
     expect(data(evs[30])).toMatchObject({ handNo: 1, kind: 'showdown' });
     expect(data(evs[30]).board).toHaveLength(5);
     expect((data(evs[30]).pots as { amount: number }[])[0].amount).toBe(12);
+    const awarded = data(evs[30]).payouts as Record<string, number>;
+    expect(Object.values(awarded).reduce((a, b) => a + b, 0)).toBe(12);
 
     // Nobody busted; the showdown pause is exactly 5s with no rebuy window.
     expect(types(evs)).not.toContain('player-busted');
@@ -791,5 +793,47 @@ describe('full-hand event stream', () => {
     for (const id of ['p0', 'p1', 'p2']) {
       expect(t.state.players[id].status).toBe('seated');
     }
+  });
+
+  it('hand-result is emitted after stacks are credited, with every remaining hand and awarded amounts', () => {
+    const t = new Table(2);
+    t.start();
+    t.rig({ p0: ['As', 'Ah'], p1: ['2c', '7d'] }, ['4h', '9s', 'Jd', 'Qc', '6h']);
+    t.act('p0', 'raise', 10);
+    t.act('p1', 'call');
+    t.checkDown();
+    expect(t.state.phase).toBe('hand-over');
+    expect(t.stack('p0')).toBe(30);
+    expect(t.stack('p1')).toBe(10);
+
+    const ev = eventsOf(t.state, 'hand-result').at(-1)!;
+    expect(data(ev)).toMatchObject({
+      handNo: 1,
+      kind: 'showdown',
+      payouts: { p0: 20 },
+      board: ['4h', '9s', 'Jd', 'Qc', '6h'],
+      revealed: { p0: ['As', 'Ah'] },
+      hands: { p0: ['As', 'Ah'], p1: ['2c', '7d'] },
+      descriptions: { p0: 'Pair of Aces', p1: 'High Card Queen' },
+    });
+  });
+
+  it('fold-win hand-result records the awarded pot and no cards', () => {
+    const t = new Table(2);
+    t.start();
+    t.foldAround();
+    expect(t.state.phase).toBe('hand-over');
+    expect(t.stack('p1')).toBe(21);
+    expect(t.stack('p0')).toBe(19);
+
+    const ev = eventsOf(t.state, 'hand-result').at(-1)!;
+    expect(data(ev)).toMatchObject({
+      kind: 'foldWin',
+      payouts: { p1: 3 },
+      revealed: {},
+      hands: {},
+      descriptions: {},
+      board: [],
+    });
   });
 });

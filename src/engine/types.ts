@@ -97,9 +97,14 @@ export interface BettingRound {
 
 export interface HandResult {
   pots: { amount: number; winners: string[]; eligible: string[] }[];
-  /** Cards shown at showdown (losers auto-mucked unless they beat/tie all shown). */
+  /** Cards shown on the felt (losers auto-mucked unless they beat/tie all shown). */
   revealed: Record<string, [Card, Card]>;
-  /** e.g. 'Two Pair, Aces and Eights' for each revealed hand. */
+  /**
+   * Hole cards of every player who did not fold. Empty on a fold-win.
+   * History uses this after settlement so a screenshot can compare the field.
+   */
+  hands: Record<string, [Card, Card]>;
+  /** Made-hand label for each entry in `hands` (and thus each revealed hand). */
   descriptions: Record<string, string>;
   showdownOrder: string[];
   /** Uncalled excess returned before pots were built. */

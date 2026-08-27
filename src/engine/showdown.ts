@@ -68,11 +68,15 @@ export function resolveShowdown(
     resultPots.push({ amount: pot.amount, winners, eligible: pot.eligible });
   }
 
+  const hands: Record<string, [Card, Card]> = {};
   const descriptions: Record<string, string> = {};
-  for (const id of Object.keys(revealed)) descriptions[id] = describe(scores[id]);
+  for (const id of contesting) {
+    hands[id] = hand.holeCards[id];
+    descriptions[id] = describe(scores[id]);
+  }
 
   return {
-    result: { pots: resultPots, revealed, descriptions, showdownOrder, refunds },
+    result: { pots: resultPots, revealed, hands, descriptions, showdownOrder, refunds },
     payouts,
   };
 }
@@ -87,6 +91,7 @@ export function resolveFoldWin(
     result: {
       pots: [{ amount: total, winners: [winner], eligible: [winner] }],
       revealed: {},
+      hands: {},
       descriptions: {},
       showdownOrder: [],
       refunds: {},

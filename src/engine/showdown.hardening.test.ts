@@ -50,8 +50,14 @@ describe('resolveShowdown hardening', () => {
     hand.round.lastAggressor = 'b';
     const { result, payouts } = resolveShowdown(hand);
     expect(result.showdownOrder).toEqual(['b', 'c', 'a']);
-    // b's aces win everything; the beaten hands auto-muck.
+    // b's aces win everything; the beaten hands auto-muck on the felt
+    // but stay on the result so history can compare every remaining hand.
     expect(Object.keys(result.revealed)).toEqual(['b']);
+    expect(result.hands).toEqual({
+      a: ['2c', '2d'],
+      b: ['As', 'Ad'],
+      c: ['7s', '8s'],
+    });
     expect(payouts).toEqual({ b: 30 });
   });
 
@@ -124,6 +130,7 @@ describe('resolveFoldWin hardening', () => {
     expect(result).toEqual({
       pots: [{ amount: 7, winners: ['a'], eligible: ['a'] }],
       revealed: {},
+      hands: {},
       descriptions: {},
       showdownOrder: [],
       refunds: {},
