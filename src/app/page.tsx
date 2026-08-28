@@ -8,6 +8,7 @@ export default function Home() {
         <p className="mt-2 text-sm opacity-70">
           Texas Hold&apos;em with friends — share a link, take a seat.
         </p>
+        <p className="mt-1 text-xs opacity-50">Play money only — chips have no cash value.</p>
       </div>
       <CreateGame />
     </main>

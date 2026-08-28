@@ -13,6 +13,7 @@ import { ToastProvider, useToast } from './Toast';
 import { GameOverScreen } from './GameOverScreen';
 import type { GameApi } from '@/hooks/useGame';
 import { reviewingLastHand } from '@/engine/types';
+import { nativeTurnHaptic } from '@/hooks/native';
 
 /** Announces table events (players leaving/being kicked) to everyone else. */
 function EventNotices({ game }: { game: GameApi }) {
@@ -73,6 +74,9 @@ function useTurnPing(isMyTurn: boolean) {
 
   useEffect(() => {
     const audio = sharedAudio;
+    if (isMyTurn && !wasMyTurn.current) {
+      void nativeTurnHaptic();
+    }
     if (isMyTurn && !wasMyTurn.current && audio && audio.state === 'running') {
       try {
         const osc = audio.createOscillator();

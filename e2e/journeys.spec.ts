@@ -21,6 +21,7 @@ test('unknown game shows the not-found copy', async ({ page }) => {
 test('quick play lands at a live table', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Home Game Poker' })).toBeVisible();
+  await expect(page.getByText(/Play money only/i)).toBeVisible();
   await fillName(page, 'Ada');
   await page.getByRole('button', { name: /Play now/i }).click();
   await page.getByRole('button', { name: 'Deal me in' }).click();

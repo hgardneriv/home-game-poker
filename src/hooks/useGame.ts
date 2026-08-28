@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientGameState } from '@/server/redact';
 import type { PlayerMove } from '@/engine/types';
+import { onNativeAppActive } from './native';
 
 export interface GameApi {
   state: ClientGameState | null;
@@ -92,12 +93,20 @@ export function useGame(gameId: string): GameApi {
       }
     };
     document.addEventListener('visibilitychange', onVisible);
+    let detachNative = () => {};
+    void onNativeAppActive(() => {
+      refresh();
+      connect();
+    }).then((detach) => {
+      detachNative = detach;
+    });
     return () => {
       stopped = true;
       clearTimeout(initial);
       clearInterval(safetyPoll);
       source?.close();
       document.removeEventListener('visibilitychange', onVisible);
+      detachNative();
     };
   }, [gameId, refresh, applyState]);
 

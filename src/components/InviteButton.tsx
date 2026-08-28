@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
+import { nativeShare } from '@/hooks/native';
 
 export function InviteButton({ gameId }: { gameId: string }) {
   const [copied, setCopied] = useState(false);
 
   const invite = async () => {
     const url = `${window.location.origin}/game/${gameId}`;
+    if (await nativeShare('Poker night!', 'Join my Texas Hold’em table:', url)) return;
     // Native share sheet on phones (SMS, WhatsApp, etc.); clipboard elsewhere.
     if (navigator.share) {
       try {
