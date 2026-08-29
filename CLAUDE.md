@@ -4,31 +4,20 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
-## Next session pickup (2026-08-25, pre-reboot)
+## Next session pickup (2026-08-29)
 
-Harry is rebooting after installing Xcode **iOS 26.5** (8.52 GB simulator runtime). **Do not push.** Do not commit unless he asks. Public lobby stays deferred.
+**iPhone app is the current product track** (website is live on `master`). Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS.
 
 **Git**
-- Branch `master`. **Committed, not pushed:** `eff2b86` — *Pin the live table with HTTP/E2E tests, rate limits, and CI.* (`origin/master` is one commit behind.)
-- **Uncommitted working tree:** Capacitor iPhone Path A (started after that commit). Expect dirty: `capacitor.config.ts`, `ios/`, `src/hooks/native.ts`, `src/hooks/native.test.ts`, `src/hooks/useGame.ts` (native resume), `src/components/GameRoom.tsx` (haptic), `src/components/InviteButton.tsx` (native share), `src/app/page.tsx` + `e2e/journeys.spec.ts` (play-money copy), `package.json` / lockfile, `.gitignore` (ios junk), this file.
+- Website / production: `master` (analytics shipped). Git-triggered Vercel deploys. Do not merge iPhone work here until Harry asks.
+- iPhone: branch `iphone-app` (local unless pushed). Capacitor Path A is **committed** (`5ec119a` and later). Working tree should be clean when switching to `master`.
+- Public lobby stays deferred.
 
-**Already done (in `eff2b86`)**
-- HTTP black-box acceptance (`src/app/api/games/http.acceptance.test.ts`) + Playwright (`e2e/`, `npm run test:e2e`).
-- Coverage floors on engine/server/API (`npm run coverage`). Fresh Stryker 2026-08-24: 89.4% overall / engine 90.1% — leftovers are documented equivalents; do not chase `engine.ts` survivors.
-- Rate limits (`src/server/ratelimit.ts`) + security headers (`next.config.ts`) + `.github/workflows/ci.yml`.
-- Harry play-tested the **website** at `http://localhost:3020` — looked good. That is **not** the iPhone app.
+**Next engineering action:** Phase 1 in the plan — simulator smoke against production. Apple Developer enrollment is Harry-parallel / later (Phase 0); it does not block the simulator.
 
-**Parked**
-- Next stay on `16.2.12` until **16.3.3** (scheduled 2026-08-26). As of 2026-08-25, `16.3.3` was not on npm (latest 16.3.2).
-- Mutation Phase 3 skipped. APNs / real-device cookie proof not started.
+**Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 skipped.
 
-**First actions after reboot**
-1. Confirm iOS 26.5 is installed (Xcode → Settings → Platforms if needed).
-2. `npm run ios` (`npx cap open ios`). Pick an iPhone simulator → Run.
-3. The sim loads **production** `https://home-game-poker-kappa.vercel.app`, not localhost. Sanity-check: home, quick play or join a table, background/resume (SSE should resync).
-4. Then: commit the Capacitor slice if he likes it; cookie-jar proof on a **real** device (force-quit); APNs turn-push (needs Apple Developer). Guideline 4.2 — do not ship a naked WebView without push.
-
-**Mental model:** `localhost:3020` = Next web app. Xcode sim = Capacitor WKWebView wrapping production. See [iPhone](#iphone-capacitor-path-a--in-progress).
+**Mental model:** `localhost:3020` = Next web app. Xcode sim/device = Capacitor WKWebView wrapping production. See [iPhone](#iphone-capacitor-path-a--in-progress).
 
 ## Audits
 
@@ -86,6 +75,7 @@ CI: `.github/workflows/ci.yml` runs `tsc --noEmit`, lint, coverage (with floors)
 
 ## Roadmap (user-confirmed direction)
 
+0. **iPhone app (Capacitor Path A)** — current track. Plan: [docs/iphone-app-plan.md](docs/iphone-app-plan.md). Poker first; dealer’s choice iOS only after poker is submitted or in review.
 1. **Public lobby with matchmaking** — architecture is ready: rooms are self-contained under `g:{id}:*`; a lobby is an index (e.g. `lobby:open` sorted set) + a browse page + a create-path flag. Bots need zero changes. The game-over screen's "Play again" is where "Back to lobby" will live.
 2. Possible smaller items: escalating blinds option, run-it-twice, four-color deck, sounds toggle, bot difficulty setting, dimmed "dead button" visual hint when the button sits on an empty/busted seat (user declined for now but may revisit if friends find it confusing). (Top-ups/rebuys: DONE July 2026.)
    **Bot-game auto-end (2026-08-01, user-requested, ported from home-game-dealers-choice)**: when bots are seated and no human can play another hand (every human busted with no rebuy left — instant in quick play's `topUps: 0`), `finishHand` ends the game with `endedReason: 'humansOut'` and crowns the chip-leader bot, instead of making the human watch bots finish. A human with a top-up remaining still holds the table open. Engine `humansAreDone()` + GameOverScreen "Out of chips — game over" copy; tests in `topup-flow.test.ts`.
@@ -98,6 +88,6 @@ Native shell loads production `https://home-game-poker-kappa.vercel.app` (`capac
 - `useGame` resyncs on Capacitor `appStateChange` (iOS background kills SSE) as well as `visibilitychange`.
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value."
-- Still needed before App Store: APNs turn-push, real-device cookie-jar proof across force-quit, Xcode signing.
+- Still needed before App Store: see plan Phases 2–4 (device cookie proof, APNs, listing).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
-- Xcode 26.6 — Harry was downloading **iOS 26.5** only (not watch/tv/vision). After reboot, that runtime is what the simulator needs.
+- Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
