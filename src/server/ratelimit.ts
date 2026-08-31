@@ -5,7 +5,9 @@ import { redisCreds } from './kv';
 
 /**
  * Fixed-window limits on expensive human actions — not the SSE 500ms poll.
- * No Redis (local / e2e MemoryKV) → no-op, same as today's unconstrained table.
+ * No Redis (e2e MemoryKV) → no-op. `next dev` also no-ops: `.env.local`
+ * Redis would otherwise share the production 5-creates/hour bucket with
+ * the iPhone sim.
  */
 
 export type LimitKind = 'create' | 'join' | 'mutate' | 'stream';
@@ -36,6 +38,7 @@ function built(): Record<LimitKind, Limiter> | null {
       ? { create: override, join: override, mutate: override, stream: override }
       : null;
   }
+  if (process.env.NODE_ENV === 'development') return null;
   if (cached !== undefined) return cached;
   const creds = redisCreds();
   if (!creds) {

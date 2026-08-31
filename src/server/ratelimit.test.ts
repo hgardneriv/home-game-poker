@@ -1,8 +1,9 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clientIp, rateLimited, setLimiterForTests } from './ratelimit';
 
 afterEach(() => {
   setLimiterForTests(undefined);
+  vi.unstubAllEnvs();
 });
 
 describe('clientIp', () => {
@@ -31,5 +32,11 @@ describe('rateLimited', () => {
   it('passes through when the injected limiter allows', async () => {
     setLimiterForTests({ limit: async () => ({ success: true }) });
     expect(await rateLimited('join', 'ip')).toBeNull();
+  });
+
+  it('is a no-op in next dev even if Redis is configured', async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+    setLimiterForTests(undefined);
+    expect(await rateLimited('create', 'ip')).toBeNull();
   });
 });
