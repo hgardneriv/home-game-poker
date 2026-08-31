@@ -620,20 +620,23 @@ function startHand(m: Mutable): void {
     inHand: hand.inHand,
   });
 
-  const post = (id: string, amount: number, kind: 'small' | 'big') => {
-    const player = state.players[id];
-    const chips = Math.min(amount, player.stack);
-    player.stack -= chips;
-    hand.round.committed[id] = chips;
-    hand.totalCommitted[id] = chips;
-    if (player.stack === 0) hand.allIn.push(id);
-    emit(m, 'blind-posted', { playerId: id, amount: chips, kind });
-  };
-  if (!hand.deadSb) post(state.seats[hand.sbSeat]!, state.config.smallBlind, 'small');
-  post(state.seats[hand.bbSeat]!, state.config.bigBlind, 'big');
+  if (!hand.deadSb) postBlind(m, state.seats[hand.sbSeat]!, state.config.smallBlind, 'small');
+  postBlind(m, state.seats[hand.bbSeat]!, state.config.bigBlind, 'big');
 
   hand.round.toAct = firstToAct(state, hand);
   advance(m);
+}
+
+function postBlind(m: Mutable, playerId: string, amount: number, kind: 'small' | 'big'): void {
+  const { state } = m;
+  const hand = state.hand!;
+  const player = state.players[playerId];
+  const chips = Math.min(amount, player.stack);
+  player.stack -= chips;
+  hand.round.committed[playerId] = chips;
+  hand.totalCommitted[playerId] = chips;
+  if (player.stack === 0) hand.allIn.push(playerId);
+  emit(m, 'blind-posted', { playerId, amount: chips, kind });
 }
 
 /**
@@ -662,10 +665,7 @@ function advance(m: Mutable): void {
 
   // Round complete. Betting over entirely (<=1 player can still act)?
   if (actors(hand).length <= 1 && hand.board.length < 5) {
-    // Run out the remaining streets with no betting.
-    while (hand.board.length < 5) {
-      dealStreet(m);
-    }
+    runOutBoard(m);
     finishHand(m, resolveShowdown(hand), 'showdown');
     return;
   }
@@ -675,6 +675,17 @@ function advance(m: Mutable): void {
     return;
   }
 
+  openNextStreet(m);
+}
+
+function runOutBoard(m: Mutable): void {
+  const hand = m.state.hand!;
+  while (hand.board.length < 5) dealStreet(m);
+}
+
+function openNextStreet(m: Mutable): void {
+  const { state } = m;
+  const hand = state.hand!;
   dealStreet(m);
   hand.round = {
     street: hand.board.length === 3 ? 'flop' : hand.board.length === 4 ? 'turn' : 'river',
@@ -735,7 +746,7 @@ function finishHand(
   resolution: ReturnType<typeof resolveShowdown>,
   kind: 'foldWin' | 'showdown'
 ): void {
-  const { state, ctx } = m;
+  const { state } = m;
   const hand = state.hand!;
   hand.result = resolution.result;
   hand.round.toAct = null;
@@ -758,6 +769,25 @@ function finishHand(
     board: [...hand.board],
   });
 
+  markBusts(m);
+
+  // A bot table folds up the moment its last human busts with no rebuy left —
+  // nobody wants to watch the bots finish the night without them.
+  if (humansAreDone(state)) {
+    endGame(m, chipLeader(state)?.id ?? null, 'humansOut');
+    return;
+  }
+
+  // 'holding' returns too: the extended rebuy deadline must not be overwritten
+  // by the normal between-hands delay below (and the hold outranks a pending
+  // pause — pauseAfterHand stays set for the next completed hand).
+  if (settleOrHold(m) !== 'normal') return;
+
+  parkAfterHand(m, kind);
+}
+
+function markBusts(m: Mutable): void {
+  const { state, ctx } = m;
   for (const player of Object.values(state.players)) {
     if (player.seat !== null && player.stack === 0 && player.status !== 'busted') {
       player.status = 'busted';
@@ -768,20 +798,14 @@ function finishHand(
       }
     }
   }
+}
 
-  // A bot table folds up the moment its last human busts with no rebuy left —
-  // nobody wants to watch the bots finish the night without them.
-  if (humansAreDone(state)) {
-    const leader = chippedPlayers(state).sort((a, b) => b.stack - a.stack)[0];
-    endGame(m, leader?.id ?? null, 'humansOut');
-    return;
-  }
+function chipLeader(state: GameState): Player | undefined {
+  return chippedPlayers(state).sort((a, b) => b.stack - a.stack)[0];
+}
 
-  // 'holding' returns too: the extended rebuy deadline must not be overwritten
-  // by the normal between-hands delay below (and the hold outranks a pending
-  // pause — pauseAfterHand stays set for the next completed hand).
-  if (settleOrHold(m) !== 'normal') return;
-
+function parkAfterHand(m: Mutable, kind: 'foldWin' | 'showdown'): void {
+  const { state, ctx } = m;
   if (state.pauseAfterHand) {
     state.pauseAfterHand = false;
     state.phase = 'paused';
@@ -789,7 +813,6 @@ function finishHand(
     emit(m, 'paused', {});
     return;
   }
-
   state.phase = 'hand-over';
   state.nextHandAt = ctx.now + HAND_OVER_MS[kind];
 }
@@ -865,30 +888,9 @@ function endGame(
 function removePlayer(m: Mutable, playerId: string, status: 'kicked' | 'left'): void {
   const { state } = m;
   const player = state.players[playerId];
-  const hand = state.hand;
 
   state.seatRequests = state.seatRequests.filter((r) => r.playerId !== playerId);
-
-  if (
-    state.phase === 'playing' &&
-    hand &&
-    hand.inHand.includes(playerId) &&
-    !hand.folded.includes(playerId)
-  ) {
-    hand.folded.push(playerId);
-    emit(m, 'action', {
-      playerId,
-      move: 'fold',
-      amount: 0,
-      street: hand.round.street,
-      auto: true,
-    });
-    if (hand.round.toAct === playerId) {
-      hand.round.toAct = nextToAct(hand, playerId);
-      hand.round.actionDeadline = null;
-      hand.round.botActAt = null;
-    }
-  }
+  foldOutOfLiveHand(m, playerId);
 
   if (player.seat !== null) {
     state.seats[player.seat] = null;
@@ -904,5 +906,31 @@ function removePlayer(m: Mutable, playerId: string, status: 'kicked' | 'left'): 
     // the game while a busted player could still rebuy — and a rebuyer leaving
     // mid-window should settle it for the winner immediately.
     settleOrHold(m);
+  }
+}
+
+function foldOutOfLiveHand(m: Mutable, playerId: string): void {
+  const { state } = m;
+  const hand = state.hand;
+  if (
+    state.phase !== 'playing' ||
+    !hand ||
+    !hand.inHand.includes(playerId) ||
+    hand.folded.includes(playerId)
+  ) {
+    return;
+  }
+  hand.folded.push(playerId);
+  emit(m, 'action', {
+    playerId,
+    move: 'fold',
+    amount: 0,
+    street: hand.round.street,
+    auto: true,
+  });
+  if (hand.round.toAct === playerId) {
+    hand.round.toAct = nextToAct(hand, playerId);
+    hand.round.actionDeadline = null;
+    hand.round.botActAt = null;
   }
 }
