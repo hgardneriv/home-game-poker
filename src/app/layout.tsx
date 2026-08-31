@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -16,6 +16,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Home Game Poker",
   description: "Texas Hold'em with friends — share a link, take a seat.",
+};
+
+/** Capacitor WKWebView (and iOS Safari) paint under the status bar / home
+ *  indicator. Without `cover`, `env(safe-area-inset-*)` stays 0. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

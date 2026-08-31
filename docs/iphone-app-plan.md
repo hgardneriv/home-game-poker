@@ -1,6 +1,6 @@
 # Home Game Poker — iPhone app plan
 
-Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** `master` remains the production website.
+Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** `master` remains the production website. **Merge gate:** restore `capacitor.config.ts` `server.url` to production (drop `cleartext`) — do not ship a localhost WebView.
 
 **Sequencing (locked):** ship this app for `home-game-poker` first. `home-game-dealers-choice` is out of scope until poker is submitted (or clearly in App Store review). Copy the proven shell later (separate bundle id, listing, and `dc:` Redis prefix).
 
@@ -12,21 +12,21 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 | Decision | Choice |
 |---|---|
-| Architecture | **Path A** — Capacitor WKWebView wrapping **production** `https://home-game-poker-kappa.vercel.app`. Not a React Native rewrite. |
+| Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app`:** `http://localhost:3020` (verify branch UI). **Before merge to `master`:** restore production `https://home-game-poker-kappa.vercel.app`. |
 | Bundle id | `com.homegame.poker` |
 | Web vs native | Same Next bundle. `@capacitor/*` is dynamically imported from `src/hooks/native.ts` and **no-ops in the browser**. |
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
 
-**Mental model:** `localhost:3020` / browser = website. Xcode simulator or device = native shell loading production. Engine/server changes for push will land on this branch and must stay web-safe.
+**Mental model:** `npx next dev -p 3020` is the website **and** (on this branch) the sim WebView. Browser and simulator must both hit localhost until this branch is merged; then point Capacitor back at production. Engine/server changes for push will land on this branch and must stay web-safe.
 
 ---
 
 ## Already done (on `iphone-app`)
 
 - Capacitor 8 iOS project (`ios/`, `capacitor.config.ts`, `npm run ios` / `ios:sync`)
-- Production URL in the native config
+- Native config currently **localhost:3020** for branch testing; restore production URL before merge
 - `useGame` resync on Capacitor `appStateChange` (iOS kills SSE in background)
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
@@ -48,13 +48,18 @@ Enroll as **Individual** in the [Apple Developer Program](https://developer.appl
 
 ### Phase 1 — Simulator smoke
 
-First action in the next engineering session.
+**Done (2026-08-29).** iPhone 17 Pro, iOS 26.5 simulator. Path A loaded production (`⚡️ Loading app at https://home-game-poker-kappa.vercel.app…`; WKWebView URL confirmed). Quick-play table seated as **iPhone**; a full hand reached showdown (Lucky Lou, straight ace-high). Backgrounded ~10s via Settings, resumed same PID — live table, same seat/stack/hole cards. Native share sheet opened on Invite (“Poker night!” → production host).
 
-1. Confirm iOS simulator runtime is installed (Xcode → Settings → Platforms). Target was **iOS 26.5** (not watch/tv/vision).
-2. `npm install` on `iphone-app`, then `npm run ios` (`npx cap open ios`).
-3. Run on an iPhone simulator. The WebView must load **production**, not localhost.
-4. Play: home → name → Play now (or host) → sit at a table. Background the app ~10s, resume — table should resync (not a dead SSE).
-5. Confirm play-money copy on the home screen. Confirm invite share / haptic if the sim supports them.
+1. ~~Confirm iOS simulator runtime is installed (Xcode → Settings → Platforms). Target was **iOS 26.5** (not watch/tv/vision).~~ Installed (`iphonesimulator26.5` / runtime 23F77).
+2. ~~`npm install` on `iphone-app`, then `npm run ios` (`npx cap open ios`).~~
+3. ~~Run on an iPhone simulator. The WebView must load **production**, not localhost.~~
+4. ~~Play: home → name → Play now (or host) → sit at a table. Background the app ~10s, resume — table should resync (not a dead SSE).~~
+5. Play-money copy: **on this branch only** (`src/app/page.tsx`). Production `master` does not ship it yet, so Path A’s home screen correctly lacks it until Harry merges. Invite share: **works** in sim. Haptic: sim has no Taptic Engine — code path not felt.
+
+**GPU / layout notes (not blockers for this phase):**
+- No black-screen / GPU hang on the felt, cards, or showdown labels.
+- Table header (`GameRoom`) now pads `env(safe-area-inset-top)` (plus `viewport-fit=cover` in `layout.tsx`) so Invite / history sit below the Dynamic Island. Desktop unchanged (`env()` is 0). Verify in the sim against localhost (not production) while this lives only on `iphone-app`.
+- Capacitor logs a benign `JS Eval error` on first load; WebView still loaded production.
 
 **Done when:** one complete quick-play (or hosted) hand in the simulator, plus a background/resume that still shows the live table. Note any GPU/layout bugs. Do not start APNs in this phase.
 
@@ -134,4 +139,4 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 ## Next session
 
-Start at **Phase 1**. Do not implement APNs until the simulator path is green. Update this file when a phase’s **done when** is met.
+Start at **Phase 2** after the safe-area header is verified in the sim against localhost. Needs Harry’s physical iPhone and a signing team (free personal team is OK if Program enrollment is still pending). Do not implement APNs until Phase 2’s force-quit → same seat result is known. Before any merge: Capacitor `server.url` back to production.

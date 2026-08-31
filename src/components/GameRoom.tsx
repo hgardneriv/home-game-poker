@@ -186,7 +186,7 @@ export function GameRoom({ gameId }: { gameId: string }) {
     <ToastProvider>
       <EventNotices game={game} />
       <main className="relative flex h-dvh flex-col bg-zinc-950">
-        <header className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-white">
+        <header className="relative flex items-center justify-between gap-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-2 pl-[max(1rem,env(safe-area-inset-left,0px))] text-sm text-white">
           <div className="flex items-baseline gap-2">
             <span className="font-semibold">🃏 Home Game</span>
             <span className="text-xs text-white/50">

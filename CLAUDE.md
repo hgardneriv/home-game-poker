@@ -13,11 +13,11 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 - iPhone: branch `iphone-app` (local unless pushed). Capacitor Path A is **committed** (`5ec119a` and later). Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
-**Next engineering action:** Phase 1 in the plan — simulator smoke against production. Apple Developer enrollment is Harry-parallel / later (Phase 0); it does not block the simulator.
+**Next engineering action:** Phase 2 in the plan — real-device cookie proof (force-quit → same seat). Phase 1 simulator smoke passed 2026-08-29 (iPhone 17 Pro / iOS 26.5, production URL, showdown + background/resume). Apple Developer enrollment is Harry-parallel (Phase 0); needed for APNs (Phase 3) and a stable signing team. Do not start APNs until Phase 2 is done.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 skipped.
 
-**Mental model:** `localhost:3020` = Next web app. Xcode sim/device = Capacitor WKWebView wrapping production. See [iPhone](#iphone-capacitor-path-a--in-progress).
+**Mental model:** `localhost:3020` = Next web app **and** (on `iphone-app`) the Capacitor sim. Restore production URL in `capacitor.config.ts` before merging to `master`. See [iPhone](#iphone-capacitor-path-a--in-progress).
 
 ## Audits
 
@@ -83,11 +83,12 @@ CI: `.github/workflows/ci.yml` runs `tsc --noEmit`, lint, coverage (with floors)
 
 ## iPhone (Capacitor Path A — in progress)
 
-Native shell loads production `https://home-game-poker-kappa.vercel.app` (`capacitor.config.ts`). Web path is unchanged: `@capacitor/*` is dynamically imported from [`src/hooks/native.ts`](src/hooks/native.ts) and no-ops in the browser.
+Native shell currently loads **`http://localhost:3020`** (`capacitor.config.ts`) so this branch can be verified in the simulator. **Before merge:** restore `https://home-game-poker-kappa.vercel.app` and drop `cleartext`. Web path is unchanged: `@capacitor/*` is dynamically imported from [`src/hooks/native.ts`](src/hooks/native.ts) and no-ops in the browser.
 
 - `useGame` resyncs on Capacitor `appStateChange` (iOS background kills SSE) as well as `visibilitychange`.
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value."
+- Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover` (`layout.tsx` / `GameRoom`). Sim must run against localhost to see it.
 - Still needed before App Store: see plan Phases 2–4 (device cookie proof, APNs, listing).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).

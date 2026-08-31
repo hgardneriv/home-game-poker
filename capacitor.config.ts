@@ -5,10 +5,15 @@ const config: CapacitorConfig = {
   appName: 'Home Game Poker',
   webDir: 'public',
   server: {
-    // Path A: the native shell loads the live site so cookies, SSE, and
-    // the existing UI transfer unchanged. WKWebView cookie persistence
-    // still needs a real-device proof before we rely on it in the store.
-    url: 'https://home-game-poker-kappa.vercel.app',
+    // BRANCH DEV ONLY — WKWebView loads local Next so this branch's UI can
+    // be verified in the simulator before it exists on production.
+    // Before merging iphone-app → master, restore:
+    //   url: 'https://home-game-poker-kappa.vercel.app'
+    //   (drop cleartext)
+    // Simulator: http://localhost:3020 with `npx next dev -p 3020` running.
+    // A physical device cannot use localhost; use the Mac's LAN IP instead.
+    url: 'http://localhost:3020',
+    cleartext: true,
     androidScheme: 'https',
   },
 };
