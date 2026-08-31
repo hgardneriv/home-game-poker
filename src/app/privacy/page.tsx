@@ -50,8 +50,8 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold">Contact</h2>
         <p>
           Questions about this policy:{' '}
-          <a className="underline" href="mailto:hgardneriv@gmail.com">
-            hgardneriv@gmail.com
+          <a className="underline" href="mailto:homegamesupport@gmail.com">
+            homegamesupport@gmail.com
           </a>
           .
         </p>
