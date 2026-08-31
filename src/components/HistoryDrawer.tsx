@@ -37,7 +37,7 @@ export function HistoryDrawer({ game }: { game: GameApi }) {
         🕐
       </button>
       {open && (
-        <div className="absolute top-full right-2 z-40 mt-1 flex max-h-[60dvh] w-80 max-w-[90vw] flex-col overflow-hidden rounded-xl border border-white/15 bg-zinc-950/95 shadow-2xl backdrop-blur sm:w-96">
+        <div className="absolute top-full right-2 z-40 mt-1 flex max-h-[60dvh] w-80 max-w-[90vw] flex-col overflow-hidden rounded-xl border border-white/15 bg-zinc-950 shadow-2xl sm:w-96">
           <div className="flex items-center justify-between border-b border-white/10 px-3 py-2 text-sm font-semibold text-white">
             Hand history
             <button className="text-white/60" onClick={() => setOpen(false)}>

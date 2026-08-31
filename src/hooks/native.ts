@@ -26,15 +26,22 @@ export async function onNativeAppActive(handler: () => void): Promise<() => void
   }
 }
 
+/**
+ * Native share sheet. `true` means the Capacitor path ran (shared *or*
+ * dismissed / failed) — the caller must not also invoke `navigator.share`
+ * in the same WKWebView. Falling through after a cancel used to reject
+ * again through the bridge and trip Next's dev overlay (`user-script`
+ * / `returnResult`).
+ */
 export async function nativeShare(title: string, text: string, url: string): Promise<boolean> {
   if (!isNative()) return false;
   try {
     const { Share } = await import('@capacitor/share');
     await Share.share({ title, text, url });
-    return true;
   } catch {
-    return false;
+    // "Share canceled", "already sharing", missing activity types, etc.
   }
+  return true;
 }
 
 export async function nativeTurnHaptic(): Promise<void> {
