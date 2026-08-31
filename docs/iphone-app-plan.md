@@ -1,6 +1,6 @@
 # Home Game Poker — iPhone app plan
 
-Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** `master` remains the production website. **Merge gate:** restore `capacitor.config.ts` `server.url` to production (drop `cleartext`) — do not ship a localhost WebView.
+Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** **`master` is still the Git production branch**; the **live alias is currently this branch** (CLI `vercel deploy --prod`, 2026-08-31 friend beta). **Do not push `master`** during the beta. **Merge gate:** restore `capacitor.config.ts` `server.url` to production (drop `cleartext` / `loggingBehavior: 'none'`) — do not ship a localhost WebView.
 
 **Sequencing (locked):** ship this app for `home-game-poker` first. `home-game-dealers-choice` is out of scope until poker is submitted (or clearly in App Store review). Copy the proven shell later (separate bundle id, listing, and `dc:` Redis prefix).
 
@@ -19,7 +19,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
 
-**Mental model:** `npx next dev -p 3020` is the website **and** (on this branch) the sim WebView. Browser and simulator must both hit localhost until this branch is merged; then point Capacitor back at production. Engine/server changes for push will land on this branch and must stay web-safe.
+**Mental model:** `npx next dev -p 3020` is the website **and** (on this branch) the sim WebView. Friends beta-test on **production**. Simulator still uses localhost until merge. Engine/server changes for push will land on this branch and must stay web-safe.
 
 ---
 
@@ -32,8 +32,9 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 - In-app copy: “Play money only — chips have no cash value.”
 - Web tests still pass with native bridges no-op’ing (`src/hooks/native.test.ts`)
 - `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`)
-- Privacy policy at `/privacy` (home footer). Listing draft: [app-store-listing.md](app-store-listing.md)
+- Privacy policy at `/privacy` (home footer; contact `homegamesupport@gmail.com`). Listing draft: [app-store-listing.md](app-store-listing.md)
 - Info.plist `ITSAppUsesNonExemptEncryption` = false (HTTPS + HMAC cookie only)
+- **Engine extract (2026-08-31):** `applyAction` is a thin switch; per-action handlers + hand-loop helpers. Harry signed off on web regression. Stryker after extract: 90.36% overall / engine 91.54% / `engine.ts` 86 survivors (mostly fail-message strings). Hardening pass **stopped** — do not chase remaining StringLiteral mutants.
 
 ---
 
@@ -57,7 +58,7 @@ Enroll as **Individual** in the [Apple Developer Program](https://developer.appl
 2. ~~`npm install` on `iphone-app`, then `npm run ios` (`npx cap open ios`).~~
 3. ~~Run on an iPhone simulator. The WebView must load **production**, not localhost.~~
 4. ~~Play: home → name → Play now (or host) → sit at a table. Background the app ~10s, resume — table should resync (not a dead SSE).~~
-5. Play-money copy: **on this branch only** (`src/app/page.tsx`). Production `master` does not ship it yet, so Path A’s home screen correctly lacks it until Harry merges. Invite share: **works** in sim. Haptic: sim has no Taptic Engine — code path not felt.
+5. Play-money copy: **on this branch and on the live alias** (`src/app/page.tsx`). `master` still lacks it until merge. Invite share: **works** in sim. Haptic: sim has no Taptic Engine — code path not felt.
 
 **GPU / layout notes (not blockers for this phase):**
 - No black-screen / GPU hang on the felt, cards, or showdown labels.
@@ -97,14 +98,14 @@ Sketch (refine when implementing; do not invent a second identity system):
 
 Upload and screenshots still wait for Phases 2–3. Draft artifacts started **2026-08-31** so Apple has a privacy URL and listing copy ready; **do not claim turn-push in Connect until Phase 3**.
 
-- Privacy policy URL (required): `/privacy` on this branch. After merge: `https://home-game-poker-kappa.vercel.app/privacy`.
+- Privacy policy URL (required): **live** at `https://home-game-poker-kappa.vercel.app/privacy`.
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
 - **Replace before submit:** Capacitor default App Icon (`AppIcon-512@2x.png` is the stock “C”) and splash PNGs in `ios/App/App/Assets.xcassets`.
 - Screenshots from a device or sim at required sizes — not started.
 - 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
-**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 2 cookie proof, Phase 3 push, production Capacitor URL, and play-money copy on `master`.
+**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 2 cookie proof, Phase 3 push, and Capacitor pointed at production (not localhost).
 
 ### Phase 5 — Submit and review
 
@@ -145,9 +146,9 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** no turn-push (4.2); play-money line is on this branch only; Capacitor still points at localhost; Phase 2 needs a physical iPhone.
+**Still not submittable:** no turn-push (4.2); Capacitor still points at localhost; Phase 2 needs a physical iPhone. Play-money copy **is** on the live alias (CLI prod from this branch).
 
-**Coverage** (`npm test` 356 passed; `npm run coverage`): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
+**Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
 **CRAP** (`comp² × (1−stmtCov)³ + comp`, bar ≤ 6) on touched product TS:
 
@@ -156,11 +157,13 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 | `ratelimit.ts` | All named fns ≤ 6 after a Redis-limiter unit test. `built` = **6.00** at 100% stmt coverage. |
 | `native.ts` | Not in the Vitest coverage *include* (hooks are Playwright-owned). One-off include: **100%** stmts/branches/fns; CRAP = complexity only (`isNative` 2, `onNativeAppActive` 4, `nativeShare` 3, `nativeTurnHaptic` 3). Extra native-path tests added. |
 | `useGame.ts` / `GameRoom.tsx` / `InviteButton.tsx` / `layout.tsx` / `page.tsx` | **0% Vitest** by design. `useGame` is the client hotspot (complexity ~21 → CRAP ~462 at 0% unit coverage). No RTL suite this pass. |
-| `engine.ts` | Still the danger zone: `applyAction` complexity ~109, ~99% stmts, CRAP **~109**. `startHand` / `advance` / `finishHand` / `removePlayer` sit at 9–13 because complexity, not missing lines. No allowlist file; mutation Phase 3 stays parked. |
+| `engine.ts` | **Extracted 2026-08-31** (`applyAction` dispatcher + lifecycle helpers). Pre-extract: `applyAction` CRAP ~109. Post-extract Stryker: **86** survivors (mostly `StringLiteral` fail messages). No allowlist file; do not chase remaining equivalents. |
 
-**Stryker** (cache-busted `npx stryker run`): **89.23%** overall / engine **90.10%** vs 2026-08-24 ~**89.4% / 90.1%**. Not materially worse. `engine.ts` still **106** survivors. `ratelimit.ts` scored **56%** on that run (12 no-coverage mutants on the Redis constructor path); the unit test that covers that path landed immediately after and Stryker was not re-run. `kv.ts` still weak (16 no-cov) — untouched this pass.
+**Stryker** after extract (cache-busted `npx stryker run`): **90.36%** overall / engine **91.54%** vs quality-pass-start 89.23% / 90.10% and 2026-08-24 ~89.4% / 90.1%. `engine.ts` **86** survivors + 1 no-cov (was 106 + 7). `kv.ts` still weak (16 no-cov) — untouched.
 
-**Store-prep:** `/privacy` + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; icon/splash called out as Capacitor defaults.
+**Store-prep:** `/privacy` live (contact `homegamesupport@gmail.com`) + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; icon/splash still Capacitor defaults.
+
+**Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
 **Harry-parallel blockers:** Developer Program enrollment → physical iPhone force-quit cookie proof (Phase 2) → APNs (Phase 3). Then restore production `server.url` / logging before any merge to `master`.
 
@@ -168,4 +171,4 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 ## Next session
 
-Start at **Phase 2**. Needs Harry’s physical iPhone and a signing team (free personal team is OK if Program enrollment is still pending). Do not implement APNs until Phase 2’s force-quit → same seat result is known. Before any merge: Capacitor `server.url` back to production and drop `loggingBehavior: 'none'`.
+Start at **Phase 2** (physical iPhone, force-quit → same seat). Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Before any merge: Capacitor `server.url` back to production and drop `loggingBehavior: 'none'`.

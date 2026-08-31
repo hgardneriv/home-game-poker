@@ -6,7 +6,7 @@ file is a draft so listing work can start without claiming native features we
 do not ship yet.
 
 Privacy policy URL (required): `https://home-game-poker-kappa.vercel.app/privacy`
-(after this branch is on production). Until merge, the page lives on `iphone-app`.
+(live on the production alias as of 2026-08-31; contact `homegamesupport@gmail.com`).
 
 ## Name / subtitle
 
