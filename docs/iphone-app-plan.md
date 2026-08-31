@@ -31,6 +31,9 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
 - Web tests still pass with native bridges no-op’ing (`src/hooks/native.test.ts`)
+- `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`)
+- Privacy policy at `/privacy` (home footer). Listing draft: [app-store-listing.md](app-store-listing.md)
+- Info.plist `ITSAppUsesNonExemptEncryption` = false (HTTPS + HMAC cookie only)
 
 ---
 
@@ -92,15 +95,16 @@ Sketch (refine when implementing; do not invent a second identity system):
 
 ### Phase 4 — Store-ready shell
 
-Only after Phases 2–3.
+Upload and screenshots still wait for Phases 2–3. Draft artifacts started **2026-08-31** so Apple has a privacy URL and listing copy ready; **do not claim turn-push in Connect until Phase 3**.
 
-- App icon / splash already in `ios/`; replace with final art if they look like Capacitor defaults.
-- Privacy policy URL (required). Host a short static page or use the production site.
-- App Store Connect listing: play-money, no real currency, age rating (simulated gambling).
-- Screenshots from a device or sim at required sizes.
-- Confirm 4.2 story in review notes: native push, share, haptics, not “a website bookmark.”
+- Privacy policy URL (required): `/privacy` on this branch. After merge: `https://home-game-poker-kappa.vercel.app/privacy`.
+- Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
+- `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
+- **Replace before submit:** Capacitor default App Icon (`AppIcon-512@2x.png` is the stock “C”) and splash PNGs in `ios/App/App/Assets.xcassets`.
+- Screenshots from a device or sim at required sizes — not started.
+- 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
-**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead.
+**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 2 cookie proof, Phase 3 push, production Capacitor URL, and play-money copy on `master`.
 
 ### Phase 5 — Submit and review
 
@@ -137,6 +141,31 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 ---
 
+## Quality pass + store shell (2026-08-31)
+
+Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
+
+**Still not submittable:** no turn-push (4.2); play-money line is on this branch only; Capacitor still points at localhost; Phase 2 needs a physical iPhone.
+
+**Coverage** (`npm test` 356 passed; `npm run coverage`): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
+
+**CRAP** (`comp² × (1−stmtCov)³ + comp`, bar ≤ 6) on touched product TS:
+
+| Area | Result |
+|---|---|
+| `ratelimit.ts` | All named fns ≤ 6 after a Redis-limiter unit test. `built` = **6.00** at 100% stmt coverage. |
+| `native.ts` | Not in the Vitest coverage *include* (hooks are Playwright-owned). One-off include: **100%** stmts/branches/fns; CRAP = complexity only (`isNative` 2, `onNativeAppActive` 4, `nativeShare` 3, `nativeTurnHaptic` 3). Extra native-path tests added. |
+| `useGame.ts` / `GameRoom.tsx` / `InviteButton.tsx` / `layout.tsx` / `page.tsx` | **0% Vitest** by design. `useGame` is the client hotspot (complexity ~21 → CRAP ~462 at 0% unit coverage). No RTL suite this pass. |
+| `engine.ts` | Still the danger zone: `applyAction` complexity ~109, ~99% stmts, CRAP **~109**. `startHand` / `advance` / `finishHand` / `removePlayer` sit at 9–13 because complexity, not missing lines. No allowlist file; mutation Phase 3 stays parked. |
+
+**Stryker** (cache-busted `npx stryker run`): **89.23%** overall / engine **90.10%** vs 2026-08-24 ~**89.4% / 90.1%**. Not materially worse. `engine.ts` still **106** survivors. `ratelimit.ts` scored **56%** on that run (12 no-coverage mutants on the Redis constructor path); the unit test that covers that path landed immediately after and Stryker was not re-run. `kv.ts` still weak (16 no-cov) — untouched this pass.
+
+**Store-prep:** `/privacy` + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; icon/splash called out as Capacitor defaults.
+
+**Harry-parallel blockers:** Developer Program enrollment → physical iPhone force-quit cookie proof (Phase 2) → APNs (Phase 3). Then restore production `server.url` / logging before any merge to `master`.
+
+---
+
 ## Next session
 
-Start at **Phase 2** after the safe-area header is verified in the sim against localhost. Needs Harry’s physical iPhone and a signing team (free personal team is OK if Program enrollment is still pending). Do not implement APNs until Phase 2’s force-quit → same seat result is known. Before any merge: Capacitor `server.url` back to production.
+Start at **Phase 2**. Needs Harry’s physical iPhone and a signing team (free personal team is OK if Program enrollment is still pending). Do not implement APNs until Phase 2’s force-quit → same seat result is known. Before any merge: Capacitor `server.url` back to production and drop `loggingBehavior: 'none'`.

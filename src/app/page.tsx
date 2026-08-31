@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { CreateGame } from '@/components/CreateGame';
 
 export default function Home() {
@@ -11,6 +12,11 @@ export default function Home() {
         <p className="mt-1 text-xs opacity-50">Play money only — chips have no cash value.</p>
       </div>
       <CreateGame />
+      <footer className="text-center text-xs opacity-50">
+        <Link href="/privacy" className="underline">
+          Privacy
+        </Link>
+      </footer>
     </main>
   );
 }

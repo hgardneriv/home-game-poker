@@ -1,6 +1,23 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { clientIp, rateLimited, setLimiterForTests } from './ratelimit';
 
+vi.mock('@upstash/redis', () => ({
+  Redis: class {
+    constructor() {}
+  },
+}));
+
+vi.mock('@upstash/ratelimit', () => ({
+  Ratelimit: class {
+    static fixedWindow() {
+      return { type: 'fixed' };
+    }
+    limit() {
+      return Promise.resolve({ success: true });
+    }
+  },
+}));
+
 afterEach(() => {
   setLimiterForTests(undefined);
   vi.unstubAllEnvs();
@@ -38,5 +55,14 @@ describe('rateLimited', () => {
     vi.stubEnv('NODE_ENV', 'development');
     setLimiterForTests(undefined);
     expect(await rateLimited('create', 'ip')).toBeNull();
+  });
+
+  it('builds Redis limiters outside next dev and reuses the cache', async () => {
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('KV_REST_API_URL', 'https://example.upstash.io');
+    vi.stubEnv('KV_REST_API_TOKEN', 'token');
+    setLimiterForTests(undefined);
+    expect(await rateLimited('create', 'ip')).toBeNull();
+    expect(await rateLimited('join', 'ip')).toBeNull();
   });
 });
