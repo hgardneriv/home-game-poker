@@ -52,7 +52,7 @@ async function createAndRig(page, setup) {
   if (!created.gameId) throw new Error(`create failed: ${JSON.stringify(created)}`);
 
   await page.goto(`${BASE}/game/${created.gameId}`, { waitUntil: 'networkidle' });
-  await page.getByText('Home Game', { exact: false }).first().waitFor({ timeout: 15_000 });
+  await page.getByText('Poker Party', { exact: false }).first().waitFor({ timeout: 15_000 });
 
   const rigged = await page.evaluate(async ({ gameId, setup }) => {
     const res = await fetch(`/api/games/${gameId}/rig`, {

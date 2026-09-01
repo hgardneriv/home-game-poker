@@ -12,11 +12,12 @@ Privacy policy URL (required): `https://home-game-poker-kappa.vercel.app/privacy
 
 - **Name:** Poker Party - Texas Hold'em (30-character cap; this fits)
 - **Subtitle:** Play-money Hold'em with friends
+- **Bundle id:** `app.pokerparty.holdem` (Dealer’s Choice sibling: `app.pokerparty.dealerschoice`)
 - **Host:** `holdem.pokerparty.app` (not live until DNS → Vercel). iPhone name is brand-first; the subdomain is game-first.
 
 ## Description
 
-Home Game Poker is a private Texas Hold'em table for friends. Share a link,
+Poker Party is a private Texas Hold'em table for friends. Share a link,
 take a seat, and play chips that have **no cash value**.
 
 Host a table or jump into a quick game with optional bots. The iPhone app
@@ -28,7 +29,7 @@ Play money only — chips have no cash value.
 
 ## Keywords (draft)
 
-poker, hold'em, texas holdem, home game, play money, chips, friends, table
+poker, hold'em, texas holdem, poker party, play money, chips, friends, table
 
 ## Category / age rating notes
 
@@ -50,7 +51,7 @@ Do **not** claim push notifications until APNs ships (Phase 3).
 This is a play-money Texas Hold'em table (chips have no cash value; no IAP).
 
 Native value today:
-- Capacitor WKWebView shell (bundle id com.homegame.poker)
+- Capacitor WKWebView shell (bundle id `app.pokerparty.holdem`)
 - Native share sheet for table invites
 - Haptic on your turn
 
@@ -66,4 +67,4 @@ sheet. There is no login. Test account: none required.
 
 - Device or simulator screenshots at Apple's required sizes.
 - `ITSAppUsesNonExemptEncryption` is already `false` in Info.plist (HTTPS + HMAC cookie only).
-- App icon / splash: house + gold spade on felt (`brand/home-game-icon-holdem.svg`). Dealer's Choice chip sibling lives in `brand/` until that app is cut.
+- App icon / splash: black spade on felt with gold frame (`brand/home-game-icon-holdem.svg`). Same chrome + a chip is the Dealer's Choice sibling (source in `brand/`, not this app).

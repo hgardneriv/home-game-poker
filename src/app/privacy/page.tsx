@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Privacy — Home Game Poker',
-  description: 'How Home Game Poker handles session cookies and play-money chips.',
+  title: 'Privacy — Poker Party',
+  description: 'How Poker Party handles session cookies and play-money chips.',
 };
 
 export default function PrivacyPage() {
@@ -19,7 +19,7 @@ export default function PrivacyPage() {
 
       <section className="space-y-3 text-sm leading-relaxed opacity-90">
         <p>
-          Home Game Poker is play money only — chips have no cash value. There
+          Poker Party is play money only — chips have no cash value. There
           are no accounts, no real-money play, and we do not sell your data.
         </p>
         <h2 className="text-lg font-semibold">What we store</h2>
