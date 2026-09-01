@@ -4,7 +4,7 @@
  * treating native plugins as required at SSR.
  */
 
-function isNative(): boolean {
+export function isNative(): boolean {
   if (typeof window === 'undefined') return false;
   const cap = (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
   return cap?.isNativePlatform?.() === true;

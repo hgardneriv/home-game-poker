@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { CreateGame } from '@/components/CreateGame';
+import { ResumeTable } from '@/components/ResumeTable';
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
         </p>
         <p className="mt-1 text-xs opacity-50">Play money only — chips have no cash value.</p>
       </div>
+      <ResumeTable />
       <CreateGame />
       <footer className="text-center text-xs opacity-50">
         <Link href="/privacy" className="underline">

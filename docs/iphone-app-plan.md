@@ -70,13 +70,11 @@ Needs a physical iPhone. Simulator cookie jars do not prove store-ready identity
 
 Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-quit, the player loses their seat.
 
-**Done (2026-09-01, layout).** Harry signed off: table fits the physical iPhone and the website with no page scroll. Capacitor WebView loads production. **Cookie proof still open:** force-quit → reopen → same seat (then reboot if that pass looks good).
+**Cookie proof (still open).** Play Now always starts a **new** table — that is correct. Layout signed off 2026-09-01. The Capacitor app boots at `/`, so force-quit then Play Now cannot restore the seat. Native reopen now returns to the last `/game/{id}`; the cookie should restore the seat. If you land on Join, the WKWebView dropped the cookie.
 
-Config is ready: WebView loads production.
-
-1. ~~Sign the iOS app for Harry’s device (Automatic Signing; Team = Harry’s Developer team). Bundle ID `com.homegame.poker`.~~
-2. ~~Install on device. Join or host a production table.~~ Table fit signed off.
-3. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
+1. Sit at a live table (note seat + stack).
+2. Force-quit. Reopen the **app icon** — do not tap Play Now.
+3. **Same table, same seat, same stack.**
 4. Repeat after a phone reboot if the first pass looks good.
 
 **Done when:** force-quit → reopen restores the seat on a real device. If it fails, stop and design a native-backed session fallback — do not paper over it and submit.

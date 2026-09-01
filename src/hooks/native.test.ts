@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { nativeShare, nativeTurnHaptic, onNativeAppActive } from './native';
+import { isNative, nativeShare, nativeTurnHaptic, onNativeAppActive } from './native';
 
 const share = vi.fn();
 const addListener = vi.fn();
@@ -33,6 +33,7 @@ describe('native bridges (web / node)', () => {
   });
 
   it('app-active, share, and haptic are no-ops without Capacitor', async () => {
+    expect(isNative()).toBe(false);
     const detach = await onNativeAppActive(() => {
       throw new Error('should not fire');
     });
@@ -46,6 +47,7 @@ describe('native bridges (web / node)', () => {
 
   it('treats a cancelled native share as handled so web share is not also invoked', async () => {
     stubNative();
+    expect(isNative()).toBe(true);
     share.mockRejectedValueOnce({ message: 'Share canceled' });
     expect(await nativeShare('t', 'x', 'http://example.com')).toBe(true);
     expect(share).toHaveBeenCalledWith({
