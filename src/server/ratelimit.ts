@@ -6,18 +6,22 @@ import { redisCreds } from './kv';
 /**
  * Fixed-window limits on expensive human actions — not the SSE 500ms poll.
  * No Redis (e2e MemoryKV) → no-op. `next dev` also no-ops: `.env.local`
- * Redis would otherwise share the production 5-creates/hour bucket with
+ * Redis would otherwise share the production 10-creates/hour bucket with
  * the iPhone sim.
  */
 
 export type LimitKind = 'create' | 'join' | 'mutate' | 'stream';
+
+/** Hosted + quick-play creates share this IP bucket. Doubled from 5 for
+ *  iPhone cookie-proof retests; still tiny versus a public lobby. */
+export const CREATE_PER_HOUR = 10;
 
 export interface Limiter {
   limit(identifier: string): Promise<{ success: boolean }>;
 }
 
 const WINDOWS: Record<LimitKind, { tokens: number; window: `${number} ${'s' | 'm' | 'h'}` }> = {
-  create: { tokens: 5, window: '1 h' },
+  create: { tokens: CREATE_PER_HOUR, window: '1 h' },
   join: { tokens: 20, window: '1 m' },
   mutate: { tokens: 30, window: '1 m' },
   stream: { tokens: 30, window: '1 m' },

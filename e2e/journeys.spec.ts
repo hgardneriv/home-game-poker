@@ -122,3 +122,19 @@ test('iPhone-sized table fits the screen without page scroll', async ({ browser 
 
   await context.close();
 });
+
+test('home offers return to the last table', async ({ page }) => {
+  await page.goto('/');
+  await fillName(page, 'Ada');
+  await page.getByRole('button', { name: /Play now/i }).click();
+  await page.getByRole('button', { name: 'Deal me in' }).click();
+  await expect(page.getByText('🃏 Home Game')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('hero-seat')).toContainText('Ada');
+
+  await page.goto('/');
+  await expect(page.getByRole('link', { name: /Return to table/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Play now/i })).toHaveCount(0);
+  await page.getByRole('link', { name: /Return to table/i }).click();
+  await expect(page.getByText('🃏 Home Game')).toBeVisible();
+  await expect(page.getByTestId('hero-seat')).toContainText('Ada');
+});

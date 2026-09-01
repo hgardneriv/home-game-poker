@@ -14,6 +14,7 @@ import { GameOverScreen } from './GameOverScreen';
 import type { GameApi } from '@/hooks/useGame';
 import { reviewingLastHand } from '@/engine/types';
 import { nativeTurnHaptic } from '@/hooks/native';
+import { clearLastGameId, writeLastGameId } from '@/hooks/lastGame';
 
 /** Announces table events (players leaving/being kicked) to everyone else. */
 function EventNotices({ game }: { game: GameApi }) {
@@ -105,6 +106,31 @@ export function GameRoom({ gameId }: { gameId: string }) {
   useTurnPing(
     !!state?.yourId && state.phase === 'playing' && state.hand?.toAct === state.yourId
   );
+
+  // Remember this table so the iPhone app can reopen it after a force-quit.
+  // Identity is still the httpOnly cookie; this is only the last URL.
+  useEffect(() => {
+    if (error) {
+      clearLastGameId();
+      return;
+    }
+    if (!state) return;
+    const me = state.yourId ? state.players[state.yourId] : null;
+    if (state.phase === 'ended' && !reviewingLastHand(state)) {
+      clearLastGameId();
+      return;
+    }
+    if (me && (me.status === 'left' || me.status === 'kicked')) {
+      clearLastGameId();
+      return;
+    }
+    if (
+      me &&
+      (me.seat !== null || state.seatRequests.some((r) => r.playerId === me.id))
+    ) {
+      writeLastGameId(gameId);
+    }
+  }, [error, state, gameId]);
 
   if (error) {
     return (

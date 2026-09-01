@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clientIp, rateLimited, setLimiterForTests } from './ratelimit';
+import { CREATE_PER_HOUR, clientIp, rateLimited, setLimiterForTests } from './ratelimit';
 
 vi.mock('@upstash/redis', () => ({
   Redis: class {
@@ -55,6 +55,10 @@ describe('rateLimited', () => {
     vi.stubEnv('NODE_ENV', 'development');
     setLimiterForTests(undefined);
     expect(await rateLimited('create', 'ip')).toBeNull();
+  });
+
+  it('caps table creates at 10 per hour', () => {
+    expect(CREATE_PER_HOUR).toBe(10);
   });
 
   it('builds Redis limiters outside next dev and reuses the cache', async () => {

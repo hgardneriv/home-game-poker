@@ -32,7 +32,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
 - Web tests still pass with native bridges no-op’ing (`src/hooks/native.test.ts`)
-- `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`)
+- `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`; 10 creates/hour)
 - Privacy policy at `/privacy` (home footer; contact `homegamesupport@gmail.com`). Listing draft: [app-store-listing.md](app-store-listing.md)
 - Info.plist `ITSAppUsesNonExemptEncryption` = false (HTTPS + HMAC cookie only)
 - **Engine extract (2026-08-31):** `applyAction` is a thin switch; per-action handlers + hand-loop helpers. Harry signed off on web regression. Stryker after extract: 90.36% overall / engine 91.54% / `engine.ts` 86 survivors (mostly fail-message strings). Hardening pass **stopped** — do not chase remaining StringLiteral mutants.
@@ -70,13 +70,11 @@ Needs a physical iPhone. Simulator cookie jars do not prove store-ready identity
 
 Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-quit, the player loses their seat.
 
-**Done (2026-09-01, layout).** Harry signed off: table fits the physical iPhone and the website with no page scroll. Capacitor WebView loads production. **Cookie proof still open:** force-quit → reopen → same seat (then reboot if that pass looks good).
+**Cookie proof (still open).** Play Now always starts a **new** table — that is correct. Layout signed off 2026-09-01. The Capacitor app boots at `/`, so force-quit then Play Now cannot restore the seat. Native reopen now returns to the last `/game/{id}`; the cookie should restore the seat. If you land on Join, the WKWebView dropped the cookie.
 
-Config is ready: WebView loads production.
-
-1. ~~Sign the iOS app for Harry’s device (Automatic Signing; Team = Harry’s Developer team). Bundle ID `com.homegame.poker`.~~
-2. ~~Install on device. Join or host a production table.~~ Table fit signed off.
-3. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
+1. Sit at a live table (note seat + stack).
+2. Force-quit. Reopen the **app icon** — do not tap Play Now.
+3. **Same table, same seat, same stack.**
 4. Repeat after a phone reboot if the first pass looks good.
 
 **Done when:** force-quit → reopen restores the seat on a real device. If it fails, stop and design a native-backed session fallback — do not paper over it and submit.
