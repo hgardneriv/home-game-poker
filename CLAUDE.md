@@ -92,6 +92,6 @@ Native shell loads **`https://home-game-poker-kappa.vercel.app`** (`capacitor.co
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Still needed before App Store: Phases 3–4 (APNs, icon/screenshots).
+- Phase 2 cookie proof **done** (2026-09-01). App icon is the house/spade family. Still needed before App Store: Phases 3–4 (APNs, screenshots).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
