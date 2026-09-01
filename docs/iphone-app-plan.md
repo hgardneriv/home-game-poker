@@ -70,14 +70,14 @@ Needs a physical iPhone. Simulator cookie jars do not prove store-ready identity
 
 Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-quit, the player loses their seat.
 
-Config is ready: WebView loads production. Remaining work is on Harry’s Mac (this cloud agent cannot see the cable or Xcode).
+**Done (2026-09-01, layout).** Harry signed off: table fits the physical iPhone and the website with no page scroll. Capacitor WebView loads production. **Cookie proof still open:** force-quit → reopen → same seat (then reboot if that pass looks good).
 
-1. On the Mac, in the repo: `git pull`, then `npm install` if needed, then `npm run ios:sync` and `npm run ios`.
-2. In Xcode: select the **App** target → **Signing & Capabilities** → check **Automatically manage signing** → Team = Harry’s Apple Developer team. Bundle ID stays `com.homegame.poker`.
-3. Trust the phone if prompted (iPhone: Settings → General → VPN & Device Management). Unlock the phone, pick it as the run destination, press Run.
-4. Join or host a **production** table (the WebView should show `home-game-poker-kappa.vercel.app`, not localhost).
-5. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
-6. Repeat after a phone reboot if the first pass looks good.
+Config is ready: WebView loads production.
+
+1. ~~Sign the iOS app for Harry’s device (Automatic Signing; Team = Harry’s Developer team). Bundle ID `com.homegame.poker`.~~
+2. ~~Install on device. Join or host a production table.~~ Table fit signed off.
+3. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
+4. Repeat after a phone reboot if the first pass looks good.
 
 **Done when:** force-quit → reopen restores the seat on a real device. If it fails, stop and design a native-backed session fallback — do not paper over it and submit.
 
@@ -166,10 +166,10 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phase 0 **done**. Next: physical iPhone force-quit cookie proof (Phase 2) → APNs (Phase 3). Capacitor already points at production.
+**Harry-parallel blockers:** Phase 0 **done**. Table fit **signed off** (2026-09-01). Next: force-quit cookie proof (Phase 2) → APNs (Phase 3).
 
 ---
 
 ## Next session
 
-**Phase 2 in progress** (physical iPhone, force-quit → same seat). Capacitor `server.url` is production. Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phases 2–3 land.
+**Phase 2 in progress.** Table fit signed off on device + web. Remaining: force-quit → same seat (then reboot). Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phases 2–3 land.

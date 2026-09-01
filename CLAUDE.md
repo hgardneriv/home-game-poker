@@ -4,19 +4,19 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
-## Next session pickup (2026-08-31)
+## Next session pickup (2026-09-01)
 
-**iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done** this session; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
+**iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done**; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
 
 **Git**
 - Branch: **`iphone-app`** (pushed). Do **not** merge to `master` until Harry asks.
-- **`master` is still the Git production branch** (vercel[bot] on push). The **live site is currently `iphone-app`**, shipped with `vercel deploy --prod` so friends can beta-test without Vercel login. **Do not push `master`** unless Harry wants to revert the alias to the old website.
+- **`master` is still the Git production branch** (vercel[bot] on push). The **live site is currently `iphone-app`**, shipped with `vercel deploy --prod`. **Do not push `master`** unless Harry wants to revert the alias to the old website.
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
-**Live site (beta):** https://home-game-poker-kappa.vercel.app — play-money copy, `/privacy` (contact `homegamesupport@gmail.com`), engine extract. Same Redis as before.
+**Live site (beta):** https://home-game-poker-kappa.vercel.app — play-money copy, `/privacy`, table-fit lock, engine extract. Same Redis as before.
 
-**Next engineering action:** Phase 2 — real-device cookie proof (force-quit → same seat) on a **physical iPhone**. Phase 0 (Developer Program) is **done** (2026-09-01). Capacitor WebView loads production. Do not start APNs until Phase 2 is done. Do not create the App Store Connect listing yet.
+**Next engineering action:** finish Phase 2 cookie proof (force-quit → same seat). Table fit signed off 2026-09-01. Phase 0 (Developer Program) is **done**. Capacitor WebView loads production. Do not start APNs until Phase 2 is done. Do not create the App Store Connect listing yet.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
