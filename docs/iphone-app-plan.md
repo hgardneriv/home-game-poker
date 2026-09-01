@@ -27,6 +27,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 - Capacitor 8 iOS project (`ios/`, `capacitor.config.ts`, `npm run ios` / `ios:sync`)
 - Native config points at **production** (`https://home-game-poker-kappa.vercel.app`) for the physical-device cookie proof
+- Table shell is locked to the visual viewport (`h-dvh overflow-hidden`); Capacitor `ios.scrollEnabled: false` so the phone cannot pan a canvas larger than the screen
 - `useGame` resync on Capacitor `appStateChange` (iOS kills SSE in background)
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
