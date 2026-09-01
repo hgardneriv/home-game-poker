@@ -156,34 +156,105 @@ function PotAward({
   );
 }
 
+/** Stacked Poker Party lockup — chip-O, ace tucked behind, sticker outline.
+ *  SVG strokes/fills only (no CSS filter) so older iOS GPUs stay happy. */
 function FeltLogo() {
+  const partyFont = 'var(--font-party), ui-sans-serif, system-ui, sans-serif';
   return (
     <div className="pointer-events-none relative select-none text-center">
       <div
-        className="absolute left-1/2 top-1/2 h-48 w-[26rem] max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
+        className="absolute left-1/2 top-[55%] h-40 w-56 max-w-[70vw] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
-            'radial-gradient(closest-side, rgba(255,210,90,0.22) 0%, rgba(216,180,92,0) 100%)',
+            'radial-gradient(closest-side, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 100%)',
         }}
       />
-      <div
-        className="relative whitespace-nowrap text-2xl leading-none tracking-[0.5em] text-black/60 sm:text-[28px]"
-        style={{ paddingLeft: '0.5em' }}
+      <span className="sr-only">POKER PARTY</span>
+      <svg
+        viewBox="0 0 320 188"
+        className="relative mx-auto h-auto w-[10.5rem] sm:w-[14.5rem]"
+        aria-hidden
+        style={{ fontFamily: partyFont }}
       >
-        ♠&nbsp;♥&nbsp;♦&nbsp;♣
-      </div>
-      <div
-        className="relative mt-1 whitespace-nowrap bg-gradient-to-b from-amber-100 via-amber-300/95 to-amber-600/85 bg-clip-text text-[1.05rem] font-black tracking-[0.16em] text-transparent sm:text-3xl sm:tracking-[0.22em]"
-        style={{ fontFamily: 'Georgia, "Times New Roman", serif', paddingLeft: '0.16em' }}
-      >
-        POKER PARTY
-      </div>
-      <div className="relative mt-1 flex items-center justify-center gap-2 whitespace-nowrap">
-        <span className="h-px w-8 bg-amber-200/40 sm:w-12" />
-        <span className="text-[10px] tracking-[0.4em] text-amber-100/60 sm:text-xs" style={{ paddingLeft: '0.4em' }}>
+        {/* 3D offset — drawn first, no filter */}
+        <g transform="translate(6 7)" fill="#122038" opacity="0.32">
+          <text x="58" y="102" fontSize="64" fontWeight="900">
+            P
+          </text>
+          <text x="134" y="102" fontSize="64" fontWeight="900">
+            ker
+          </text>
+          <circle cx="110" cy="80" r="23" />
+          <text x="40" y="164" fontSize="72" fontWeight="900">
+            Party
+          </text>
+        </g>
+
+        {/* Ace of hearts, tucked behind the P */}
+        <g transform="rotate(-20 56 62)">
+          <rect x="22" y="14" width="56" height="78" rx="7" fill="#fff" stroke="#d6dce6" strokeWidth="1.5" />
+          <path transform="translate(37,26) scale(0.78)" d={SUIT_PATH.h} fill="#e11d2a" />
+        </g>
+
+        {/* Poker */}
+        <text
+          x="58"
+          y="102"
+          fontSize="64"
+          fontWeight="900"
+          fill="#1b2a4a"
+          stroke="#fff"
+          strokeWidth="12"
+          strokeLinejoin="round"
+          paintOrder="stroke fill"
+        >
+          P
+        </text>
+        <text
+          x="134"
+          y="102"
+          fontSize="64"
+          fontWeight="900"
+          fill="#1b2a4a"
+          stroke="#fff"
+          strokeWidth="12"
+          strokeLinejoin="round"
+          paintOrder="stroke fill"
+        >
+          ker
+        </text>
+        <g transform="translate(110 80)">
+          <circle r="24" fill="#fff" />
+          <circle r="19.5" fill="#e11d2a" />
+          <circle r="15.4" fill="none" stroke="#fff" strokeWidth="3.4" strokeDasharray="3.6 5.2" strokeLinecap="round" />
+          <circle r="7.4" fill="#fff" />
+          <circle r="4.8" fill="#e11d2a" />
+        </g>
+
+        {/* Party */}
+        <text
+          x="40"
+          y="164"
+          fontSize="72"
+          fontWeight="900"
+          fill="#dc2626"
+          stroke="#fff"
+          strokeWidth="12"
+          strokeLinejoin="round"
+          paintOrder="stroke fill"
+        >
+          Party
+        </text>
+      </svg>
+      <div className="relative -mt-0.5 flex items-center justify-center gap-2 whitespace-nowrap">
+        <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-200/50 sm:w-12" />
+        <span
+          className="text-[9px] tracking-[0.38em] text-amber-100/70 sm:text-[11px] sm:tracking-[0.42em]"
+          style={{ paddingLeft: '0.38em' }}
+        >
           TEXAS HOLD&apos;EM
         </span>
-        <span className="h-px w-8 bg-amber-200/40 sm:w-12" />
+        <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-200/50 sm:w-12" />
       </div>
     </div>
   );
