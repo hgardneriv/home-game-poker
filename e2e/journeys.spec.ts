@@ -132,6 +132,8 @@ test('home offers return to the last table', async ({ page }) => {
   await expect(page.getByTestId('hero-seat')).toContainText('Ada');
 
   await page.goto('/');
+  await expect(page.getByRole('link', { name: /Return to table/i })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Play now/i })).toHaveCount(0);
   await page.getByRole('link', { name: /Return to table/i }).click();
   await expect(page.getByText('🃏 Home Game')).toBeVisible();
   await expect(page.getByTestId('hero-seat')).toContainText('Ada');

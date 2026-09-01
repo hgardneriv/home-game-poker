@@ -32,7 +32,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
 - Web tests still pass with native bridges no-op’ing (`src/hooks/native.test.ts`)
-- `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`)
+- `next dev` skips Upstash rate limits so `.env.local` Redis does not share the production create bucket (`src/server/ratelimit.ts`; 10 creates/hour)
 - Privacy policy at `/privacy` (home footer; contact `homegamesupport@gmail.com`). Listing draft: [app-store-listing.md](app-store-listing.md)
 - Info.plist `ITSAppUsesNonExemptEncryption` = false (HTTPS + HMAC cookie only)
 - **Engine extract (2026-08-31):** `applyAction` is a thin switch; per-action handlers + hand-loop helpers. Harry signed off on web regression. Stryker after extract: 90.36% overall / engine 91.54% / `engine.ts` 86 survivors (mostly fail-message strings). Hardening pass **stopped** — do not chase remaining StringLiteral mutants.
