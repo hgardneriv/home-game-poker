@@ -7,6 +7,13 @@ import { useToast } from './Toast';
 import { LeaveButton } from './LeaveButton';
 import { reviewingLastHand } from '@/engine/types';
 
+/** In-flow footer (not sticky): the table shell is a locked flex column, and
+ *  sticky needs an overflowing ancestor — which is exactly what we forbid. */
+const ACTION_BAR =
+  'shrink-0 flex items-center gap-3 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]';
+const ACTION_BAR_COL =
+  'shrink-0 flex flex-col gap-2 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]';
+
 export function ActionBar({ game }: { game: GameApi }) {
   const toast = useToast();
   const state = game.state!;
@@ -41,11 +48,9 @@ export function ActionBar({ game }: { game: GameApi }) {
   const leave = me && !me.isHost ? <LeaveButton game={game} /> : null;
 
   if (reviewingLastHand(state)) {
-    const bar =
-      'sticky bottom-0 flex items-center gap-3 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]';
     if (me?.isHost) {
       return (
-        <div className={bar}>
+        <div className={ACTION_BAR}>
           <span className="flex-1 text-center text-base font-medium text-white">
             Last Hand - Press Results to continue 👉
           </span>
@@ -66,7 +71,7 @@ export function ActionBar({ game }: { game: GameApi }) {
       );
     }
     return (
-      <div className={bar}>
+      <div className={ACTION_BAR}>
         <span className="flex-1 text-center text-base font-medium text-white/60">
           Last hand - waiting for the host to continue…
         </span>
@@ -82,7 +87,7 @@ export function ActionBar({ game }: { game: GameApi }) {
         ? Math.max(0, Math.ceil((state.nextHandAt - game.serverNow()) / 1000))
         : null;
     return (
-      <div className="sticky bottom-0 flex items-center gap-3 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className={ACTION_BAR}>
         {leave}
         {amount > 0 ? (
           <>
@@ -117,7 +122,7 @@ export function ActionBar({ game }: { game: GameApi }) {
   // Away banner beats everything.
   if (me && me.status === 'away') {
     return (
-      <div className="sticky bottom-0 flex items-center gap-3 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className={ACTION_BAR}>
         {leave}
         <span className="flex-1 text-center text-sm text-white">💤 You&apos;re sitting out</span>
         <button
@@ -132,7 +137,7 @@ export function ActionBar({ game }: { game: GameApi }) {
 
   if (!myTurn || !legal || !hand) {
     return (
-      <div className="sticky bottom-0 flex items-center gap-3 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className={ACTION_BAR}>
         {leave}
         <span className="flex-1 text-center text-sm text-white/60">
           {state.phase === 'playing'
@@ -178,7 +183,7 @@ export function ActionBar({ game }: { game: GameApi }) {
     'flex-1 rounded-xl px-3 py-3 font-semibold text-white disabled:opacity-40 active:scale-95 transition';
 
   return (
-    <div className="sticky bottom-0 flex flex-col gap-2 border-t border-white/10 bg-zinc-900 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+    <div className={ACTION_BAR_COL}>
       {showSizing && (legal.canBet || legal.canRaise) && (
         <div className="flex flex-col gap-2">
           <div className="flex gap-2">
