@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.homegame.poker',
-  appName: 'Home Game Poker',
+  appName: 'Poker Party',
   webDir: 'public',
   // Native WKWebView scrolling would pan the table. Safe areas are handled
   // in CSS (viewport-fit=cover + env(safe-area-inset-*)).

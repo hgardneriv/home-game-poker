@@ -23,6 +23,8 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView now loads that same production URL (needed for a physical iPhone). `npx next dev -p 3020` is still the website for browser/sim work if you temporarily point `server.url` back at localhost. Engine/server changes for push will land on this branch and must stay web-safe.
 
+**Felt / chrome (Hold’em first, local only):** branch `cursor/poker-party-felt-a5dd` — party felt tile + “POKER PARTY” wordmark. Iterate in the browser (`npm run dev`) before any `vercel deploy --prod`. The iPhone app still points at production, so it will not show this felt until we ship. House icon can stay until the felt is signed off, then we restyle it for “party.” Dealer’s Choice is a later pass.
+
 ---
 
 ## Already done (on `iphone-app`)

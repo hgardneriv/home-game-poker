@@ -9,12 +9,12 @@ export function InviteButton({ gameId }: { gameId: string }) {
   const invite = async () => {
     const url = `${window.location.origin}/game/${gameId}`;
     try {
-      if (await nativeShare('Poker night!', 'Join my Texas Hold’em table:', url)) return;
+      if (await nativeShare('Poker Party!', 'Join my Texas Hold’em table:', url)) return;
       // Browser / Safari: Web Share when present, clipboard otherwise.
       if (navigator.share) {
         try {
           await navigator.share({
-            title: 'Poker night!',
+            title: 'Poker Party!',
             text: 'Join my Texas Hold’em table:',
             url,
           });

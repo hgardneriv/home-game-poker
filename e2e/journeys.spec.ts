@@ -20,14 +20,14 @@ test('unknown game shows the not-found copy', async ({ page }) => {
 
 test('quick play lands at a live table', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: 'Home Game Poker' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Poker Party' })).toBeVisible();
   await expect(page.getByText(/Play money only/i)).toBeVisible();
   await fillName(page, 'Ada');
   await page.getByRole('button', { name: /Play now/i }).click();
   await page.getByRole('button', { name: 'Deal me in' }).click();
   await expect(page).toHaveURL(/\/game\/[A-Za-z0-9_-]+$/, { timeout: 15_000 });
-  await expect(page.getByText('🃏 Home Game')).toBeVisible();
-  await expect(page.getByText('HOME GAME', { exact: true })).toBeVisible();
+  await expect(page.getByText('🃏 Poker Party')).toBeVisible();
+  await expect(page.getByText('POKER PARTY', { exact: true })).toBeVisible();
   await expect(page.getByText('Ada').first()).toBeVisible();
 });
 
@@ -40,7 +40,7 @@ test('hosted two-browser night: join, approve, start, refresh keeps the seat', a
   await page.getByRole('button', { name: /Host a game/i }).click();
   await page.getByRole('button', { name: 'Create table' }).click();
   await expect(page).toHaveURL(/\/game\/[A-Za-z0-9_-]+$/, { timeout: 15_000 });
-  await expect(page.getByText('🃏 Home Game')).toBeVisible();
+  await expect(page.getByText('🃏 Poker Party')).toBeVisible();
   const gameUrl = page.url();
 
   const guestContext = await browser.newContext();
@@ -56,13 +56,13 @@ test('hosted two-browser night: join, approve, start, refresh keeps the seat', a
   await expect(page.getByRole('button', { name: /Start game/i })).toBeEnabled();
   await page.getByRole('button', { name: /Start game/i }).click();
 
-  await expect(page.getByText('HOME GAME', { exact: true })).toBeVisible();
-  await expect(guest.getByText('HOME GAME', { exact: true })).toBeVisible();
+  await expect(page.getByText('POKER PARTY', { exact: true })).toBeVisible();
+  await expect(guest.getByText('POKER PARTY', { exact: true })).toBeVisible();
   await expect(guest.getByText('Pat').first()).toBeVisible();
 
   await guest.reload();
   await expect(guest.getByRole('heading', { name: /You're invited/i })).toHaveCount(0);
-  await expect(guest.getByText('HOME GAME', { exact: true })).toBeVisible();
+  await expect(guest.getByText('POKER PARTY', { exact: true })).toBeVisible();
   await expect(guest.getByText('Pat').first()).toBeVisible();
 
   await guestContext.close();
@@ -82,7 +82,7 @@ test('guest leave shows the farewell; host end shows standings', async ({ browse
   await fillName(guest, 'Pat');
   await guest.getByRole('button', { name: 'Take a seat' }).click();
   await page.getByRole('button', { name: 'Approve' }).click();
-  await expect(guest.getByText('HOME GAME', { exact: true })).toBeVisible();
+  await expect(guest.getByText('POKER PARTY', { exact: true })).toBeVisible();
 
   await guest.getByRole('button', { name: 'Leave' }).click();
   await guest.getByRole('button', { name: 'Really leave?' }).click();
@@ -104,7 +104,7 @@ test('iPhone-sized table fits the screen without page scroll', async ({ browser 
   await fillName(page, 'Ada');
   await page.getByRole('button', { name: /Play now/i }).click();
   await page.getByRole('button', { name: 'Deal me in' }).click();
-  await expect(page.getByText('🃏 Home Game')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('🃏 Poker Party')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole('button', { name: /Invite/i })).toBeVisible();
 
   const box = await page.evaluate(() => ({
@@ -128,13 +128,13 @@ test('home offers return to the last table', async ({ page }) => {
   await fillName(page, 'Ada');
   await page.getByRole('button', { name: /Play now/i }).click();
   await page.getByRole('button', { name: 'Deal me in' }).click();
-  await expect(page.getByText('🃏 Home Game')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText('🃏 Poker Party')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByTestId('hero-seat')).toContainText('Ada');
 
   await page.goto('/');
   await expect(page.getByRole('link', { name: /Return to table/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Play now/i })).toHaveCount(0);
   await page.getByRole('link', { name: /Return to table/i }).click();
-  await expect(page.getByText('🃏 Home Game')).toBeVisible();
+  await expect(page.getByText('🃏 Poker Party')).toBeVisible();
   await expect(page.getByTestId('hero-seat')).toContainText('Ada');
 });

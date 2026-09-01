@@ -218,7 +218,7 @@ export function GameRoom({ gameId }: { gameId: string }) {
       <main className="relative flex h-dvh max-h-dvh w-full max-w-full flex-col overflow-hidden overscroll-none bg-zinc-950">
         <header className="relative z-20 flex min-w-0 shrink-0 items-center justify-between gap-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-2 pl-[max(1rem,env(safe-area-inset-left,0px))] text-sm text-white">
           <div className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden">
-            <span className="shrink-0 font-semibold">🃏 Home Game</span>
+            <span className="shrink-0 font-semibold">🃏 Poker Party</span>
             <span className="truncate text-xs text-white/50">
               ${state.config.smallBlind}/${state.config.bigBlind}
               {state.hand ? ` · hand #${state.hand.handNo}` : ''}

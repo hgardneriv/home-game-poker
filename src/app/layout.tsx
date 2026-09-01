@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Home Game Poker",
+  title: "Poker Party",
   description: "Texas Hold'em with friends — share a link, take a seat.",
 };
 

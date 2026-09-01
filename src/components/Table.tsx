@@ -9,22 +9,41 @@ import { PlayingCard, SUIT_PATH } from './PlayingCard';
 import { reviewingLastHand } from '@/engine/types';
 
 /**
- * Felt texture: a sparse diagonal tile of dark suit motifs baked into a
- * data-URI SVG. Static backgrounds rasterize once — deliberately no
- * filters/blurs anywhere on the table (they wedge older iOS GPUs).
+ * Party felt: four-suit motif + static confetti/streamers in a data-URI
+ * SVG. Backgrounds rasterize once — no filters/blurs on the table
+ * (they wedge older iOS GPUs).
  */
 const FELT_TILE = `url("data:image/svg+xml,${encodeURIComponent(
-  `<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'>` +
-    `<g fill='#000000' fill-opacity='0.06'>` +
-    `<path transform='translate(16,12)' d='${SUIT_PATH.s}'/>` +
-    `<path transform='translate(76,72)' d='${SUIT_PATH.c}'/>` +
-    `</g></svg>`
+  `<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>` +
+    `<g fill='#000000' fill-opacity='0.075'>` +
+    `<path transform='translate(18,16)' d='${SUIT_PATH.s}'/>` +
+    `<path transform='translate(108,22)' d='${SUIT_PATH.c}'/>` +
+    `<path transform='translate(24,102)' d='${SUIT_PATH.d}'/>` +
+    `<path transform='translate(96,88)' d='${SUIT_PATH.h}'/>` +
+    `</g>` +
+    `<g fill='none' stroke='#d8b45c' stroke-opacity='0.14' stroke-width='1.4' stroke-linecap='round'>` +
+    `<path d='M8 52 Q36 38 62 56'/>` +
+    `<path d='M92 18 Q118 8 146 24'/>` +
+    `<path d='M70 118 Q98 132 128 116'/>` +
+    `</g>` +
+    `<g>` +
+    `<circle cx='72' cy='44' r='2.4' fill='#f0d78c' fill-opacity='0.22'/>` +
+    `<circle cx='148' cy='70' r='1.7' fill='#e8a07a' fill-opacity='0.20'/>` +
+    `<circle cx='54' cy='138' r='2' fill='#d8b45c' fill-opacity='0.20'/>` +
+    `<circle cx='132' cy='128' r='1.8' fill='#f5e6c8' fill-opacity='0.18'/>` +
+    `<circle cx='12' cy='68' r='1.5' fill='#e07a7a' fill-opacity='0.16'/>` +
+    `<circle cx='88' cy='78' r='1.4' fill='#f0d78c' fill-opacity='0.18'/>` +
+    `<path d='M40 80 l2.4 3.2 -2.4 3.2 -2.4-3.2 z' fill='#d8b45c' fill-opacity='0.18'/>` +
+    `<path d='M118 98 l2.1 2.8 -2.1 2.8 -2.1-2.8 z' fill='#f0d78c' fill-opacity='0.16'/>` +
+    `</g>` +
+    `</svg>`
 )}")`;
 
 const FELT_LAYERS = [
-  'radial-gradient(ellipse at 50% 35%, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0) 60%)',
+  'radial-gradient(ellipse at 50% 30%, rgba(255,220,120,0.16) 0%, rgba(255,255,255,0) 56%)',
+  'radial-gradient(ellipse at 18% 72%, rgba(255,170,90,0.07) 0%, rgba(255,255,255,0) 42%)',
   FELT_TILE,
-  'radial-gradient(ellipse at 50% 38%, #15714a 0%, #0d5334 45%, #05301d 100%)',
+  'radial-gradient(ellipse at 50% 38%, #1fa86c 0%, #0f6a40 46%, #062918 100%)',
 ].join(', ');
 
 /** Mahogany rail: top sheen + fine grain streaks over a deep warm radial. */
@@ -144,7 +163,7 @@ function FeltLogo() {
         className="absolute left-1/2 top-1/2 h-48 w-[26rem] max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
-            'radial-gradient(closest-side, rgba(216,180,92,0.16) 0%, rgba(216,180,92,0) 100%)',
+            'radial-gradient(closest-side, rgba(255,210,90,0.22) 0%, rgba(216,180,92,0) 100%)',
         }}
       />
       <div
@@ -154,10 +173,10 @@ function FeltLogo() {
         ♠&nbsp;♥&nbsp;♦&nbsp;♣
       </div>
       <div
-        className="relative mt-1 whitespace-nowrap bg-gradient-to-b from-amber-100 via-amber-300/95 to-amber-600/85 bg-clip-text text-xl font-black tracking-[0.3em] text-transparent sm:text-3xl"
-        style={{ fontFamily: 'Georgia, "Times New Roman", serif', paddingLeft: '0.3em' }}
+        className="relative mt-1 whitespace-nowrap bg-gradient-to-b from-amber-100 via-amber-300/95 to-amber-600/85 bg-clip-text text-[1.05rem] font-black tracking-[0.16em] text-transparent sm:text-3xl sm:tracking-[0.22em]"
+        style={{ fontFamily: 'Georgia, "Times New Roman", serif', paddingLeft: '0.16em' }}
       >
-        HOME GAME
+        POKER PARTY
       </div>
       <div className="relative mt-1 flex items-center justify-center gap-2 whitespace-nowrap">
         <span className="h-px w-8 bg-amber-200/40 sm:w-12" />
@@ -227,8 +246,8 @@ export function Table({ game }: { game: GameApi }) {
         style={{
           borderRadius: 'inherit',
           backgroundImage: FELT_LAYERS,
-          backgroundSize: 'auto, 120px 120px, auto',
-          backgroundRepeat: 'no-repeat, repeat, no-repeat',
+          backgroundSize: 'auto, auto, 120px 120px, auto',
+          backgroundRepeat: 'no-repeat, no-repeat, repeat, no-repeat',
         }}
       />
       {/* Double gold pinstripe inside the rail — the only ornament, kept clean */}
@@ -245,7 +264,7 @@ export function Table({ game }: { game: GameApi }) {
           logo→cards stays tight while cards→pot keeps a real gap — same
           stack on phone, narrow, and full-screen. Winner copy overlays the
           mark (does not move it): one line covers TEXAS HOLD'EM, extra
-          winners grow up over HOME GAME. */}
+          winners grow up over POKER PARTY. */}
       <div
         className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
         style={{ left: `${center.x}%`, top: `${center.y}%` }}
