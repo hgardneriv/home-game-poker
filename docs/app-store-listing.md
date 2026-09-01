@@ -10,8 +10,9 @@ Privacy policy URL (required): `https://home-game-poker-kappa.vercel.app/privacy
 
 ## Name / subtitle
 
-- **Name:** Home Game Poker
-- **Subtitle:** Play-money Texas Hold'em with friends
+- **Name:** Poker Party - Texas Hold'em (30-character cap; this fits)
+- **Subtitle:** Play-money Hold'em with friends
+- **Host:** `holdem.pokerparty.app` (not live until DNS → Vercel). iPhone name is brand-first; the subdomain is game-first.
 
 ## Description
 

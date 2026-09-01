@@ -13,11 +13,13 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 | Decision | Choice |
 |---|---|
 | Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app` (Phase 2+):** production `https://home-game-poker-kappa.vercel.app`. Localhost was simulator-only (Phase 1). |
-| Bundle id | `com.homegame.poker` |
+| Bundle id | `com.homegame.poker` today. If the Poker Party rename is locked **before** the first App Store Connect record, consider `com.pokerparty.holdem` / `com.pokerparty.dealerschoice`. Do not change a bundle id after the first Connect app. |
 | Web vs native | Same Next bundle. `@capacitor/*` is dynamically imported from `src/hooks/native.ts` and **no-ops in the browser**. |
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
+| Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Web: `{game}.pokerparty.app`. iPhone: brand first, game second. Live site is still the Vercel alias until Harry points DNS. |
+| App names | Hold’em: **Poker Party - Texas Hold’em** at `holdem.pokerparty.app`. Dealer’s Choice: **Poker Party - Dealer’s Choice** at `dealerschoice.pokerparty.app`. |
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView now loads that same production URL (needed for a physical iPhone). `npx next dev -p 3020` is still the website for browser/sim work if you temporarily point `server.url` back at localhost. Engine/server changes for push will land on this branch and must stay web-safe.
 
