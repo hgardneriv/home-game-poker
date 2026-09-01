@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Rasterize brand SVGs to opaque PNGs (Apple rejects app icons with alpha).
+# Family: felt + gold frame; Hold'em = gold spade; Dealer's Choice = chip (source only).
 # Requires: rsvg-convert (librsvg2-bin), python3 + PIL.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
