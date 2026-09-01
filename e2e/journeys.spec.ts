@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, devices } from '@playwright/test';
 
 async function fillName(page: Page, name: string) {
   await page.getByPlaceholder('Your name').fill(name);
@@ -95,4 +95,30 @@ test('guest leave shows the farewell; host end shows standings', async ({ browse
   await expect(page.getByText('The host ended the game')).toBeVisible();
 
   await guestContext.close();
+});
+
+test('iPhone-sized table fits the screen without page scroll', async ({ browser }) => {
+  const context = await browser.newContext({ ...devices['iPhone 14'] });
+  const page = await context.newPage();
+  await page.goto('/');
+  await fillName(page, 'Ada');
+  await page.getByRole('button', { name: /Play now/i }).click();
+  await page.getByRole('button', { name: 'Deal me in' }).click();
+  await expect(page.getByText('🃏 Home Game')).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('button', { name: /Invite/i })).toBeVisible();
+
+  const box = await page.evaluate(() => ({
+    scrollWidth: document.documentElement.scrollWidth,
+    clientWidth: document.documentElement.clientWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    clientHeight: document.documentElement.clientHeight,
+  }));
+  expect(box.scrollWidth).toBeLessThanOrEqual(box.clientWidth + 1);
+  expect(box.scrollHeight).toBeLessThanOrEqual(box.clientHeight + 1);
+
+  const inviteBox = await page.getByRole('button', { name: /Invite/i }).boundingBox();
+  expect(inviteBox).toBeTruthy();
+  expect(inviteBox!.x + inviteBox!.width).toBeLessThanOrEqual(box.clientWidth + 1);
+
+  await context.close();
 });
