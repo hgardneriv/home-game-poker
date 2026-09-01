@@ -1,6 +1,6 @@
 @AGENTS.md
 
-# Home Game Poker — session handoff & architecture notes
+# Poker Party — Texas Hold'em — session handoff & architecture notes
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 

@@ -16,7 +16,7 @@ Privacy policy URL (required): `https://home-game-poker-kappa.vercel.app/privacy
 
 ## Description
 
-Home Game Poker is a private Texas Hold'em table for friends. Share a link,
+Poker Party is a private Texas Hold'em table for friends. Share a link,
 take a seat, and play chips that have **no cash value**.
 
 Host a table or jump into a quick game with optional bots. The iPhone app
@@ -28,7 +28,7 @@ Play money only — chips have no cash value.
 
 ## Keywords (draft)
 
-poker, hold'em, texas holdem, home game, play money, chips, friends, table
+poker, hold'em, texas holdem, poker party, play money, chips, friends, table
 
 ## Category / age rating notes
 
@@ -50,7 +50,7 @@ Do **not** claim push notifications until APNs ships (Phase 3).
 This is a play-money Texas Hold'em table (chips have no cash value; no IAP).
 
 Native value today:
-- Capacitor WKWebView shell (bundle id com.homegame.poker)
+- Capacitor WKWebView shell (bundle id `app.pokerparty.holdem`)
 - Native share sheet for table invites
 - Haptic on your turn
 

@@ -1,4 +1,4 @@
-# Home Game Poker — iPhone app plan
+# Poker Party — iPhone app plan
 
 Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** **`master` is still the Git production branch**; the **live alias is currently this branch** (CLI `vercel deploy --prod`, 2026-08-31 friend beta). **Do not push `master`** during the beta. **Merge gate:** `capacitor.config.ts` already points at production (no `cleartext` / no `loggingBehavior: 'none'`). Do not ship a localhost WebView. Still **do not merge to `master` until Harry asks.**
 
@@ -13,7 +13,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 | Decision | Choice |
 |---|---|
 | Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app` (Phase 2+):** production `https://home-game-poker-kappa.vercel.app`. Localhost was simulator-only (Phase 1). |
-| Bundle id | `com.homegame.poker` today. If the Poker Party rename is locked **before** the first App Store Connect record, consider `com.pokerparty.holdem` / `com.pokerparty.dealerschoice`. Do not change a bundle id after the first Connect app. |
+| Bundle id | **Locked:** `app.pokerparty.holdem` (Hold’em) / `app.pokerparty.dealerschoice` (Dealer’s Choice). Reverse-DNS of `{game}.pokerparty.app`. Do not change a bundle id after the first App Store Connect record. |
 | Web vs native | Same Next bundle. `@capacitor/*` is dynamically imported from `src/hooks/native.ts` and **no-ops in the browser**. |
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |

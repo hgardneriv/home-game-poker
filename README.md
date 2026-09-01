@@ -1,4 +1,4 @@
-# 🃏 Home Game Poker
+# 🃏 Poker Party
 
 Texas Hold'em with friends — share a link, take a seat.
 
