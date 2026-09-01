@@ -1,6 +1,6 @@
 # Home Game Poker — iPhone app plan
 
-Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** **`master` is still the Git production branch**; the **live alias is currently this branch** (CLI `vercel deploy --prod`, 2026-08-31 friend beta). **Do not push `master`** during the beta. **Merge gate:** restore `capacitor.config.ts` `server.url` to production (drop `cleartext` / `loggingBehavior: 'none'`) — do not ship a localhost WebView.
+Living plan for the Capacitor iOS app. Work stays on branch `iphone-app` until a slice is ready for review. **Do not merge to `master` until Harry asks.** **`master` is still the Git production branch**; the **live alias is currently this branch** (CLI `vercel deploy --prod`, 2026-08-31 friend beta). **Do not push `master`** during the beta. **Merge gate:** `capacitor.config.ts` already points at production (no `cleartext` / no `loggingBehavior: 'none'`). Do not ship a localhost WebView. Still **do not merge to `master` until Harry asks.**
 
 **Sequencing (locked):** ship this app for `home-game-poker` first. `home-game-dealers-choice` is out of scope until poker is submitted (or clearly in App Store review). Copy the proven shell later (separate bundle id, listing, and `dc:` Redis prefix).
 
@@ -12,21 +12,21 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 | Decision | Choice |
 |---|---|
-| Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app`:** `http://localhost:3020` (verify branch UI). **Before merge to `master`:** restore production `https://home-game-poker-kappa.vercel.app`. |
+| Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app` (Phase 2+):** production `https://home-game-poker-kappa.vercel.app`. Localhost was simulator-only (Phase 1). |
 | Bundle id | `com.homegame.poker` |
 | Web vs native | Same Next bundle. `@capacitor/*` is dynamically imported from `src/hooks/native.ts` and **no-ops in the browser**. |
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
 
-**Mental model:** `npx next dev -p 3020` is the website **and** (on this branch) the sim WebView. Friends beta-test on **production**. Simulator still uses localhost until merge. Engine/server changes for push will land on this branch and must stay web-safe.
+**Mental model:** Friends beta-test on **production**. The Capacitor WebView now loads that same production URL (needed for a physical iPhone). `npx next dev -p 3020` is still the website for browser/sim work if you temporarily point `server.url` back at localhost. Engine/server changes for push will land on this branch and must stay web-safe.
 
 ---
 
 ## Already done (on `iphone-app`)
 
 - Capacitor 8 iOS project (`ios/`, `capacitor.config.ts`, `npm run ios` / `ios:sync`)
-- Native config currently **localhost:3020** for branch testing; restore production URL before merge
+- Native config points at **production** (`https://home-game-poker-kappa.vercel.app`) for the physical-device cookie proof
 - `useGame` resync on Capacitor `appStateChange` (iOS kills SSE in background)
 - Native share on invite; haptic on your-turn
 - In-app copy: “Play money only — chips have no cash value.”
@@ -44,11 +44,7 @@ Check off in this file as work completes. Each phase has a **done when**. Stop a
 
 ### Phase 0 — Apple Developer (Harry, parallel / later)
 
-Not a code blocker for Phase 1 (simulator). Needed before a real device with a stable signing team, APNs keys, and App Store Connect.
-
-Enroll as **Individual** in the [Apple Developer Program](https://developer.apple.com/programs/enroll/) (~$99/year) when ready. Skip detailed portal work until Phase 2/3 needs signing + push.
-
-**Done when:** membership is Active and Harry can open App Store Connect. Record Team ID somewhere local (not in git).
+**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing yet** — wait for Phase 2 cookie proof and Phase 3 APNs. Team ID stays local (not in git).
 
 ### Phase 1 — Simulator smoke
 
@@ -73,10 +69,14 @@ Needs a physical iPhone. Simulator cookie jars do not prove store-ready identity
 
 Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-quit, the player loses their seat.
 
-1. Sign the iOS app for Harry’s device (Automatic Signing in Xcode once a team exists; free personal team is OK for this proof if Program enrollment is still pending).
-2. Install on device. Join or host a production table.
-3. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
-4. Repeat after a phone reboot if the first pass looks good.
+Config is ready: WebView loads production. Remaining work is on Harry’s Mac (this cloud agent cannot see the cable or Xcode).
+
+1. On the Mac, in the repo: `git pull`, then `npm install` if needed, then `npm run ios:sync` and `npm run ios`.
+2. In Xcode: select the **App** target → **Signing & Capabilities** → check **Automatically manage signing** → Team = Harry’s Apple Developer team. Bundle ID stays `com.homegame.poker`.
+3. Trust the phone if prompted (iPhone: Settings → General → VPN & Device Management). Unlock the phone, pick it as the run destination, press Run.
+4. Join or host a **production** table (the WebView should show `home-game-poker-kappa.vercel.app`, not localhost).
+5. Force-quit the app (swipe away). Reopen. **Same seat, same stack.**
+6. Repeat after a phone reboot if the first pass looks good.
 
 **Done when:** force-quit → reopen restores the seat on a real device. If it fails, stop and design a native-backed session fallback — do not paper over it and submit.
 
@@ -146,7 +146,7 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** no turn-push (4.2); Capacitor still points at localhost; Phase 2 needs a physical iPhone. Play-money copy **is** on the live alias (CLI prod from this branch).
+**Still not submittable:** no turn-push (4.2); Phase 2 cookie proof not finished. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
 
 **Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
@@ -165,10 +165,10 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Developer Program enrollment → physical iPhone force-quit cookie proof (Phase 2) → APNs (Phase 3). Then restore production `server.url` / logging before any merge to `master`.
+**Harry-parallel blockers:** Phase 0 **done**. Next: physical iPhone force-quit cookie proof (Phase 2) → APNs (Phase 3). Capacitor already points at production.
 
 ---
 
 ## Next session
 
-Start at **Phase 2** (physical iPhone, force-quit → same seat). Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Before any merge: Capacitor `server.url` back to production and drop `loggingBehavior: 'none'`.
+**Phase 2 in progress** (physical iPhone, force-quit → same seat). Capacitor `server.url` is production. Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phases 2–3 land.

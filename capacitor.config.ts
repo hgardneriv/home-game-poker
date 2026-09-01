@@ -4,21 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.homegame.poker',
   appName: 'Home Game Poker',
   webDir: 'public',
-  // Next 16's dev overlay treats Capacitor's `console.error` of plugin
-  // failures as a crash. Share-cancel is a plugin error (`Share canceled`),
-  // so debug result-logging paints a red screen. Restore default (`debug`)
-  // when pointing this config back at production.
-  loggingBehavior: 'none',
   server: {
-    // BRANCH DEV ONLY — WKWebView loads local Next so this branch's UI can
-    // be verified in the simulator before it exists on production.
-    // Before merging iphone-app → master, restore:
-    //   url: 'https://home-game-poker-kappa.vercel.app'
-    //   (drop cleartext; restore loggingBehavior to `debug` or omit it)
-    // Simulator: http://localhost:3020 with `npx next dev -p 3020` running.
-    // A physical device cannot use localhost; use the Mac's LAN IP instead.
-    url: 'http://localhost:3020',
-    cleartext: true,
+    // Phase 2 device proof + merge-gate target: WKWebView loads production.
+    // A physical iPhone cannot reach this Mac's localhost.
+    url: 'https://home-game-poker-kappa.vercel.app',
     androidScheme: 'https',
   },
 };
