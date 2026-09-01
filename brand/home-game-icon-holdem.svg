@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Poker Party Texas Hold'em">
   <!-- Family chrome: felt + double gold frame.
-       Hold'em glyph = gold spade. Dealer's Choice swaps this for a chip. -->
+       Hold'em glyph = black spade. Dealer's Choice swaps this for a chip. -->
   <defs>
     <radialGradient id="felt" cx="50%" cy="38%" r="70%">
       <stop offset="0%" stop-color="#1fa86c"/>
@@ -11,10 +11,10 @@
       <stop offset="0%" stop-color="#ffd66e" stop-opacity="0.32"/>
       <stop offset="100%" stop-color="#ffd66e" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="spadeGold" x1="0.28" y1="0" x2="0.72" y2="1">
-      <stop offset="0%" stop-color="#fff6d0"/>
-      <stop offset="38%" stop-color="#e4c05c"/>
-      <stop offset="100%" stop-color="#9a7020"/>
+    <linearGradient id="spadeFill" x1="0.28" y1="0" x2="0.72" y2="1">
+      <stop offset="0%" stop-color="#4a4a4a"/>
+      <stop offset="38%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#050505"/>
     </linearGradient>
     <clipPath id="spadeClip">
       <path d="M12 2C9.5 6.5 4 9.5 4 13.5c0 2.5 2 4.2 4.2 4.2 1.1 0 2.1-.4 2.8-1.1-.3 1.9-1.1 3.4-2.5 4.4v1h7v-1c-1.4-1-2.2-2.5-2.5-4.4.7.7 1.7 1.1 2.8 1.1 2.2 0 4.2-1.7 4.2-4.2C20 9.5 14.5 6.5 12 2z"/>
@@ -25,7 +25,7 @@
   <rect x="56" y="56" width="912" height="912" rx="196" fill="none" stroke="#d8b45c" stroke-width="14"/>
   <rect x="84" y="84" width="856" height="856" rx="176" fill="none" stroke="#d8b45c" stroke-opacity="0.45" stroke-width="6"/>
   <g transform="translate(512, 528) scale(26.5) translate(-12, -12)">
-    <path fill="url(#spadeGold)" stroke="#6b4a12" stroke-width="0.28" stroke-linejoin="round" d="M12 2C9.5 6.5 4 9.5 4 13.5c0 2.5 2 4.2 4.2 4.2 1.1 0 2.1-.4 2.8-1.1-.3 1.9-1.1 3.4-2.5 4.4v1h7v-1c-1.4-1-2.2-2.5-2.5-4.4.7.7 1.7 1.1 2.8 1.1 2.2 0 4.2-1.7 4.2-4.2C20 9.5 14.5 6.5 12 2z"/>
+    <path fill="url(#spadeFill)" stroke="#0a0a0a" stroke-width="0.22" stroke-linejoin="round" d="M12 2C9.5 6.5 4 9.5 4 13.5c0 2.5 2 4.2 4.2 4.2 1.1 0 2.1-.4 2.8-1.1-.3 1.9-1.1 3.4-2.5 4.4v1h7v-1c-1.4-1-2.2-2.5-2.5-4.4.7.7 1.7 1.1 2.8 1.1 2.2 0 4.2-1.7 4.2-4.2C20 9.5 14.5 6.5 12 2z"/>
     <ellipse cx="9" cy="7.2" rx="5" ry="4" fill="#fff" opacity="0.34" clip-path="url(#spadeClip)"/>
   </g>
 </svg>

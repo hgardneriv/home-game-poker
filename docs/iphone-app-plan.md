@@ -23,7 +23,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView now loads that same production URL (needed for a physical iPhone). `npx next dev -p 3020` is still the website for browser/sim work if you temporarily point `server.url` back at localhost. Engine/server changes for push will land on this branch and must stay web-safe.
 
-**Felt / chrome (Hold’em, local first):** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon:** gold spade on felt (`brand/home-game-icon-holdem.svg`); Dealer’s Choice uses the same chrome with a chip. House glyph retired.
+**Felt / chrome (Hold’em, local first):** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon:** black spade on felt with gold frame (`brand/home-game-icon-holdem.svg`); Dealer’s Choice uses the same chrome with a chip. House glyph retired.
 
 ---
 
@@ -97,7 +97,7 @@ Upload and screenshots still wait for Phases 2–3. Draft artifacts started **20
 - Privacy policy URL (required): **live** at `https://home-game-poker-kappa.vercel.app/privacy`.
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
-- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (gold spade on felt in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
+- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
 - Screenshots from a device or sim at required sizes — not started.
 - 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
@@ -157,7 +157,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Stryker** after extract (cache-busted `npx stryker run`): **90.36%** overall / engine **91.54%** vs quality-pass-start 89.23% / 90.10% and 2026-08-24 ~89.4% / 90.1%. `engine.ts` **86** survivors + 1 no-cov (was 106 + 7). `kv.ts` still weak (16 no-cov) — untouched.
 
-**Store-prep:** `/privacy` live (contact `homegamesupport@gmail.com`) + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; **app icon + splash** are the gold-spade-on-felt family (`brand/`).
+**Store-prep:** `/privacy` live (contact `homegamesupport@gmail.com`) + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; **app icon + splash** are the black-spade-on-felt family (`brand/`).
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
