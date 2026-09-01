@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { GameApi } from '@/hooks/useGame';
 import { useOrientation } from '@/hooks/useOrientation';
@@ -156,105 +156,106 @@ function PotAward({
   );
 }
 
-/** Stacked Poker Party lockup — chip-O, ace tucked behind, sticker outline.
- *  SVG strokes/fills only (no CSS filter) so older iOS GPUs stay happy. */
+const FELT_SUITS: { suit: 's' | 'h' | 'd' | 'c'; red: boolean }[] = [
+  { suit: 's', red: false },
+  { suit: 'h', red: true },
+  { suit: 'd', red: true },
+  { suit: 'c', red: false },
+];
+
+/** Glossy suit — SVG gradients only, no CSS filter. Kept small so Callin
+ *  Carl / the top seat keep a clear lane of felt above the wordmark. */
+function FeltSuit({
+  suit,
+  red,
+  gid,
+}: {
+  suit: 's' | 'h' | 'd' | 'c';
+  red: boolean;
+  gid: string;
+}) {
+  const fill = `${gid}-fill`;
+  return (
+    <span className="relative inline-flex h-5 w-5 items-center justify-center sm:h-7 sm:w-7">
+      <span
+        className="absolute inset-[-30%] rounded-full"
+        style={{
+          background: red
+            ? 'radial-gradient(closest-side, rgba(255,196,90,0.42) 0%, rgba(255,196,90,0) 74%)'
+            : 'radial-gradient(closest-side, rgba(255,214,120,0.26) 0%, rgba(255,214,120,0) 74%)',
+        }}
+      />
+      <svg viewBox="0 0 24 24" className="relative h-full w-full" aria-hidden>
+        <defs>
+          <linearGradient id={fill} x1="0.28" y1="0" x2="0.72" y2="1">
+            {red ? (
+              <>
+                <stop offset="0%" stopColor="#ff9a9a" />
+                <stop offset="36%" stopColor="#e11d2a" />
+                <stop offset="100%" stopColor="#6d0b12" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#6a6a6a" />
+                <stop offset="38%" stopColor="#1c1c1c" />
+                <stop offset="100%" stopColor="#050505" />
+              </>
+            )}
+          </linearGradient>
+          <clipPath id={`${gid}-clip`}>
+            <path d={SUIT_PATH[suit]} />
+          </clipPath>
+        </defs>
+        <path d={SUIT_PATH[suit]} fill={`url(#${fill})`} />
+        <ellipse
+          cx="9"
+          cy="7.5"
+          rx="5.2"
+          ry="4.2"
+          fill="#fff"
+          opacity="0.38"
+          clipPath={`url(#${gid}-clip)`}
+        />
+      </svg>
+    </span>
+  );
+}
+
 function FeltLogo() {
-  const partyFont = 'var(--font-party), ui-sans-serif, system-ui, sans-serif';
+  const rawId = useId().replace(/:/g, '');
+  const word = {
+    fontFamily: 'var(--font-cinzel), Georgia, "Times New Roman", serif',
+    paddingLeft: '0.14em',
+  } as const;
   return (
     <div className="pointer-events-none relative select-none text-center">
       <div
-        className="absolute left-1/2 top-[55%] h-40 w-56 max-w-[70vw] -translate-x-1/2 -translate-y-1/2"
+        className="absolute left-1/2 top-[62%] h-36 w-[24rem] max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
-            'radial-gradient(closest-side, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 100%)',
+            'radial-gradient(closest-side, rgba(255,214,110,0.26) 0%, rgba(216,180,92,0) 100%)',
         }}
       />
-      <span className="sr-only">POKER PARTY</span>
-      <svg
-        viewBox="0 0 320 188"
-        className="relative mx-auto h-auto w-[10.5rem] sm:w-[14.5rem]"
-        aria-hidden
-        style={{ fontFamily: partyFont }}
+      <div className="relative flex items-center justify-center gap-1.5 sm:gap-2">
+        {FELT_SUITS.map(({ suit, red }) => (
+          <FeltSuit key={suit} suit={suit} red={red} gid={`${rawId}-${suit}`} />
+        ))}
+      </div>
+      <div
+        className="relative mt-0.5 whitespace-nowrap bg-gradient-to-b from-[#fff6d0] via-[#e4c05c] to-[#9a7020] bg-clip-text text-[1.3rem] font-bold tracking-[0.14em] text-transparent sm:text-[1.85rem] sm:tracking-[0.18em]"
+        style={word}
       >
-        {/* 3D offset — drawn first, no filter */}
-        <g transform="translate(6 7)" fill="#122038" opacity="0.32">
-          <text x="58" y="102" fontSize="64" fontWeight="900">
-            P
-          </text>
-          <text x="134" y="102" fontSize="64" fontWeight="900">
-            ker
-          </text>
-          <circle cx="110" cy="80" r="23" />
-          <text x="40" y="164" fontSize="72" fontWeight="900">
-            Party
-          </text>
-        </g>
-
-        {/* Ace of hearts, tucked behind the P */}
-        <g transform="rotate(-20 56 62)">
-          <rect x="22" y="14" width="56" height="78" rx="7" fill="#fff" stroke="#d6dce6" strokeWidth="1.5" />
-          <path transform="translate(37,26) scale(0.78)" d={SUIT_PATH.h} fill="#e11d2a" />
-        </g>
-
-        {/* Poker */}
-        <text
-          x="58"
-          y="102"
-          fontSize="64"
-          fontWeight="900"
-          fill="#1b2a4a"
-          stroke="#fff"
-          strokeWidth="12"
-          strokeLinejoin="round"
-          paintOrder="stroke fill"
-        >
-          P
-        </text>
-        <text
-          x="134"
-          y="102"
-          fontSize="64"
-          fontWeight="900"
-          fill="#1b2a4a"
-          stroke="#fff"
-          strokeWidth="12"
-          strokeLinejoin="round"
-          paintOrder="stroke fill"
-        >
-          ker
-        </text>
-        <g transform="translate(110 80)">
-          <circle r="24" fill="#fff" />
-          <circle r="19.5" fill="#e11d2a" />
-          <circle r="15.4" fill="none" stroke="#fff" strokeWidth="3.4" strokeDasharray="3.6 5.2" strokeLinecap="round" />
-          <circle r="7.4" fill="#fff" />
-          <circle r="4.8" fill="#e11d2a" />
-        </g>
-
-        {/* Party */}
-        <text
-          x="40"
-          y="164"
-          fontSize="72"
-          fontWeight="900"
-          fill="#dc2626"
-          stroke="#fff"
-          strokeWidth="12"
-          strokeLinejoin="round"
-          paintOrder="stroke fill"
-        >
-          Party
-        </text>
-      </svg>
-      <div className="relative -mt-0.5 flex items-center justify-center gap-2 whitespace-nowrap">
-        <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-200/50 sm:w-12" />
+        POKER PARTY
+      </div>
+      <div className="relative mt-0.5 flex items-center justify-center gap-2 whitespace-nowrap">
+        <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-200/55 sm:w-14" />
         <span
           className="text-[9px] tracking-[0.38em] text-amber-100/70 sm:text-[11px] sm:tracking-[0.42em]"
           style={{ paddingLeft: '0.38em' }}
         >
           TEXAS HOLD&apos;EM
         </span>
-        <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-200/50 sm:w-12" />
+        <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-200/55 sm:w-14" />
       </div>
     </div>
   );
