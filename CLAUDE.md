@@ -14,9 +14,9 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
-**Live site (beta):** https://home-game-poker-kappa.vercel.app — play-money copy, `/privacy`, table-fit lock, engine extract. Same Redis as before.
+**Live site (beta):** https://home-game-poker-kappa.vercel.app — play-money copy, `/privacy`, table-fit lock, last-table resume, engine extract. Same Redis as before.
 
-**Next engineering action:** finish Phase 2 cookie proof (force-quit → same seat). Table fit signed off 2026-09-01. Phase 0 (Developer Program) is **done**. Capacitor WebView loads production. Do not start APNs until Phase 2 is done. Do not create the App Store Connect listing yet.
+**Next engineering action:** Phase 3 — APNs turn-push. Phases 0–2 are **done** (2026-09-01): Developer Program, table fit, force-quit cookie proof. Capacitor WebView loads production. Do not create the App Store Connect listing yet.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -92,6 +92,6 @@ Native shell loads **`https://home-game-poker-kappa.vercel.app`** (`capacitor.co
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Still needed before App Store: finish Phase 2 cookie proof, then Phases 3–4 (APNs, icon/screenshots).
+- Phase 2 cookie proof **done** (2026-09-01). Still needed before App Store: Phases 3–4 (APNs, icon/screenshots).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).

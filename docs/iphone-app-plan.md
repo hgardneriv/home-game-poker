@@ -45,7 +45,7 @@ Check off in this file as work completes. Each phase has a **done when**. Stop a
 
 ### Phase 0 — Apple Developer (Harry, parallel / later)
 
-**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing yet** — wait for Phase 2 cookie proof and Phase 3 APNs. Team ID stays local (not in git).
+**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing yet** — wait for Phase 3 APNs. Team ID stays local (not in git).
 
 ### Phase 1 — Simulator smoke
 
@@ -70,14 +70,7 @@ Needs a physical iPhone. Simulator cookie jars do not prove store-ready identity
 
 Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-quit, the player loses their seat.
 
-**Cookie proof (still open).** Play Now always starts a **new** table — that is correct. Layout signed off 2026-09-01. The Capacitor app boots at `/`, so force-quit then Play Now cannot restore the seat. Native reopen now returns to the last `/game/{id}`; the cookie should restore the seat. If you land on Join, the WKWebView dropped the cookie.
-
-1. Sit at a live table (note seat + stack).
-2. Force-quit. Reopen the **app icon** — do not tap Play Now.
-3. **Same table, same seat, same stack.**
-4. Repeat after a phone reboot if the first pass looks good.
-
-**Done when:** force-quit → reopen restores the seat on a real device. If it fails, stop and design a native-backed session fallback — do not paper over it and submit.
+**Done (2026-09-01).** Harry: force-quit → reopen returns to the same table while a hand is live **and** after the hand has ended before Results. Cookie + `hg:lastGameId` resume. Optional phone-reboot pass not required. No native session fallback.
 
 ### Phase 3 — APNs turn-push
 
@@ -104,7 +97,7 @@ Upload and screenshots still wait for Phases 2–3. Draft artifacts started **20
 - Screenshots from a device or sim at required sizes — not started.
 - 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
-**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 2 cookie proof, Phase 3 push, and Capacitor pointed at production (not localhost).
+**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 3 push. Capacitor already points at production.
 
 ### Phase 5 — Submit and review
 
@@ -145,7 +138,7 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** no turn-push (4.2); Phase 2 cookie proof not finished. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
+**Still not submittable:** no turn-push (4.2). Phase 2 cookie proof **done**. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
 
 **Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
@@ -164,10 +157,10 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phase 0 **done**. Table fit **signed off** (2026-09-01). Next: force-quit cookie proof (Phase 2) → APNs (Phase 3).
+**Harry-parallel blockers:** Phases 0–2 **done**. Next: APNs turn-push (Phase 3). Do not create the App Store Connect listing until Phase 3.
 
 ---
 
 ## Next session
 
-**Phase 2 in progress.** Table fit signed off on device + web. Remaining: force-quit → same seat (then reboot). Do not implement APNs until that result is known. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phases 2–3 land.
+**Phase 3 next** (APNs turn-push). Do not start until Harry says continue. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands.
