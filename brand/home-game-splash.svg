@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <radialGradient id="felt" cx="50%" cy="38%" r="70%">
+      <stop offset="0%" stop-color="#15714a"/>
+      <stop offset="55%" stop-color="#0d5334"/>
+      <stop offset="100%" stop-color="#05301d"/>
+    </radialGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#felt)"/>
+  <g transform="translate(854, 854)">
+    <rect x="56" y="56" width="912" height="912" rx="196" fill="none" stroke="#d8b45c" stroke-width="14"/>
+    <rect x="84" y="84" width="856" height="856" rx="176" fill="none" stroke="#d8b45c" stroke-opacity="0.45" stroke-width="6"/>
+    <rect x="292" y="430" width="440" height="384" rx="18" fill="#6a3414" stroke="#e8c36a" stroke-width="10"/>
+    <polygon points="512,198 238,438 786,438" fill="#6a3414" stroke="#e8c36a" stroke-width="10" stroke-linejoin="round"/>
+    <rect x="468" y="708" width="88" height="106" rx="8" fill="#3d1c08" stroke="#e8c36a" stroke-width="6"/>
+    <g transform="translate(512, 548) scale(9.4) translate(-12, -13.2)">
+      <path fill="#f0d078" d="M12 2C9.5 6.5 4 9.5 4 13.5c0 2.5 2 4.2 4.2 4.2 1.1 0 2.1-.4 2.8-1.1-.3 1.9-1.1 3.4-2.5 4.4v1h7v-1c-1.4-1-2.2-2.5-2.5-4.4.7.7 1.7 1.1 2.8 1.1 2.2 0 4.2-1.7 4.2-4.2C20 9.5 14.5 6.5 12 2z"/>
+    </g>
+  </g>
+</svg>

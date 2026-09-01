@@ -63,6 +63,6 @@ sheet. There is no login. Test account: none required.
 
 ## Assets still needed before submit
 
-- Replace Capacitor default **App Icon** (`ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png` is the stock Capacitor "C") and **splash** (`Splash.imageset` PNGs) with final art.
 - Device or simulator screenshots at Apple's required sizes.
 - `ITSAppUsesNonExemptEncryption` is already `false` in Info.plist (HTTPS + HMAC cookie only).
+- App icon / splash: house + gold spade on felt (`brand/home-game-icon-holdem.svg`). Dealer's Choice chip sibling lives in `brand/` until that app is cut.

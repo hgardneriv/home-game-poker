@@ -93,7 +93,7 @@ Upload and screenshots still wait for Phases 2–3. Draft artifacts started **20
 - Privacy policy URL (required): **live** at `https://home-game-poker-kappa.vercel.app/privacy`.
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
-- **Replace before submit:** Capacitor default App Icon (`AppIcon-512@2x.png` is the stock “C”) and splash PNGs in `ios/App/App/Assets.xcassets`.
+- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (house + spade family in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`). Dealer’s Choice chip variant is ready in `brand/` for the next app. Screenshots at Apple’s required sizes — not started.
 - Screenshots from a device or sim at required sizes — not started.
 - 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
@@ -153,7 +153,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Stryker** after extract (cache-busted `npx stryker run`): **90.36%** overall / engine **91.54%** vs quality-pass-start 89.23% / 90.10% and 2026-08-24 ~89.4% / 90.1%. `engine.ts` **86** survivors + 1 no-cov (was 106 + 7). `kv.ts` still weak (16 no-cov) — untouched.
 
-**Store-prep:** `/privacy` live (contact `homegamesupport@gmail.com`) + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; icon/splash still Capacitor defaults.
+**Store-prep:** `/privacy` live (contact `homegamesupport@gmail.com`) + home footer; [app-store-listing.md](app-store-listing.md); encryption exemption in Info.plist; **app icon + splash** are the house/spade family (`brand/`).
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
