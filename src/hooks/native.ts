@@ -37,11 +37,12 @@ export async function onNativeAppState(handler: (isActive: boolean) => void): Pr
 export async function reportNativeBackground(gameId: string): Promise<void> {
   if (!isNative() || !gameId) return;
   try {
-    await fetch(`/api/games/${gameId}/push`, {
+    const res = await fetch(`/api/games/${gameId}/push`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ active: false }),
     });
+    console.info('push background', res.status, await res.text());
   } catch {
     // next turn-start still tries
   }
@@ -122,7 +123,13 @@ export async function attachNativePushHandlers(opts?: {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ token }),
-      });
+      })
+        .then(async (res) => {
+          console.info('push register', res.status, await res.text());
+        })
+        .catch((err) => {
+          console.warn('push register failed', err);
+        });
     });
     await PushNotifications.addListener('registrationError', () => {
       // permission granted but APNs failed — next sit retries register()

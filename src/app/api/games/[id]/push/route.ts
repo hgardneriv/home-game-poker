@@ -1,8 +1,17 @@
 import { playerIdFromRequest } from '@/server/identity';
 import { json, readJson } from '@/server/api';
 import { rateLimited } from '@/server/ratelimit';
-import { clearPlayerForeground, deleteDeviceToken, saveDeviceToken } from '@/server/push-store';
-import { remindTurnIfActing } from '@/server/turn-push';
+import {
+  clearPlayerForeground,
+  deleteDeviceToken,
+  getDeviceToken,
+  getLastPush,
+  isPlayerForeground,
+  saveDeviceToken,
+} from '@/server/push-store';
+import { apnsConfigured, apnsProduction } from '@/server/apns';
+import { remindTurnIfActing, sendTurnPushToPlayer } from '@/server/turn-push';
+import { getKV } from '@/server/kv';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,8 +36,15 @@ export async function POST(
   const body = await readJson(req);
   if (body.active === false) {
     await clearPlayerForeground(gameId, playerId);
-    await remindTurnIfActing(gameId, playerId);
-    return json({ ok: true });
+    const attempt = await remindTurnIfActing(gameId, playerId);
+    return json({ ok: true, attempt });
+  }
+  if (body.test === true) {
+    await clearPlayerForeground(gameId, playerId);
+    const entry = await getKV().read(gameId);
+    if (!entry) return json({ error: { code: 'not-found', message: 'Game not found' } }, 404);
+    const attempt = await sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
+    return json({ ok: true, attempt });
   }
 
   const token = String(body.token ?? '').trim();
@@ -37,6 +53,30 @@ export async function POST(
 
   await saveDeviceToken(gameId, playerId, token);
   return json({ ok: true });
+}
+
+/** Cookie-auth debug: token stored? APNs env present? last send result? */
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+): Promise<Response> {
+  const { id: gameId } = await params;
+  const playerId = playerIdFromRequest(req, gameId);
+  if (!playerId)
+    return json({ error: { code: 'unauthorized', message: 'Not in this game' } }, 401);
+  const [hasToken, foreground, last] = await Promise.all([
+    getDeviceToken(gameId, playerId).then((t) => t !== null),
+    isPlayerForeground(gameId, playerId),
+    getLastPush(gameId, playerId),
+  ]);
+  return json({
+    ok: true,
+    apnsConfigured: apnsConfigured(),
+    apnsProduction: apnsProduction(),
+    hasToken,
+    foreground,
+    last,
+  });
 }
 
 export async function DELETE(

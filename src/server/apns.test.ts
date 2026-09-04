@@ -44,6 +44,7 @@ describe('APNs env helpers', () => {
     expect(apnsShouldInvalidate(410)).toBe(true);
     expect(apnsShouldInvalidate(400, 'BadDeviceToken')).toBe(true);
     expect(apnsShouldInvalidate(400, 'Unregistered')).toBe(true);
+    expect(apnsShouldInvalidate(403, 'InvalidProviderToken')).toBe(false);
   });
 
   it('defaults to the Hold’em bundle id and sandbox host', () => {
@@ -134,5 +135,27 @@ describe('turn alert payload + send', () => {
         payload: expect.objectContaining({ gameId: 'game1' }),
       })
     );
+  });
+
+  it('retries the other APNs host when the first returns BadDeviceToken', async () => {
+    const pem = testPem();
+    vi.stubEnv('APNS_KEY_ID', 'KEYID1234');
+    vi.stubEnv('APNS_TEAM_ID', 'TEAMID1234');
+    vi.stubEnv('APNS_KEY', pem);
+    const sender = vi
+      .fn()
+      .mockResolvedValueOnce({ status: 400, reason: 'BadDeviceToken', invalidate: true })
+      .mockResolvedValueOnce({ status: 200, invalidate: false });
+    setApnsSenderForTests(sender);
+    const result = await sendTurnAlert('f'.repeat(64), 'game1');
+    expect(result.status).toBe(200);
+    expect(sender).toHaveBeenCalledTimes(2);
+    expect(sender.mock.calls[0][0]).toEqual(expect.objectContaining({ production: false }));
+    expect(sender.mock.calls[1][0]).toEqual(expect.objectContaining({ production: true }));
+  });
+
+  it('does not treat a bad provider JWT as a dead device token', () => {
+    expect(apnsShouldInvalidate(403, 'InvalidProviderToken')).toBe(false);
+    expect(apnsShouldInvalidate(403, 'ExpiredProviderToken')).toBe(false);
   });
 });

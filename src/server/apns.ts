@@ -26,12 +26,8 @@ export interface ApnsSendInput {
 
 export type ApnsSender = (input: ApnsSendInput) => Promise<ApnsResult>;
 
-const INVALID_REASONS = new Set([
-  'BadDeviceToken',
-  'Unregistered',
-  'ExpiredProviderToken',
-  'InvalidProviderToken',
-]);
+/** Only drop the *device* token — never on a bad provider JWT. */
+const INVALID_REASONS = new Set(['BadDeviceToken', 'Unregistered']);
 
 let senderOverride: ApnsSender | undefined;
 let cachedJwt: { token: string; exp: number } | null = null;
@@ -164,11 +160,12 @@ export function turnPushPayload(gameId: string): Record<string, unknown> {
 
 export async function sendTurnAlert(token: string, gameId: string): Promise<ApnsResult> {
   const sender = senderOverride ?? sendApnsHttp2;
-  return sender({
-    token,
-    jwt: apnsJwt(),
-    topic: apnsBundleId(),
-    production: apnsProduction(),
-    payload: turnPushPayload(gameId),
-  });
+  const jwt = apnsJwt();
+  const topic = apnsBundleId();
+  const payload = turnPushPayload(gameId);
+  const preferred = apnsProduction();
+  const first = await sender({ token, jwt, topic, production: preferred, payload });
+  // Xcode Play tokens are sandbox; a dual-env key can talk to either host.
+  if (first.status === 200 || first.reason !== 'BadDeviceToken') return first;
+  return sender({ token, jwt, topic, production: !preferred, payload });
 }
