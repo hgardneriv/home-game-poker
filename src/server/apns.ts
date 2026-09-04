@@ -107,12 +107,7 @@ export async function sendApnsHttp2(input: ApnsSendInput): Promise<ApnsResult> {
   try {
     const body = JSON.stringify(input.payload);
     return await new Promise<ApnsResult>((resolve, reject) => {
-      let req: ClientHttp2Stream | undefined;
-      const timer = setTimeout(() => {
-        req?.close();
-        reject(new Error('APNs request timed out'));
-      }, 8_000);
-      req = client.request({
+      const req: ClientHttp2Stream = client.request({
         ':method': 'POST',
         ':path': `/3/device/${input.token}`,
         authorization: `bearer ${input.jwt}`,
@@ -121,6 +116,10 @@ export async function sendApnsHttp2(input: ApnsSendInput): Promise<ApnsResult> {
         'apns-priority': '10',
         'content-type': 'application/json',
       });
+      const timer = setTimeout(() => {
+        req.close();
+        reject(new Error('APNs request timed out'));
+      }, 8_000);
       let data = '';
       req.setEncoding('utf8');
       req.on('response', (headers) => {

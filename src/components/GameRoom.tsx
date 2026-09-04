@@ -134,15 +134,17 @@ export function GameRoom({ gameId }: { gameId: string }) {
 
   // Native-only: bind this seat’s APNs token to the cookie identity.
   // Web registerNativeTurnPush is a no-op (no permission prompt in Safari).
-  const meForPush = state?.yourId ? state.players[state.yourId] : null;
+  const pushPlayerId = state?.yourId ?? null;
+  const pushSeat = pushPlayerId ? (state?.players[pushPlayerId]?.seat ?? null) : null;
+  const pushStatus = pushPlayerId ? state?.players[pushPlayerId]?.status : undefined;
   useEffect(() => {
-    if (!meForPush || meForPush.seat === null) return;
-    if (meForPush.status === 'left' || meForPush.status === 'kicked') {
+    if (!pushPlayerId || pushSeat === null) return;
+    if (pushStatus === 'left' || pushStatus === 'kicked') {
       void clearNativeTurnPush(gameId);
       return;
     }
     void registerNativeTurnPush(gameId);
-  }, [gameId, meForPush?.id, meForPush?.seat, meForPush?.status]);
+  }, [gameId, pushPlayerId, pushSeat, pushStatus]);
 
   if (error) {
     return (

@@ -95,14 +95,12 @@ Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/
 
 1. **Identifiers → App IDs → `app.pokerparty.holdem`:** enable **Push Notifications** if it is not already on. Xcode automatic signing may have created the App ID.
 2. **Keys → + :** only check **Apple Push Notification service (APNs)**. Leave DeviceCheck / Maps / Sign in with Apple / everything else unchecked.
-3. Click **Configure** on APNs (required). For the first Xcode-on-device proof:
-   - **Environment:** Sandbox
-   - **Type:** Topic Specific
-   - **Topic:** `app.pokerparty.holdem`
-4. **Key Name:** `Poker Party Hold'em APNs Sandbox`
-5. **Key Usage Description** (optional): `Turn-push for Texas Hold'em. Sandbox for Xcode device builds.`
-6. Continue → Register → **Download the `.p8` once** (Apple will not show it again). Note the **Key ID**. Team ID is in the portal header (keep it out of git).
-7. Later (TestFlight / App Store): create a **related Production** key for the same topic. Then set `APNS_PRODUCTION=1` and swap the Key ID / `.p8` on Vercel.
+3. Click **Configure** on APNs (required; locked after Save):
+   - **Environment:** **Sandbox & Production** — one key covers Xcode Play (sandbox tokens) and later TestFlight / App Store (production tokens). The server picks the host with `APNS_PRODUCTION`.
+   - **Key Restriction:** **Topic Specific**, topic `app.pokerparty.holdem`. If that topic is missing, enable Push Notifications on the App ID first; otherwise **Team Scoped (All Topics)** is fine on this individual team.
+4. **Key Name:** `Poker Party Hold'em APNs`
+5. **Key Usage Description** (optional): `Turn-push for Texas Hold'em (app.pokerparty.holdem).`
+6. Save → Continue → Register → **Download the `.p8` once** (Apple will not show it again). Note the **Key ID**. Team ID is in the portal header (keep it out of git).
 
 **Vercel env (Production — never commit):**
 
@@ -112,7 +110,7 @@ Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/
 | `APNS_TEAM_ID` | Team ID from the portal header |
 | `APNS_KEY` | Full `.p8` PEM (literal `\n` is OK) |
 | `APNS_BUNDLE_ID` | `app.pokerparty.holdem` (optional; this is the default) |
-| `APNS_PRODUCTION` | omit / `0` for the Sandbox key (Xcode Play). `1` only with a Production key. |
+| `APNS_PRODUCTION` | omit / `0` for Xcode Play (sandbox host). Set `1` when the installed build is TestFlight / App Store. Same dual-env key works for both. |
 
 After env is set: `vercel deploy --prod` from `iphone-app` (or this PR once merged). Rebuild the iPhone app (`npx cap sync ios` → Xcode Play). Sit at a production table, allow notifications, background or kill the app, have the other side act until it is your turn, tap the banner.
 
