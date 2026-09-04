@@ -18,12 +18,12 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
-| Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Hold’em web **live:** `https://holdem.pokerparty.app` (confirmed 2026-09-04). Dealer’s Choice host reserved: `dealerschoice.pokerparty.app`. iPhone: brand first, game second. |
-| App names | Hold’em: **Poker Party - Texas Hold’em** at `holdem.pokerparty.app`. Dealer’s Choice: **Poker Party - Dealer’s Choice** at `dealerschoice.pokerparty.app`. |
+| Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Hold’em web **live:** `https://holdem.pokerparty.app` (confirmed 2026-09-04). Dealer’s Choice host reserved: `dealerschoice.pokerparty.app`. Home-screen icon is the brand; the SpringBoard label is the game. |
+| App names | Hold’em: App Store **Poker Party - Texas Hold’em**; SpringBoard label **Texas Hold’em**; icon wordmark **POKER PARTY**. Dealer’s Choice sibling: label **Dealer’s Choice** (not shipped). |
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView loads `https://holdem.pokerparty.app` (`capacitor.config.ts`). `npx next dev` is still the website for browser work. Engine/server changes for push must stay web-safe.
 
-**Felt / chrome:** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon (v1 shipped):** black spade on felt with gold frame. **Next session:** Harry will specify home-screen tweaks — do not invent a restyle. Dealer’s Choice uses the same chrome with a chip. House glyph retired.
+**Felt / chrome:** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon (2026-09-04):** black spade on felt, gold frame, white **POKER PARTY** wordmark. SpringBoard label is **Texas Hold’em**. Dealer’s Choice uses the same chrome + wordmark with a chip (source only). House glyph retired.
 
 ---
 
@@ -97,7 +97,7 @@ Upload and screenshots still wait for Phases 2–3. Draft artifacts started **20
 - Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy` (kappa alias also serves `/privacy`).
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
-- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
+- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade + white Poker Party wordmark on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`; SpringBoard name **Texas Hold’em**). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
 - Screenshots from a device or sim at required sizes — not started.
 - 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
 
@@ -169,7 +169,8 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Mobile TODOs (Harry, 2026-09-04):**
 1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
-2. **iPhone home-screen icon tweaks** — **next session.** Edit `brand/home-game-icon-holdem.svg` only after Harry specifies. Then `brand/render-icons.sh` (opaque RGB PNGs). Do not invent a restyle.
+2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
 3. **Phase 3 APNs** — still the App Store 4.2 path. Do not start until Harry says continue.
+4. **Rebuild on device** — icon + label are native; pull this branch, `npx cap sync ios`, Xcode → Play on Harry’s iPhone. Privacy Close is a website change — it also needs a production deploy of this branch (`vercel deploy --prod` from `iphone-app` after merge) before the installed app will show it.
 
 Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands. **Docs-only: push `iphone-app` directly — no PR.**

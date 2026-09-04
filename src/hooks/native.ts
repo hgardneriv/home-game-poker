@@ -53,3 +53,14 @@ export async function nativeTurnHaptic(): Promise<void> {
     // plugin missing or unavailable — the web ping still plays
   }
 }
+
+/**
+ * Leave an in-app page (privacy, etc.) and land on `/`.
+ * Next.js `<Link href="/">` is a client-side soft nav — on the iPhone
+ * WKWebView that often does nothing, especially when the control sits
+ * under the status bar. A full assign always unloads the page.
+ */
+export function leaveToAppHome(): void {
+  if (typeof window === 'undefined') return;
+  window.location.assign('/');
+}

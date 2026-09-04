@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import { PrivacyExit } from '@/components/PrivacyExit';
 
 export const metadata: Metadata = {
   title: 'Privacy — Poker Party',
@@ -8,12 +8,8 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto flex min-h-dvh max-w-prose flex-col gap-6 p-6">
-      <p className="text-sm opacity-70">
-        <Link href="/" className="underline">
-          Home
-        </Link>
-      </p>
+    <main className="mx-auto flex h-dvh max-w-prose flex-col gap-6 overflow-y-auto overscroll-contain px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+      <PrivacyExit />
       <h1 className="text-3xl font-bold">Privacy</h1>
       <p className="text-sm opacity-80">Last updated August 31, 2026.</p>
 

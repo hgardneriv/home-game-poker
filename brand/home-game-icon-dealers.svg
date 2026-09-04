@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-label="Poker Party Dealer's Choice">
-  <!-- Family chrome matches Hold'em. Glyph is a chip instead of a spade.
-       Source only for now — this app does not ship Dealer's Choice. -->
+  <!-- Family chrome matches Hold'em, including the white Poker Party wordmark.
+       Glyph is a chip instead of a spade. Source only — this app does not ship Dealer's Choice. -->
   <defs>
     <radialGradient id="felt" cx="50%" cy="38%" r="70%">
       <stop offset="0%" stop-color="#1fa86c"/>
@@ -16,11 +16,21 @@
   <ellipse cx="512" cy="400" rx="380" ry="300" fill="url(#glow)"/>
   <rect x="56" y="56" width="912" height="912" rx="196" fill="none" stroke="#d8b45c" stroke-width="14"/>
   <rect x="84" y="84" width="856" height="856" rx="176" fill="none" stroke="#d8b45c" stroke-opacity="0.45" stroke-width="6"/>
-  <g transform="translate(512, 512)">
-    <circle r="210" fill="#e11d2a"/>
-    <circle r="210" fill="none" stroke="#fff6d0" stroke-width="22" stroke-dasharray="28 22" stroke-linecap="round"/>
-    <circle r="128" fill="none" stroke="#7f1d1d" stroke-width="10" stroke-opacity="0.55"/>
-    <circle r="72" fill="#fff6d0"/>
-    <circle r="48" fill="#e11d2a"/>
+  <g transform="translate(512, 455)">
+    <circle r="188" fill="#e11d2a"/>
+    <circle r="188" fill="none" stroke="#fff6d0" stroke-width="20" stroke-dasharray="25 20" stroke-linecap="round"/>
+    <circle r="114" fill="none" stroke="#7f1d1d" stroke-width="9" stroke-opacity="0.55"/>
+    <circle r="64" fill="#fff6d0"/>
+    <circle r="42" fill="#e11d2a"/>
   </g>
+  <text
+    x="512"
+    y="800"
+    text-anchor="middle"
+    fill="#ffffff"
+    font-family="Cinzel, 'Noto Serif', Georgia, serif"
+    font-size="78"
+    font-weight="700"
+    letter-spacing="10"
+  >POKER PARTY</text>
 </svg>
