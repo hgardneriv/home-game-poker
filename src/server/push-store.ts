@@ -25,6 +25,19 @@ export function foregroundKey(gameId: string, playerId: string): string {
   return `fg:${gameId}:${playerId}`;
 }
 
+export function lastPushKey(gameId: string, playerId: string): string {
+  return `pushlast:${gameId}:${playerId}`;
+}
+
+/** Last APNs attempt — no token, no key material. For device debug. */
+export interface PushAttempt {
+  at: number;
+  outcome: 'sent' | 'skipped' | 'error';
+  skip?: 'bot' | 'left' | 'unconfigured' | 'foreground' | 'no-token' | 'not-acting';
+  status?: number;
+  reason?: string;
+}
+
 class MemoryPushKV implements PushKV {
   private store = new Map<string, { value: string; exp: number }>();
 
@@ -114,4 +127,18 @@ export async function isPlayerForeground(gameId: string, playerId: string): Prom
 /** Native app went to the background — SSE may still be open for a few seconds. */
 export async function clearPlayerForeground(gameId: string, playerId: string): Promise<void> {
   await getPushKV().del(foregroundKey(gameId, playerId));
+}
+
+export async function saveLastPush(gameId: string, playerId: string, attempt: PushAttempt): Promise<void> {
+  await getPushKV().set(lastPushKey(gameId, playerId), JSON.stringify(attempt), TOKEN_TTL_SECONDS);
+}
+
+export async function getLastPush(gameId: string, playerId: string): Promise<PushAttempt | null> {
+  const raw = await getPushKV().get(lastPushKey(gameId, playerId));
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as PushAttempt;
+  } catch {
+    return null;
+  }
 }

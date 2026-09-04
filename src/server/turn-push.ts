@@ -1,6 +1,12 @@
 import type { GameState, Street } from '@/engine/types';
 import { apnsConfigured, sendTurnAlert } from './apns';
-import { deleteDeviceToken, getDeviceToken, isPlayerForeground } from './push-store';
+import {
+  deleteDeviceToken,
+  getDeviceToken,
+  isPlayerForeground,
+  saveLastPush,
+  type PushAttempt,
+} from './push-store';
 import { getKV } from './kv';
 
 export interface TurnActor {
@@ -36,28 +42,43 @@ export function turnJustStarted(before: GameState | null, after: GameState): str
   return next.playerId;
 }
 
-/**
- * After a persisted mutation: notify the human who just became toAct.
- * No-ops without APNs env, without a registered token, for bots, or when
- * that player's SSE stream is still touching the foreground key.
- */
+function skipped(skip: NonNullable<PushAttempt['skip']>): PushAttempt {
+  return { at: Date.now(), outcome: 'skipped', skip };
+}
+
 export async function sendTurnPushToPlayer(
   state: GameState,
   playerId: string,
   opts?: { ignoreForeground?: boolean }
-): Promise<void> {
+): Promise<PushAttempt> {
   const player = state.players[playerId];
-  if (!player || player.isBot) return;
-  if (player.status === 'left' || player.status === 'kicked') return;
-  if (!apnsConfigured()) return;
-  if (!opts?.ignoreForeground && (await isPlayerForeground(state.id, playerId))) return;
+  const record = async (attempt: PushAttempt) => {
+    await saveLastPush(state.id, playerId, attempt);
+    return attempt;
+  };
+  if (!player || player.isBot) return record(skipped('bot'));
+  if (player.status === 'left' || player.status === 'kicked') return record(skipped('left'));
+  if (!apnsConfigured()) return record(skipped('unconfigured'));
+  if (!opts?.ignoreForeground && (await isPlayerForeground(state.id, playerId))) {
+    return record(skipped('foreground'));
+  }
   const token = await getDeviceToken(state.id, playerId);
-  if (!token) return;
+  if (!token) return record(skipped('no-token'));
   try {
     const result = await sendTurnAlert(token, state.id);
     if (result.invalidate) await deleteDeviceToken(state.id, playerId);
-  } catch {
-    // APNs blip — the next turn will retry; do not fail the game write.
+    return record({
+      at: Date.now(),
+      outcome: result.status === 200 ? 'sent' : 'error',
+      status: result.status,
+      reason: result.reason,
+    });
+  } catch (err) {
+    return record({
+      at: Date.now(),
+      outcome: 'error',
+      reason: err instanceof Error ? err.message : 'apns-failed',
+    });
   }
 }
 
@@ -70,11 +91,15 @@ export async function maybeSendTurnPush(
   await sendTurnPushToPlayer(after, playerId);
 }
 
-/** iPhone backgrounded: if it is already this seat's turn, send now (SSE still looks "foreground"). */
-export async function remindTurnIfActing(gameId: string, playerId: string): Promise<void> {
+/** iPhone backgrounded: if it is already this seat's turn, send now. */
+export async function remindTurnIfActing(gameId: string, playerId: string): Promise<PushAttempt> {
   const entry = await getKV().read(gameId);
-  if (!entry) return;
+  if (!entry) return skipped('not-acting');
   const acting = turnActor(entry.state);
-  if (!acting || acting.playerId !== playerId) return;
-  await sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
+  if (!acting || acting.playerId !== playerId) {
+    const attempt = skipped('not-acting');
+    await saveLastPush(gameId, playerId, attempt);
+    return attempt;
+  }
+  return sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
 }

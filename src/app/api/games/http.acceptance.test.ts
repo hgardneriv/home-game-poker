@@ -9,7 +9,7 @@ import { POST as playerAction } from './[id]/action/route';
 import { GET as getState } from './[id]/state/route';
 import { GET as getStream } from './[id]/stream/route';
 import { POST as rigTable } from './[id]/rig/route';
-import { POST as registerPush, DELETE as deletePush } from './[id]/push/route';
+import { POST as registerPush, DELETE as deletePush, GET as getPush } from './[id]/push/route';
 import {
   createMemoryPushKV,
   getDeviceToken,
@@ -641,6 +641,30 @@ describe('POST /api/games/:id/push', () => {
     );
     expect(res.status).toBe(200);
     expect(await isPlayerForeground(gameId!, playerId)).toBe(false);
+    const body = (await res.json()) as { attempt: { outcome: string; skip: string } };
+    expect(body.attempt.outcome).toBe('skipped');
+    expect(['unconfigured', 'not-acting']).toContain(body.attempt.skip);
+  });
+
+  it('GET reports token + last attempt without leaking the token', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const { state } = await stateOf(gameId!, cookie);
+    const playerId = state!.yourId as string;
+    await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { token }, cookie),
+      ctx(gameId!)
+    );
+    const res = await getPush(getReq(`http://localhost/api/games/${gameId}/push`, cookie), ctx(gameId!));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toMatchObject({
+      ok: true,
+      hasToken: true,
+      apnsConfigured: false,
+      apnsProduction: false,
+    });
+    expect(JSON.stringify(data)).not.toContain(token);
+    expect(playerId).toBeTruthy();
   });
 
   it('429s when the mutate limiter denies register', async () => {

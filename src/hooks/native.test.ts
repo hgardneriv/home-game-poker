@@ -193,7 +193,11 @@ describe('native turn-push (web / node)', () => {
 
   it('posts the APNs token to this game and opens the table on tap', async () => {
     stubNative();
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => '{"ok":true}',
+    });
     vi.stubGlobal('fetch', fetchMock);
     const listeners = new Map<string, (ev: unknown) => void>();
     pushAddListener.mockImplementation(async (event: string, cb: (ev: unknown) => void) => {
@@ -239,7 +243,11 @@ describe('native turn-push (web / node)', () => {
 
   it('reports background so the server can clear presence and nudge APNs', async () => {
     stubNative();
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => '{"ok":true}',
+    });
     vi.stubGlobal('fetch', fetchMock);
     await reportNativeBackground('game1');
     expect(fetchMock).toHaveBeenCalledWith(
@@ -265,7 +273,11 @@ describe('native turn-push (web / node)', () => {
 
   it('clears the stored token for this game on leave', async () => {
     stubNative();
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => '{"ok":true}',
+    });
     vi.stubGlobal('fetch', fetchMock);
     await clearNativeTurnPush('game1');
     expect(fetchMock).toHaveBeenCalledWith('/api/games/game1/push', { method: 'DELETE' });
