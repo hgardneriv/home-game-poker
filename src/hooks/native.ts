@@ -33,32 +33,59 @@ export async function onNativeAppState(handler: (isActive: boolean) => void): Pr
   }
 }
 
+let presenceSeq = 0;
+let foregroundAbort: AbortController | null = null;
+
+function nextPresenceSeq(): number {
+  presenceSeq += 1;
+  return presenceSeq;
+}
+
 /** Looking at the table — skip turn-push while the app is in the foreground. */
 export async function reportNativeForeground(gameId: string): Promise<void> {
   if (!isNative() || !gameId) return;
+  const seq = nextPresenceSeq();
+  foregroundAbort?.abort();
+  const ac = new AbortController();
+  foregroundAbort = ac;
   try {
     await fetch(`/api/games/${gameId}/push`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ active: true }),
+      body: JSON.stringify({ active: true, seq }),
+      signal: ac.signal,
     });
   } catch {
-    // next action still works
+    // aborted on swipe-away, or next action still works
   }
 }
 
 /** Not looking — clear presence and nudge APNs if it is already our turn. */
 export async function reportNativeBackground(gameId: string): Promise<void> {
   if (!isNative() || !gameId) return;
+  const seq = nextPresenceSeq();
+  foregroundAbort?.abort();
+  foregroundAbort = null;
   try {
     const res = await fetch(`/api/games/${gameId}/push`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ active: false }),
+      body: JSON.stringify({ active: false, seq }),
     });
     console.info('push background', res.status, await res.text());
   } catch {
     // next turn-start still tries
+  }
+}
+
+/** Xcode: last APNs attempt after coming back to the table. */
+export async function logNativePushDebug(gameId: string): Promise<void> {
+  if (!isNative() || !gameId) return;
+  try {
+    const res = await fetch(`/api/games/${gameId}/push`, { cache: 'no-store' });
+    console.info('push debug', res.status, await res.text());
+  } catch {
+    // ignore
   }
 }
 
@@ -194,6 +221,8 @@ export function resetNativePushForTests(): void {
   pushHandlersAttached = false;
   pushGameId = null;
   openGameFromPush = null;
+  presenceSeq = 0;
+  foregroundAbort = null;
 }
 
 export function openGamePath(gameId: string): string {

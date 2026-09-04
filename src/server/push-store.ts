@@ -32,6 +32,10 @@ export function lastPushKey(gameId: string, playerId: string): string {
   return `pushlast:${gameId}:${playerId}`;
 }
 
+export function presenceSeqKey(gameId: string, playerId: string): string {
+  return `fgseq:${gameId}:${playerId}`;
+}
+
 /** Last APNs attempt — no token, no key material. For device debug. */
 export interface PushAttempt {
   at: number;
@@ -39,6 +43,7 @@ export interface PushAttempt {
   skip?: 'bot' | 'left' | 'unconfigured' | 'foreground' | 'no-token' | 'not-acting';
   status?: number;
   reason?: string;
+  via?: 'turn-start' | 'remind' | 'test';
 }
 
 class MemoryPushKV implements PushKV {
@@ -130,6 +135,27 @@ export async function isPlayerForeground(gameId: string, playerId: string): Prom
 /** Native app went to the background — the stream may stay open so bots still act. */
 export async function clearPlayerForeground(gameId: string, playerId: string): Promise<void> {
   await getPushKV().del(foregroundKey(gameId, playerId));
+}
+
+/**
+ * Apply looking / away. Client `seq` is last-write-wins so an in-flight
+ * `{ active: true }` cannot undo a later swipe-away.
+ */
+export async function applyPlayerPresence(
+  gameId: string,
+  playerId: string,
+  active: boolean,
+  seq?: number
+): Promise<'applied' | 'stale'> {
+  if (typeof seq === 'number' && Number.isFinite(seq)) {
+    const raw = await getPushKV().get(presenceSeqKey(gameId, playerId));
+    const last = raw === null ? Number.NEGATIVE_INFINITY : Number(raw);
+    if (Number.isFinite(last) && seq < last) return 'stale';
+    await getPushKV().set(presenceSeqKey(gameId, playerId), String(seq), TOKEN_TTL_SECONDS);
+  }
+  if (active) await markPlayerForeground(gameId, playerId);
+  else await clearPlayerForeground(gameId, playerId);
+  return 'applied';
 }
 
 export async function saveLastPush(gameId: string, playerId: string, attempt: PushAttempt): Promise<void> {

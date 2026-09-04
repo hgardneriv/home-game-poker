@@ -655,9 +655,34 @@ describe('POST /api/games/:id/push', () => {
     );
     expect(res.status).toBe(200);
     expect(await isPlayerForeground(gameId!, playerId)).toBe(false);
-    const body = (await res.json()) as { attempt: { outcome: string; skip: string } };
+    const body = (await res.json()) as {
+      presence: string;
+      attempt: { outcome: string; skip: string; via?: string };
+    };
+    expect(body.presence).toBe('applied');
     expect(body.attempt.outcome).toBe('skipped');
     expect(['unconfigured', 'not-acting']).toContain(body.attempt.skip);
+    expect(body.attempt.via).toBe('remind');
+  });
+
+  it('ignores a stale looking ping after swipe-away', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const { state } = await stateOf(gameId!, cookie);
+    const playerId = state!.yourId as string;
+    await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { active: true, seq: 1 }, cookie),
+      ctx(gameId!)
+    );
+    await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { active: false, seq: 2 }, cookie),
+      ctx(gameId!)
+    );
+    const late = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { active: true, seq: 1 }, cookie),
+      ctx(gameId!)
+    );
+    expect(await late.json()).toMatchObject({ ok: true, presence: 'stale' });
+    expect(await isPlayerForeground(gameId!, playerId)).toBe(false);
   });
 
   it('GET reports token + last attempt without leaking the token', async () => {
