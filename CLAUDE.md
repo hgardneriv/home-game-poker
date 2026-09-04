@@ -9,17 +9,18 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 **iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done**; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
 
 **Git**
-- Branch: **`iphone-app`** (pushed). Do **not** merge to `master` until Harry asks.
+- Branch: **`iphone-app`** (pushed, includes PR #6). Do **not** merge to `master` until Harry asks.
 - **`master` is still the Git production branch** (vercel[bot] on push). The **live site is `iphone-app`**, shipped with `vercel deploy --prod`. Official host: **https://holdem.pokerparty.app** (kappa alias still works). **Do not push `master`.**
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
 **Live site:** https://holdem.pokerparty.app — Poker Party felt (signed off), play-money copy, `/privacy`, table-fit lock, last-table resume. Same Redis as before.
 
-**Mobile TODOs**
-1. Point Capacitor at `https://holdem.pokerparty.app` (this slice) — Harry rebuilds on device after merge.
-2. **iPhone home-screen icon tweaks** — details later. v1 black spade + gold frame stays until Harry specifies.
-3. Phase 3 APNs — do not start until Harry says continue. Do not create the App Store Connect listing yet.
+**Done this pass:** Capacitor `server.url` is `https://holdem.pokerparty.app` (PR #6 merged). Harry still needs `npx cap sync ios` + Xcode Play on a physical iPhone. Seat cookies from the old `kappa` host will not follow.
+
+**Next: iPhone home-screen icon tweaks.** v1 is a glossy black spade on felt with a gold double frame (`brand/home-game-icon-holdem.svg` → `brand/render-icons.sh`). Harry said v1 was “good enough for now” and will specify the tweaks in the new session — **do not invent a restyle**. After editing the SVG, run the render script (needs `rsvg-convert` + Pillow) so iOS `AppIcon`, splash, `src/app/icon.png`, and the 1024 PNG stay in lockstep. RGB, no alpha (Apple rejects transparent icons).
+
+**Parked:** Phase 3 APNs — do not start until Harry says. Do not create the App Store Connect listing yet.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -95,6 +96,6 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). App icon v1 is black spade + gold frame (**TODO:** desktop-icon tweaks, details later). Still needed before App Store: Phases 3–4 (APNs, screenshots).
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). App icon v1 is black spade + gold frame — **next:** Harry-specified home-screen tweaks. Still needed before App Store: Phases 3–4 (APNs, screenshots).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).

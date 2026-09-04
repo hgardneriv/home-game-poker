@@ -23,7 +23,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView loads `https://holdem.pokerparty.app` (`capacitor.config.ts`). `npx next dev` is still the website for browser work. Engine/server changes for push must stay web-safe.
 
-**Felt / chrome:** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon (v1 shipped):** black spade on felt with gold frame — **TODO:** Harry wants desktop-icon tweaks (details later). Dealer’s Choice uses the same chrome with a chip. House glyph retired.
+**Felt / chrome:** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon (v1 shipped):** black spade on felt with gold frame. **Next session:** Harry will specify home-screen tweaks — do not invent a restyle. Dealer’s Choice uses the same chrome with a chip. House glyph retired.
 
 ---
 
@@ -168,8 +168,8 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 ## Next session
 
 **Mobile TODOs (Harry, 2026-09-04):**
-1. **Official URL** — Capacitor `server.url` is `https://holdem.pokerparty.app`. After this lands, Harry rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow; that is expected.
-2. **iPhone home-screen icon tweaks** — v1 (black spade + gold frame) is “good enough for now.” Harry will specify changes later. Do not restyle until he does.
+1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
+2. **iPhone home-screen icon tweaks** — **next session.** Edit `brand/home-game-icon-holdem.svg` only after Harry specifies. Then `brand/render-icons.sh` (opaque RGB PNGs). Do not invent a restyle.
 3. **Phase 3 APNs** — still the App Store 4.2 path. Do not start until Harry says continue.
 
 Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands.
