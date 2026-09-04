@@ -11,9 +11,9 @@ const config: CapacitorConfig = {
     scrollEnabled: false,
   },
   server: {
-    // Phase 2 device proof + merge-gate target: WKWebView loads production.
-    // A physical iPhone cannot reach this Mac's localhost.
-    url: 'https://home-game-poker-kappa.vercel.app',
+    // Official host (DNS live 2026-09-04). Same Vercel project as the
+    // kappa alias. A physical iPhone cannot reach this Mac's localhost.
+    url: 'https://holdem.pokerparty.app',
     androidScheme: 'https',
   },
 };

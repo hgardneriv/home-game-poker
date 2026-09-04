@@ -4,19 +4,22 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
-## Next session pickup (2026-09-01)
+## Next session pickup (2026-09-04)
 
 **iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done**; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
 
 **Git**
 - Branch: **`iphone-app`** (pushed). Do **not** merge to `master` until Harry asks.
-- **`master` is still the Git production branch** (vercel[bot] on push). The **live site is currently `iphone-app`**, shipped with `vercel deploy --prod`. **Do not push `master`** unless Harry wants to revert the alias to the old website.
+- **`master` is still the Git production branch** (vercel[bot] on push). The **live site is `iphone-app`**, shipped with `vercel deploy --prod`. Official host: **https://holdem.pokerparty.app** (kappa alias still works). **Do not push `master`.**
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
-**Live site (beta):** https://home-game-poker-kappa.vercel.app — play-money copy, `/privacy`, table-fit lock, last-table resume, engine extract. Same Redis as before.
+**Live site:** https://holdem.pokerparty.app — Poker Party felt (signed off), play-money copy, `/privacy`, table-fit lock, last-table resume. Same Redis as before.
 
-**Next engineering action:** Phase 3 — APNs turn-push. Phases 0–2 are **done** (2026-09-01): Developer Program, table fit, force-quit cookie proof. Capacitor WebView loads production. Do not create the App Store Connect listing yet.
+**Mobile TODOs**
+1. Point Capacitor at `https://holdem.pokerparty.app` (this slice) — Harry rebuilds on device after merge.
+2. **iPhone home-screen icon tweaks** — details later. v1 black spade + gold frame stays until Harry specifies.
+3. Phase 3 APNs — do not start until Harry says continue. Do not create the App Store Connect listing yet.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -86,12 +89,12 @@ CI: `.github/workflows/ci.yml` runs `tsc --noEmit`, lint, coverage (with floors)
 
 ## iPhone (Capacitor Path A — in progress)
 
-Native shell loads **`https://home-game-poker-kappa.vercel.app`** (`capacitor.config.ts`) so a physical iPhone can reach the live site. `@capacitor/*` is dynamically imported from [`src/hooks/native.ts`](src/hooks/native.ts) and no-ops in the browser.
+Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). `@capacitor/*` is dynamically imported from [`src/hooks/native.ts`](src/hooks/native.ts) and no-ops in the browser.
 
 - `useGame` resyncs on Capacitor `appStateChange` (iOS background kills SSE) as well as `visibilitychange`.
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). App icon is the house/spade family. Still needed before App Store: Phases 3–4 (APNs, screenshots).
+- Phase 2 cookie proof **done** (2026-09-01). App icon v1 is black spade + gold frame (**TODO:** desktop-icon tweaks, details later). Still needed before App Store: Phases 3–4 (APNs, screenshots).
 - `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).

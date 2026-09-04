@@ -2,7 +2,7 @@
 
 Texas Hold'em with friends — share a link, take a seat.
 
-**Live:** https://home-game-poker-kappa.vercel.app
+**Live:** https://holdem.pokerparty.app
 
 A polished, mobile-first multiplayer poker table with a hidden automated dealer. No accounts: the host creates a table, shares the link (native share sheet on phones), and approves who sits down. Everyone buys in with $1 coins, blinds post automatically, and a freshly CSPRNG-shuffled 52-card deck is dealt every hand. Play solo against 5 computer players with one click, or host a friends game with 0–5 bots filling the empty seats.
 
@@ -49,7 +49,7 @@ Required env in production: `SESSION_SECRET`, plus `KV_REST_API_URL` / `KV_REST_
 
 ## Deploy
 
-Pushing `master` deploys production via Vercel’s GitHub integration. Confirm at https://home-game-poker-kappa.vercel.app.
+Pushing `master` deploys production via Vercel’s GitHub integration. Confirm at https://holdem.pokerparty.app.
 
 If a Git deploy does not start, fall back to:
 

@@ -5,15 +5,15 @@ into Connect until Phase 2 cookie proof and Phase 3 turn-push are done.** This
 file is a draft so listing work can start without claiming native features we
 do not ship yet.
 
-Privacy policy URL (required): `https://home-game-poker-kappa.vercel.app/privacy`
-(live on the production alias as of 2026-08-31; contact `homegamesupport@gmail.com`).
+Privacy policy URL (required): `https://holdem.pokerparty.app/privacy`
+(also on the `kappa` Vercel alias; contact `homegamesupport@gmail.com`).
 
 ## Name / subtitle
 
 - **Name:** Poker Party - Texas Hold'em (30-character cap; this fits)
 - **Subtitle:** Play-money Hold'em with friends
 - **Bundle id:** `app.pokerparty.holdem` (Dealer’s Choice sibling: `app.pokerparty.dealerschoice`)
-- **Host:** `holdem.pokerparty.app` (not live until DNS → Vercel). iPhone name is brand-first; the subdomain is game-first.
+- **Host:** `https://holdem.pokerparty.app` (live 2026-09-04). iPhone name is brand-first; the subdomain is game-first.
 
 ## Description
 
