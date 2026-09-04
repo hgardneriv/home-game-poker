@@ -14,6 +14,7 @@ import {
   createMemoryPushKV,
   getDeviceToken,
   isPlayerForeground,
+  markPlayerForeground,
   setPushKVForTests,
 } from '@/server/push-store';
 
@@ -626,6 +627,20 @@ describe('POST /api/games/:id/push', () => {
       ctx(gameId!)
     );
     expect(del.status).toBe(401);
+  });
+
+  it('clears foreground presence when the native app reports background', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const { state } = await stateOf(gameId!, cookie);
+    const playerId = state!.yourId as string;
+    await markPlayerForeground(gameId!, playerId);
+    expect(await isPlayerForeground(gameId!, playerId)).toBe(true);
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { active: false }, cookie),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(200);
+    expect(await isPlayerForeground(gameId!, playerId)).toBe(false);
   });
 
   it('429s when the mutate limiter denies register', async () => {

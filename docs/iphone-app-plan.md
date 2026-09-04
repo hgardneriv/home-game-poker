@@ -80,14 +80,14 @@ Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-qui
 
 **Code on `iphone-app` (PR #9 merged 2026-09-04) and on the live site** (Harry: Vercel Production redeploy + CLI deploy). Device proof still needed — do not mark done until Harry sees a live-table notification.
 
-Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/push` is only `{ token }`. No second login.
+Identity is the existing `hg_{gameId}` cookie. `POST /api/games/:id/push` is `{ token }` to register or `{ active: false }` when the native app backgrounds. No second login.
 
 | Piece | Behavior |
 |---|---|
 | Native | `@capacitor/push-notifications`. Permission + `register()` only when `isNative()` and the player is seated. Web no-ops (`src/hooks/native.ts`). |
 | Token store | Redis (or in-memory) `push:{gameId}:{playerId}`, 24h TTL — same lifetime as the table. |
-| Presence | SSE stream touches `fg:{gameId}:{playerId}` (8s TTL) while connected. Skip the push if that key is live. iOS kills SSE in background, so the key expires. |
-| Send | After `withGame` / `createNewGame` persist, if `(handNo, street, toAct)` changed, the new actor is human, not left/kicked, not foreground, and has a token. |
+| Presence | SSE touches `fg:{gameId}:{playerId}` (8s TTL) while the stream is open. Native `appStateChange` closes SSE and POSTs `{ active: false }` so a swipe-away is not treated as “still looking.” |
+| Send | After a persist, if `(handNo, street, toAct)` changed, notify that human unless they are still marked foreground. Backgrounding while it is already your turn sends immediately (the ding you hear in-app is haptic, not APNs). Solo vs bots **freezes** with no client — keep a Mac Safari tab on the table so the sweep keeps running. |
 | APNs | Token auth (.p8) via Vercel env. Default host is **sandbox** (`APNS_PRODUCTION` unset). Dual-env keys are team-scoped; the server still sends to one host at a time. |
 | Tap | Payload includes `gameId`. `NativePushRoot` assigns `/game/{id}` (works from a killed app). |
 
@@ -196,7 +196,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 **Mobile TODOs (Harry, 2026-09-04):**
 1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
 2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
-3. **Phase 3 APNs** — code + keys are on production. Still needed: enable Push on the App ID if Xcode complains, rebuild the phone app (`npx cap sync ios` → Xcode Play), then device proof (background/kill → banner → tap → same table). Do not create the Connect listing yet. Do not start Phase 4 screenshots.
+3. **Phase 3 APNs** — token + permission work on device. First swipe-away heard the in-app haptic (ding), not a banner: SSE still looked “foreground,” and a solo bot table freezes with no second client. Fix on this PR (clear fg + remind on background). After merge: `vercel deploy --prod` from `iphone-app` (JS-only — no Xcode rebuild). Proof: open the same table in Mac Safari, Allow on the phone, background **on your turn** (banner now) or before your turn (banner when Safari/bots advance). Do not create the Connect listing yet.
 4. ~~**Try Simulator first, then the phone**~~ Harry installed the icon + **Texas Hold’em** label on device (2026-09-04). Privacy Close still needs the website on production (`vercel deploy --prod` from `iphone-app`).
 5. ~~**README screenshots**~~ **done** (this session). Recaptured `docs/gameplay.png` and the three hand shots against the Poker Party felt. Docs-only; pushed `iphone-app` directly.
 

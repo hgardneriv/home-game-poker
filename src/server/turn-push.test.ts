@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import type { GameState, Player, Street } from '@/engine/types';
-import { maybeSendTurnPush, turnActor, turnJustStarted } from './turn-push';
+import { maybeSendTurnPush, remindTurnIfActing, turnActor, turnJustStarted } from './turn-push';
 import { createMemoryPushKV, markPlayerForeground, saveDeviceToken, setPushKVForTests } from './push-store';
 import { setApnsSenderForTests } from './apns';
+import { MemoryKV } from './kv';
 
 function player(id: string, extra: Partial<Player> = {}): Player {
   return {
@@ -105,6 +106,7 @@ function stubApnsEnv() {
 afterEach(() => {
   setPushKVForTests(undefined);
   setApnsSenderForTests(undefined);
+  globalThis.__gameKV = undefined;
   vi.unstubAllEnvs();
 });
 
@@ -202,3 +204,37 @@ describe('maybeSendTurnPush', () => {
     expect(sender).not.toHaveBeenCalled();
   });
 });
+
+describe('remindTurnIfActing', () => {
+  it('sends even when the SSE foreground key is still live', async () => {
+    globalThis.__gameKV = new MemoryKV();
+    setPushKVForTests(createMemoryPushKV());
+    stubApnsEnv();
+    const sender = vi.fn(async () => ({ status: 200, invalidate: false }));
+    setApnsSenderForTests(sender);
+    const s = state({ toAct: 'p1' });
+    await getKVCas(s);
+    await saveDeviceToken('g1', 'p1', 'e'.repeat(64));
+    await markPlayerForeground('g1', 'p1');
+    await remindTurnIfActing('g1', 'p1');
+    expect(sender).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not send when someone else is to act', async () => {
+    globalThis.__gameKV = new MemoryKV();
+    setPushKVForTests(createMemoryPushKV());
+    stubApnsEnv();
+    const sender = vi.fn(async () => ({ status: 200, invalidate: false }));
+    setApnsSenderForTests(sender);
+    await getKVCas(state({ toAct: 'p2' }));
+    await saveDeviceToken('g1', 'p1', 'f'.repeat(64));
+    await remindTurnIfActing('g1', 'p1');
+    expect(sender).not.toHaveBeenCalled();
+  });
+});
+
+async function getKVCas(s: GameState) {
+  const { getKV } = await import('./kv');
+  const wrote = await getKV().cas(s.id, 0, s);
+  expect(wrote).toBeGreaterThan(0);
+}

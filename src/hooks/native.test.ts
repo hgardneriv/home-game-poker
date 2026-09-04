@@ -7,7 +7,9 @@ import {
   nativeShare,
   nativeTurnHaptic,
   onNativeAppActive,
+  onNativeAppState,
   openGamePath,
+  reportNativeBackground,
   registerNativeTurnPush,
   resetNativePushForTests,
 } from './native';
@@ -152,6 +154,7 @@ describe('native turn-push (web / node)', () => {
     await attachNativePushHandlers({ onOpenGame: () => {} });
     await registerNativeTurnPush('game1');
     await clearNativeTurnPush('game1');
+    await reportNativeBackground('game1');
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(requestPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
@@ -232,6 +235,32 @@ describe('native turn-push (web / node)', () => {
     await attachNativePushHandlers({ onOpenGame: opened });
     listeners.get('pushNotificationActionPerformed')?.({ notification: { data: {} } });
     expect(opened).not.toHaveBeenCalled();
+  });
+
+  it('reports background so the server can clear presence and nudge APNs', async () => {
+    stubNative();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    await reportNativeBackground('game1');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/games/game1/push',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ active: false }),
+      })
+    );
+  });
+
+  it('notifies the app-state handler for both background and foreground', async () => {
+    stubNative();
+    addListener.mockResolvedValueOnce({ remove: vi.fn() });
+    const handler = vi.fn();
+    await onNativeAppState(handler);
+    const cb = addListener.mock.calls[0][1] as (state: { isActive: boolean }) => void;
+    cb({ isActive: false });
+    cb({ isActive: true });
+    expect(handler).toHaveBeenNthCalledWith(1, false);
+    expect(handler).toHaveBeenNthCalledWith(2, true);
   });
 
   it('clears the stored token for this game on leave', async () => {
