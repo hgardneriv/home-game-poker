@@ -63,7 +63,7 @@ export async function POST(
   return json({ ok: true });
 }
 
-/** Cookie-auth debug: token stored? APNs env present? last send result? */
+/** Cookie-auth status: token stored? APNs env present? last send result? */
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

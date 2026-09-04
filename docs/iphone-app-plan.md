@@ -78,7 +78,7 @@ Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-qui
 
 ### Phase 3 — APNs turn-push
 
-**Code on `iphone-app` (PR #9 merged 2026-09-04) and on the live site** (Harry: Vercel Production redeploy + CLI deploy). Device proof still needed — do not mark done until Harry sees a live-table notification.
+**Done (2026-09-04).** Device-proven: swipe-away on your turn, and swipe-away before it becomes your turn (phone + another seat). Web/Safari unchanged (no permission prompt).
 
 Identity is the existing `hg_{gameId}` cookie. `POST /api/games/:id/push` is `{ token }` to register, `{ active: true }` while the native app is looking at the table, or `{ active: false }` when it backgrounds. No second login.
 
@@ -87,7 +87,7 @@ Identity is the existing `hg_{gameId}` cookie. `POST /api/games/:id/push` is `{ 
 | Native | `@capacitor/push-notifications`. Permission + `register()` only when `isNative()` and the player is seated. Web no-ops (`src/hooks/native.ts`). |
 | Token store | Redis (or in-memory) `push:{gameId}:{playerId}`, 24h TTL — same lifetime as the table. |
 | Presence | `fg:{gameId}:{playerId}` (90s TTL) means the **app is in front**, refreshed by `{ active: true }` + a 30s heartbeat. SSE does **not** count as looking — the stream stays open in the background so bots/sweep can still move. Swipe-away POSTs `{ active: false }`. |
-| Send | After a persist, `withGame` **awaits** the turn-start send (a detached `void` send was dying when the action route returned on Vercel — that is why swipe-away-on-turn worked and “it became my turn” did not). Notify unless they are still marked looking. Two cases: swipe away **on** your turn (`via: remind`) and swipe away **before** it becomes your turn (`via: turn-start`). Presence writes carry a client `seq` so a late “looking” ping cannot undo swipe-away. The ding you hear in-app is haptic, not APNs. Swipe-away keeps this device’s SSE so bots can still act; if iOS drops the socket, another connected client (or a Safari tab on the same table) is the backup. Force-quit / bots-only with no other client still freezes the table. |
+| Send | After a persist, `withGame` awaits the turn-start send. Notify unless they are still marked looking. Swipe-away **on** your turn reminds immediately; swipe-away **before** it becomes your turn sends when the actor changes. Presence writes carry a client `seq` so a late “looking” ping cannot undo swipe-away. The ding you hear in-app is haptic, not APNs. If iOS drops this device’s SSE and nobody else is connected, a solo table freezes. |
 | APNs | Token auth (.p8) via Vercel env. Default host is **sandbox** (`APNS_PRODUCTION` unset). Dual-env keys are team-scoped; the server still sends to one host at a time. |
 | Tap | Payload includes `gameId`. `NativePushRoot` assigns `/game/{id}` (works from a killed app). |
 
@@ -112,13 +112,11 @@ Identity is the existing `hg_{gameId}` cookie. `POST /api/games/:id/push` is `{ 
 | `APNS_BUNDLE_ID` | `app.pokerparty.holdem` (optional; this is the default) |
 | `APNS_PRODUCTION` | omit / `0` for Xcode Play (sandbox host). Set `1` when the installed build is TestFlight / App Store. Same dual-env key works for both. |
 
-After env is set: `vercel deploy --prod` from `iphone-app` (or this PR once merged). Rebuild the iPhone app (`npx cap sync ios` → Xcode Play). Sit at a production table, allow notifications, background or kill the app, have the other side act until it is your turn, tap the banner.
-
-**Done when:** with the app backgrounded or killed, a human at a live production table gets a “your turn” notification, taps it, and returns to the correct table. Web players are unchanged (no permission prompt in Safari).
+After env is set: `vercel deploy --prod` from `iphone-app`. Rebuild the iPhone app only when native/plugin/entitlements change (`npx cap sync ios` → Xcode Play). Website JS + server changes do not need a rebuild.
 
 ### Phase 4 — Store-ready shell
 
-Upload and screenshots still wait for Phases 2–3. Draft artifacts started **2026-08-31** so Apple has a privacy URL and listing copy ready; **do not claim turn-push in Connect until Phase 3**.
+Upload and screenshots wait for Phase 4. Draft artifacts started **2026-08-31**. Phase 3 turn-push is device-proven — listing copy may claim it when Harry starts Connect.
 
 - Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy` (kappa alias also serves `/privacy`).
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
@@ -168,7 +166,7 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** turn-push is implemented but **not device-proven** (4.2). Phase 2 cookie proof **done**. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
+**Still not submittable:** Phase 3 turn-push is device-proven; Phase 4 screenshots + Connect listing are not started. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
 
 **Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
@@ -187,7 +185,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phases 0–2 **done**. Phase 3 code is in; listing waits for a live-table push proof. Do not create the App Store Connect listing until that proof.
+**Harry-parallel blockers:** Phases 0–3 **done** (turn-push device-proven 2026-09-04). Listing / Phase 4 screenshots next. Do not create the App Store Connect listing until Harry is ready for Phase 4.
 
 ---
 
@@ -196,8 +194,8 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 **Mobile TODOs (Harry, 2026-09-04):**
 1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
 2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
-3. **Phase 3 APNs** — swipe-away **on your turn** banners. “It became my turn” was not sending: action persist used a fire-and-forget APNs call that Vercel can kill, and a late `{ active: true }` could mark you looking again. After this deploy: **best test is two humans** (phone + Mac Safari). Swipe away on the phone while the Mac is to act, then act on the Mac. Phone should banner. Bots-only still needs a live sweep (Safari tab or iOS keeping SSE); if the table is frozen, no turn starts. Debug: Xcode `push background` on swipe; come back to the table and read `push debug` (`foreground`, `last.via`, `last.skip`). `turn-start` + `skip: foreground` = still marked looking; `via: remind` only = turn-start never ran. No Xcode rebuild. After merge: `vercel deploy --prod` from `iphone-app`. Do not create the Connect listing yet.
+3. ~~**Phase 3 APNs**~~ **done** (2026-09-04). Swipe-away on your turn and “it became my turn” both banner on a live table. Do not create the Connect listing until Phase 4.
 4. ~~**Try Simulator first, then the phone**~~ Harry installed the icon + **Texas Hold’em** label on device (2026-09-04). Privacy Close still needs the website on production (`vercel deploy --prod` from `iphone-app`).
 5. ~~**README screenshots**~~ **done** (this session). Recaptured `docs/gameplay.png` and the three hand shots against the Poker Party felt. Docs-only; pushed `iphone-app` directly.
 
-Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands. **Docs-only: push `iphone-app` directly — no PR.**
+Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. **Docs-only: push `iphone-app` directly — no PR.**

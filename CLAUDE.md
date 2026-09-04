@@ -21,7 +21,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 
 **Next: iPhone home-screen icon tweaks.** v1 is a glossy black spade on felt with a gold double frame (`brand/home-game-icon-holdem.svg` → `brand/render-icons.sh`). Harry said v1 was “good enough for now” and will specify the tweaks in the new session — **do not invent a restyle**. After editing the SVG, run the render script (needs `rsvg-convert` + Pillow) so iOS `AppIcon`, splash, `src/app/icon.png`, and the 1024 PNG stay in lockstep. RGB, no alpha (Apple rejects transparent icons).
 
-**In progress: Phase 3 APNs.** Swipe-away **on your turn** is device-proven. “It became my turn” still needs a prod retest after awaiting the turn-start send (Vercel was killing the detached APNs call). Best proof: phone + Mac Safari, swipe away, act on the Mac. Do not create the App Store Connect listing yet. Do not start Phase 4.
+**Phase 3 APNs device-proven (2026-09-04).** Swipe-away on your turn and “it became my turn” both banner. Do not create the App Store Connect listing yet. Phase 4 (screenshots / listing) waits for Harry.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -97,6 +97,6 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **implemented, awaiting device proof** (Sandbox `.p8` in Vercel + Xcode rebuild). Still needed before App Store: prove turn-push, then Phase 4 screenshots.
-- `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is proven on a phone.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (2026-09-04). Still needed before App Store: Phase 4 screenshots + Connect listing.
+- `npm run ios` / `npm run ios:sync`.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
