@@ -110,3 +110,8 @@ export async function markPlayerForeground(gameId: string, playerId: string): Pr
 export async function isPlayerForeground(gameId: string, playerId: string): Promise<boolean> {
   return (await getPushKV().get(foregroundKey(gameId, playerId))) !== null;
 }
+
+/** Native app went to the background — SSE may still be open for a few seconds. */
+export async function clearPlayerForeground(gameId: string, playerId: string): Promise<void> {
+  await getPushKV().del(foregroundKey(gameId, playerId));
+}

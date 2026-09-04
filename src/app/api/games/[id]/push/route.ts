@@ -1,7 +1,8 @@
 import { playerIdFromRequest } from '@/server/identity';
 import { json, readJson } from '@/server/api';
 import { rateLimited } from '@/server/ratelimit';
-import { deleteDeviceToken, saveDeviceToken } from '@/server/push-store';
+import { clearPlayerForeground, deleteDeviceToken, saveDeviceToken } from '@/server/push-store';
+import { remindTurnIfActing } from '@/server/turn-push';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,6 +25,12 @@ export async function POST(
   if (blocked) return blocked;
 
   const body = await readJson(req);
+  if (body.active === false) {
+    await clearPlayerForeground(gameId, playerId);
+    await remindTurnIfActing(gameId, playerId);
+    return json({ ok: true });
+  }
+
   const token = String(body.token ?? '').trim();
   if (!TOKEN_RE.test(token))
     return json({ error: { code: 'bad-request', message: 'Invalid device token' } }, 400);

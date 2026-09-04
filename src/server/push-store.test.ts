@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  clearPlayerForeground,
   createMemoryPushKV,
   deleteDeviceToken,
   FOREGROUND_TTL_SECONDS,
@@ -46,6 +47,14 @@ describe('memory token + presence', () => {
     vi.setSystemTime(1_000_000 + FOREGROUND_TTL_SECONDS * 1000 - 1);
     expect(await isPlayerForeground('g1', 'p1')).toBe(true);
     vi.setSystemTime(1_000_000 + FOREGROUND_TTL_SECONDS * 1000);
+    expect(await isPlayerForeground('g1', 'p1')).toBe(false);
+  });
+
+  it('clears a live foreground key immediately', async () => {
+    setPushKVForTests(createMemoryPushKV());
+    await markPlayerForeground('g1', 'p1');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(true);
+    await clearPlayerForeground('g1', 'p1');
     expect(await isPlayerForeground('g1', 'p1')).toBe(false);
   });
 

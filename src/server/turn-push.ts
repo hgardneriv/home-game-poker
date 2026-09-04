@@ -1,6 +1,7 @@
 import type { GameState, Street } from '@/engine/types';
 import { apnsConfigured, sendTurnAlert } from './apns';
 import { deleteDeviceToken, getDeviceToken, isPlayerForeground } from './push-store';
+import { getKV } from './kv';
 
 export interface TurnActor {
   playerId: string;
@@ -40,23 +41,40 @@ export function turnJustStarted(before: GameState | null, after: GameState): str
  * No-ops without APNs env, without a registered token, for bots, or when
  * that player's SSE stream is still touching the foreground key.
  */
+export async function sendTurnPushToPlayer(
+  state: GameState,
+  playerId: string,
+  opts?: { ignoreForeground?: boolean }
+): Promise<void> {
+  const player = state.players[playerId];
+  if (!player || player.isBot) return;
+  if (player.status === 'left' || player.status === 'kicked') return;
+  if (!apnsConfigured()) return;
+  if (!opts?.ignoreForeground && (await isPlayerForeground(state.id, playerId))) return;
+  const token = await getDeviceToken(state.id, playerId);
+  if (!token) return;
+  try {
+    const result = await sendTurnAlert(token, state.id);
+    if (result.invalidate) await deleteDeviceToken(state.id, playerId);
+  } catch {
+    // APNs blip — the next turn will retry; do not fail the game write.
+  }
+}
+
 export async function maybeSendTurnPush(
   before: GameState | null,
   after: GameState
 ): Promise<void> {
   const playerId = turnJustStarted(before, after);
   if (!playerId) return;
-  const player = after.players[playerId];
-  if (!player || player.isBot) return;
-  if (player.status === 'left' || player.status === 'kicked') return;
-  if (!apnsConfigured()) return;
-  if (await isPlayerForeground(after.id, playerId)) return;
-  const token = await getDeviceToken(after.id, playerId);
-  if (!token) return;
-  try {
-    const result = await sendTurnAlert(token, after.id);
-    if (result.invalidate) await deleteDeviceToken(after.id, playerId);
-  } catch {
-    // APNs blip — the next turn will retry; do not fail the game write.
-  }
+  await sendTurnPushToPlayer(after, playerId);
+}
+
+/** iPhone backgrounded: if it is already this seat's turn, send now (SSE still looks "foreground"). */
+export async function remindTurnIfActing(gameId: string, playerId: string): Promise<void> {
+  const entry = await getKV().read(gameId);
+  if (!entry) return;
+  const acting = turnActor(entry.state);
+  if (!acting || acting.playerId !== playerId) return;
+  await sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
 }

@@ -12,17 +12,38 @@ export function isNative(): boolean {
 
 /** Resume from background — iOS suspends the WebView and kills SSE. */
 export async function onNativeAppActive(handler: () => void): Promise<() => void> {
+  return onNativeAppState((isActive) => {
+    if (isActive) handler();
+  });
+}
+
+/** Foreground and background. Web no-op. */
+export async function onNativeAppState(handler: (isActive: boolean) => void): Promise<() => void> {
   if (!isNative()) return () => {};
   try {
     const { App } = await import('@capacitor/app');
     const handle = await App.addListener('appStateChange', ({ isActive }) => {
-      if (isActive) handler();
+      handler(isActive);
     });
     return () => {
       void handle.remove();
     };
   } catch {
     return () => {};
+  }
+}
+
+/** Clear the SSE "looking at the table" key and nudge APNs if it is already our turn. */
+export async function reportNativeBackground(gameId: string): Promise<void> {
+  if (!isNative() || !gameId) return;
+  try {
+    await fetch(`/api/games/${gameId}/push`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ active: false }),
+    });
+  } catch {
+    // next turn-start still tries
   }
 }
 
