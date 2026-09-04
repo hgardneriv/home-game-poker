@@ -172,4 +172,4 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 2. **iPhone home-screen icon tweaks** — **next session.** Edit `brand/home-game-icon-holdem.svg` only after Harry specifies. Then `brand/render-icons.sh` (opaque RGB PNGs). Do not invent a restyle.
 3. **Phase 3 APNs** — still the App Store 4.2 path. Do not start until Harry says continue.
 
-Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands.
+Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands. **Docs-only: push `iphone-app` directly — no PR.**
