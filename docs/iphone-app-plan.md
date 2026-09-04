@@ -93,7 +93,7 @@ Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/
 
 **Harry — Apple portal (do this, then paste env into Vercel, not git):**
 
-1. **Identifiers → App IDs:** if you only see **XC Wildcard** (`*`), register an **explicit** App ID (Xcode used the wildcard because Push was not on yet). **+** → App IDs → App → Description `Poker Party Holdem`, Bundle ID **Explicit** `app.pokerparty.holdem` → enable **Push Notifications** → Register. Do not try to turn Push on for the wildcard (Apple does not allow it). Do not create the App Store Connect listing.
+1. **Identifiers → App IDs:** if you only see **XC Wildcard** (`*`), register an **explicit** App ID (Xcode used the wildcard because Push was not on yet). **+** → App IDs → App → Description `Poker Party Holdem`, Bundle ID **Explicit** `app.pokerparty.holdem` → enable **Push Notifications** (leave **Broadcast Capability** unchecked) → Register. Do not try to turn Push on for the wildcard (Apple does not allow it). Do not create the App Store Connect listing.
 2. **Keys → + :** only check **Apple Push Notification service (APNs)**. Leave DeviceCheck / Maps / Sign in with Apple / everything else unchecked.
 3. Click **Configure** on APNs (required; locked after Save):
    - **Environment:** **Sandbox & Production** — one key covers Xcode Play (sandbox tokens) and later TestFlight / App Store (production tokens). The server picks the host with `APNS_PRODUCTION`.
