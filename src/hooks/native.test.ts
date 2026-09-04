@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isNative, nativeShare, nativeTurnHaptic, onNativeAppActive } from './native';
+import { isNative, leaveToAppHome, nativeShare, nativeTurnHaptic, onNativeAppActive } from './native';
 
 const share = vi.fn();
 const addListener = vi.fn();
@@ -99,5 +99,12 @@ describe('native bridges (web / node)', () => {
     stubNative();
     impact.mockRejectedValueOnce(new Error('plugin missing'));
     await expect(nativeTurnHaptic()).resolves.toBeUndefined();
+  });
+
+  it('leaveToAppHome assigns / so the WKWebView unloads the page', () => {
+    const assign = vi.fn();
+    vi.stubGlobal('window', { location: { assign } });
+    leaveToAppHome();
+    expect(assign).toHaveBeenCalledWith('/');
   });
 });

@@ -67,4 +67,4 @@ sheet. There is no login. Test account: none required.
 
 - Device or simulator screenshots at Apple's required sizes.
 - `ITSAppUsesNonExemptEncryption` is already `false` in Info.plist (HTTPS + HMAC cookie only).
-- App icon / splash: black spade on felt with gold frame (`brand/home-game-icon-holdem.svg`). Same chrome + a chip is the Dealer's Choice sibling (source in `brand/`, not this app).
+- App icon / splash: black spade + white Poker Party wordmark on felt with gold frame (`brand/home-game-icon-holdem.svg`). SpringBoard label is **Texas Hold'em**. Same chrome + a chip is the Dealer's Choice sibling (source in `brand/`, not this app).

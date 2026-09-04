@@ -123,6 +123,17 @@ test('iPhone-sized table fits the screen without page scroll', async ({ browser 
   await context.close();
 });
 
+test('privacy Home returns to the landing page', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Privacy' }).click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Home', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Home', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { name: 'Poker Party' })).toBeVisible();
+});
+
 test('home offers return to the last table', async ({ page }) => {
   await page.goto('/');
   await fillName(page, 'Ada');

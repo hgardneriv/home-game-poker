@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Rasterize brand SVGs to opaque PNGs (Apple rejects app icons with alpha).
-# Family: felt + gold frame; Hold'em = black spade; Dealer's Choice = chip (source only).
+# Family: felt + gold frame + white Poker Party wordmark.
+# Hold'em = black spade; Dealer's Choice = chip (source only).
+# SpringBoard label is the game name (Texas Hold'em), not the brand.
 # Requires: rsvg-convert (librsvg2-bin), python3 + PIL.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
