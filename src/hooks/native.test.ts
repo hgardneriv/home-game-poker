@@ -1,9 +1,24 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { isNative, leaveToAppHome, nativeShare, nativeTurnHaptic, onNativeAppActive } from './native';
+import {
+  attachNativePushHandlers,
+  clearNativeTurnPush,
+  isNative,
+  leaveToAppHome,
+  nativeShare,
+  nativeTurnHaptic,
+  onNativeAppActive,
+  openGamePath,
+  registerNativeTurnPush,
+  resetNativePushForTests,
+} from './native';
 
 const share = vi.fn();
 const addListener = vi.fn();
 const impact = vi.fn();
+const checkPermissions = vi.fn();
+const requestPermissions = vi.fn();
+const register = vi.fn();
+const pushAddListener = vi.fn();
 
 vi.mock('@capacitor/share', () => ({
   Share: { share: (...args: unknown[]) => share(...args) },
@@ -18,6 +33,15 @@ vi.mock('@capacitor/haptics', () => ({
   Haptics: { impact: (...args: unknown[]) => impact(...args) },
 }));
 
+vi.mock('@capacitor/push-notifications', () => ({
+  PushNotifications: {
+    checkPermissions: (...args: unknown[]) => checkPermissions(...args),
+    requestPermissions: (...args: unknown[]) => requestPermissions(...args),
+    register: (...args: unknown[]) => register(...args),
+    addListener: (...args: unknown[]) => pushAddListener(...args),
+  },
+}));
+
 function stubNative() {
   vi.stubGlobal('window', {
     Capacitor: { isNativePlatform: () => true },
@@ -27,9 +51,14 @@ function stubNative() {
 describe('native bridges (web / node)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    resetNativePushForTests();
     share.mockReset();
     addListener.mockReset();
     impact.mockReset();
+    checkPermissions.mockReset();
+    requestPermissions.mockReset();
+    register.mockReset();
+    pushAddListener.mockReset();
   });
 
   it('app-active, share, and haptic are no-ops without Capacitor', async () => {
@@ -106,5 +135,110 @@ describe('native bridges (web / node)', () => {
     vi.stubGlobal('window', { location: { assign } });
     leaveToAppHome();
     expect(assign).toHaveBeenCalledWith('/');
+  });
+});
+
+describe('native turn-push (web / node)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetNativePushForTests();
+    checkPermissions.mockReset();
+    requestPermissions.mockReset();
+    register.mockReset();
+    pushAddListener.mockReset();
+  });
+
+  it('never touches the Push plugin or permission APIs off native', async () => {
+    await attachNativePushHandlers({ onOpenGame: () => {} });
+    await registerNativeTurnPush('game1');
+    await clearNativeTurnPush('game1');
+    expect(checkPermissions).not.toHaveBeenCalled();
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+    expect(pushAddListener).not.toHaveBeenCalled();
+  });
+
+  it('requests permission only when iOS reports prompt, then registers', async () => {
+    stubNative();
+    pushAddListener.mockResolvedValue({ remove: vi.fn() });
+    checkPermissions.mockResolvedValueOnce({ receive: 'prompt' });
+    requestPermissions.mockResolvedValueOnce({ receive: 'granted' });
+    register.mockResolvedValueOnce(undefined);
+    await registerNativeTurnPush('game1');
+    expect(requestPermissions).toHaveBeenCalled();
+    expect(register).toHaveBeenCalled();
+  });
+
+  it('does not prompt again when permission is already granted', async () => {
+    stubNative();
+    pushAddListener.mockResolvedValue({ remove: vi.fn() });
+    checkPermissions.mockResolvedValueOnce({ receive: 'granted' });
+    register.mockResolvedValueOnce(undefined);
+    await registerNativeTurnPush('game1');
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(register).toHaveBeenCalled();
+  });
+
+  it('does not register when the player denies notifications', async () => {
+    stubNative();
+    pushAddListener.mockResolvedValue({ remove: vi.fn() });
+    checkPermissions.mockResolvedValueOnce({ receive: 'denied' });
+    await registerNativeTurnPush('game1');
+    expect(requestPermissions).not.toHaveBeenCalled();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('posts the APNs token to this game and opens the table on tap', async () => {
+    stubNative();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    const listeners = new Map<string, (ev: unknown) => void>();
+    pushAddListener.mockImplementation(async (event: string, cb: (ev: unknown) => void) => {
+      listeners.set(event, cb);
+      return { remove: vi.fn() };
+    });
+    checkPermissions.mockResolvedValue({ receive: 'granted' });
+    register.mockResolvedValue(undefined);
+
+    const opened: string[] = [];
+    await attachNativePushHandlers({ onOpenGame: (id) => opened.push(id) });
+    await registerNativeTurnPush('game1');
+
+    listeners.get('registration')?.({ value: 'ab'.repeat(32) });
+    await Promise.resolve();
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/games/game1/push',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ token: 'ab'.repeat(32) }),
+      })
+    );
+
+    listeners.get('pushNotificationActionPerformed')?.({
+      notification: { data: { gameId: 'game1' } },
+    });
+    expect(opened).toEqual(['game1']);
+    expect(openGamePath('game1')).toBe('/game/game1');
+  });
+
+  it('ignores a tap with no gameId', async () => {
+    stubNative();
+    const listeners = new Map<string, (ev: unknown) => void>();
+    pushAddListener.mockImplementation(async (event: string, cb: (ev: unknown) => void) => {
+      listeners.set(event, cb);
+      return { remove: vi.fn() };
+    });
+    const opened = vi.fn();
+    await attachNativePushHandlers({ onOpenGame: opened });
+    listeners.get('pushNotificationActionPerformed')?.({ notification: { data: {} } });
+    expect(opened).not.toHaveBeenCalled();
+  });
+
+  it('clears the stored token for this game on leave', async () => {
+    stubNative();
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal('fetch', fetchMock);
+    await clearNativeTurnPush('game1');
+    expect(fetchMock).toHaveBeenCalledWith('/api/games/game1/push', { method: 'DELETE' });
   });
 });

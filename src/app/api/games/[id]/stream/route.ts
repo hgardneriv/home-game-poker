@@ -4,6 +4,7 @@ import { playerIdFromRequest } from '@/server/identity';
 import { redactForPlayer } from '@/server/redact';
 import { dueSweepAction } from '@/server/sweep';
 import { clientIp, rateLimited } from '@/server/ratelimit';
+import { markPlayerForeground } from '@/server/push-store';
 import type { GameState } from '@/engine/types';
 
 export const dynamic = 'force-dynamic';
@@ -41,11 +42,20 @@ export async function GET(
     async start(controller) {
       const started = Date.now();
       let lastBeat = Date.now();
+      let lastFg = 0;
       let lastRaw: GameState | null = null;
       let closed = false;
       req.signal.addEventListener('abort', () => {
         closed = true;
       });
+      const touchFg = () => {
+        if (!playerId) return;
+        const now = Date.now();
+        if (now - lastFg < 2_000) return;
+        lastFg = now;
+        void markPlayerForeground(gameId, playerId);
+      };
+      touchFg();
 
       const push = (raw: GameState, version: number) => {
         const payload = JSON.stringify({ state: redactForPlayer(raw, playerId) });
@@ -68,6 +78,7 @@ export async function GET(
           if (closed) break;
 
           const now = Date.now();
+          touchFg();
           const version = await kv.readVersion(gameId);
           if (version === 0) break; // game expired
           const sweepDue =

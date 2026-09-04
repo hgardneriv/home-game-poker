@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <main className="mx-auto flex h-dvh max-w-prose flex-col gap-6 overflow-y-auto overscroll-contain px-6 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
       <PrivacyExit />
       <h1 className="text-3xl font-bold">Privacy</h1>
-      <p className="text-sm opacity-80">Last updated August 31, 2026.</p>
+      <p className="text-sm opacity-80">Last updated September 4, 2026.</p>
 
       <section className="space-y-3 text-sm leading-relaxed opacity-90">
         <p>
@@ -39,9 +39,11 @@ export default function PrivacyPage() {
         <h2 className="text-lg font-semibold">iOS app</h2>
         <p>
           The iPhone app is a native shell around this same site. Share sheet
-          and haptics stay on device. We do not currently send push
-          notifications, and we do not use the camera, microphone, or photo
-          library.
+          and haptics stay on device. If you allow notifications, we store an
+          Apple device token next to your seat cookie so we can send a “your
+          turn” alert when the app is in the background. Tokens expire with
+          the table (about 24 hours). Safari never asks for this permission.
+          We do not use the camera, microphone, or photo library.
         </p>
         <h2 className="text-lg font-semibold">Contact</h2>
         <p>

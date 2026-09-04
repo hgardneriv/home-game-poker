@@ -13,7 +13,7 @@ import { ToastProvider, useToast } from './Toast';
 import { GameOverScreen } from './GameOverScreen';
 import type { GameApi } from '@/hooks/useGame';
 import { reviewingLastHand } from '@/engine/types';
-import { nativeTurnHaptic } from '@/hooks/native';
+import { clearNativeTurnPush, nativeTurnHaptic, registerNativeTurnPush } from '@/hooks/native';
 import { clearLastGameId, writeLastGameId } from '@/hooks/lastGame';
 
 /** Announces table events (players leaving/being kicked) to everyone else. */
@@ -131,6 +131,20 @@ export function GameRoom({ gameId }: { gameId: string }) {
       writeLastGameId(gameId);
     }
   }, [error, state, gameId]);
+
+  // Native-only: bind this seat’s APNs token to the cookie identity.
+  // Web registerNativeTurnPush is a no-op (no permission prompt in Safari).
+  const pushPlayerId = state?.yourId ?? null;
+  const pushSeat = pushPlayerId ? (state?.players[pushPlayerId]?.seat ?? null) : null;
+  const pushStatus = pushPlayerId ? state?.players[pushPlayerId]?.status : undefined;
+  useEffect(() => {
+    if (!pushPlayerId || pushSeat === null) return;
+    if (pushStatus === 'left' || pushStatus === 'kicked') {
+      void clearNativeTurnPush(gameId);
+      return;
+    }
+    void registerNativeTurnPush(gameId);
+  }, [gameId, pushPlayerId, pushSeat, pushStatus]);
 
   if (error) {
     return (
