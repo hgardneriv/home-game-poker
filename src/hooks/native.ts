@@ -67,25 +67,13 @@ export async function reportNativeBackground(gameId: string): Promise<void> {
   foregroundAbort?.abort();
   foregroundAbort = null;
   try {
-    const res = await fetch(`/api/games/${gameId}/push`, {
+    await fetch(`/api/games/${gameId}/push`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ active: false, seq }),
     });
-    console.info('push background', res.status, await res.text());
   } catch {
     // next turn-start still tries
-  }
-}
-
-/** Xcode: last APNs attempt after coming back to the table. */
-export async function logNativePushDebug(gameId: string): Promise<void> {
-  if (!isNative() || !gameId) return;
-  try {
-    const res = await fetch(`/api/games/${gameId}/push`, { cache: 'no-store' });
-    console.info('push debug', res.status, await res.text());
-  } catch {
-    // ignore
   }
 }
 
@@ -164,13 +152,9 @@ export async function attachNativePushHandlers(opts?: {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ token }),
-      })
-        .then(async (res) => {
-          console.info('push register', res.status, await res.text());
-        })
-        .catch((err) => {
-          console.warn('push register failed', err);
-        });
+      }).catch(() => {
+        // next sit retries register()
+      });
     });
     await PushNotifications.addListener('registrationError', () => {
       // permission granted but APNs failed — next sit retries register()

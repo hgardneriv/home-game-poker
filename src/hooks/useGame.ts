@@ -3,12 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientGameState } from '@/server/redact';
 import type { PlayerMove } from '@/engine/types';
-import {
-  logNativePushDebug,
-  onNativeAppState,
-  reportNativeBackground,
-  reportNativeForeground,
-} from './native';
+import { onNativeAppState, reportNativeBackground, reportNativeForeground } from './native';
 
 export interface GameApi {
   state: ClientGameState | null;
@@ -110,7 +105,6 @@ export function useGame(gameId: string): GameApi {
       looking = isActive;
       if (isActive) {
         void reportNativeForeground(gameId);
-        void logNativePushDebug(gameId);
         refresh();
         connect();
         return;

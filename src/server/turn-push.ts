@@ -56,7 +56,6 @@ export async function sendTurnPushToPlayer(
   const record = async (attempt: PushAttempt) => {
     const tagged = via ? { ...attempt, via } : attempt;
     await saveLastPush(state.id, playerId, tagged);
-    console.info('turn-push', state.id, tagged);
     return tagged;
   };
   if (!player || player.isBot) return record(skipped('bot'));

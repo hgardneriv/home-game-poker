@@ -45,9 +45,9 @@ poker, hold'em, texas holdem, poker party, play money, chips, friends, table
 
 ## Review notes template (Guideline 4.2)
 
-Do **not** claim push notifications in Connect until Phase 3 is **device-proven**
-(background or kill → banner → tap → same table). The code path exists; the
-listing still omits push until Harry confirms that proof.
+Phase 3 turn-push is **device-proven** (2026-09-04). Claim it in Connect when
+Harry starts the listing (Phase 4). Until then the draft copy below still
+omits push so a premature paste cannot over-claim.
 
 ```
 This is a play-money Texas Hold'em table (chips have no cash value; no IAP).

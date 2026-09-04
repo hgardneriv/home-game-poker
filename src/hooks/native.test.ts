@@ -9,7 +9,6 @@ import {
   onNativeAppActive,
   onNativeAppState,
   openGamePath,
-  logNativePushDebug,
   reportNativeBackground,
   registerNativeTurnPush,
   reportNativeForeground,
@@ -158,7 +157,6 @@ describe('native turn-push (web / node)', () => {
     await clearNativeTurnPush('game1');
     await reportNativeBackground('game1');
     await reportNativeForeground('game1');
-    await logNativePushDebug('game1');
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(requestPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
@@ -286,18 +284,6 @@ describe('native turn-push (web / node)', () => {
     expect(fetchMock.mock.calls[1][1]).toEqual(
       expect.objectContaining({ body: JSON.stringify({ active: false, seq: 2 }) })
     );
-  });
-
-  it('logs the cookie-auth push debug payload on demand', async () => {
-    stubNative();
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      text: async () => '{"ok":true,"foreground":false}',
-    });
-    vi.stubGlobal('fetch', fetchMock);
-    await logNativePushDebug('game1');
-    expect(fetchMock).toHaveBeenCalledWith('/api/games/game1/push', { cache: 'no-store' });
   });
 
   it('reports background so the server can clear presence and nudge APNs', async () => {
