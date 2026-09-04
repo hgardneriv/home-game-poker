@@ -7,6 +7,7 @@ import {
   getDeviceToken,
   getLastPush,
   isPlayerForeground,
+  markPlayerForeground,
   saveDeviceToken,
 } from '@/server/push-store';
 import { apnsConfigured, apnsProduction } from '@/server/apns';
@@ -34,6 +35,10 @@ export async function POST(
   if (blocked) return blocked;
 
   const body = await readJson(req);
+  if (body.active === true) {
+    await markPlayerForeground(gameId, playerId);
+    return json({ ok: true });
+  }
   if (body.active === false) {
     await clearPlayerForeground(gameId, playerId);
     const attempt = await remindTurnIfActing(gameId, playerId);

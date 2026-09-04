@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ClientGameState } from '@/server/redact';
 import type { PlayerMove } from '@/engine/types';
-import { onNativeAppState, reportNativeBackground } from './native';
+import { onNativeAppState, reportNativeBackground, reportNativeForeground } from './native';
 
 export interface GameApi {
   state: ClientGameState | null;
@@ -93,22 +93,32 @@ export function useGame(gameId: string): GameApi {
       }
     };
     document.addEventListener('visibilitychange', onVisible);
+    // Presence is "app is looking," not "SSE is connected." Keep the stream
+    // open in the background so bots still act and a later turn can notify.
+    let looking = true;
+    void reportNativeForeground(gameId);
+    const fgBeat = setInterval(() => {
+      if (looking) void reportNativeForeground(gameId);
+    }, 30_000);
     let detachNative = () => {};
     void onNativeAppState((isActive) => {
+      looking = isActive;
       if (isActive) {
+        void reportNativeForeground(gameId);
         refresh();
         connect();
         return;
       }
-      source?.close();
       void reportNativeBackground(gameId);
     }).then((detach) => {
       detachNative = detach;
     });
     return () => {
       stopped = true;
+      looking = false;
       clearTimeout(initial);
       clearInterval(safetyPoll);
+      clearInterval(fgBeat);
       source?.close();
       document.removeEventListener('visibilitychange', onVisible);
       detachNative();
@@ -144,7 +154,10 @@ export function useGame(gameId: string): GameApi {
     join: async (name, seat) => {
       const err = await post('join', { name, seat });
       // The stream predates our cookie — reconnect so it knows who we are.
-      if (!err) reconnectRef.current();
+      if (!err) {
+        reconnectRef.current();
+        void reportNativeForeground(gameId);
+      }
       return err;
     },
     act: (move, amount, expectedCall) => post('action', { move, amount, expectedCall }),
