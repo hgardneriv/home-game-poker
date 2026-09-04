@@ -11,6 +11,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 **Git**
 - Branch: **`iphone-app`** (pushed, includes PR #6). Do **not** merge to `master` until Harry asks.
 - **`master` is still the Git production branch** (vercel[bot] on push). The **live site is `iphone-app`**, shipped with `vercel deploy --prod`. Official host: **https://holdem.pokerparty.app** (kappa alias still works). **Do not push `master`.**
+- **Docs-only changes: push straight to `iphone-app`. Do not open a PR.** Code / config / native / engine changes still get a PR.
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
 - Public lobby stays deferred.
 
