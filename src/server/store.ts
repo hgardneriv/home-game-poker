@@ -5,6 +5,7 @@ import { applyAction, createGame, normalizeConfig } from '@/engine/engine';
 import type { TableConfig } from '@/engine/types';
 import { getKV } from './kv';
 import { dueSweepAction } from './sweep';
+import { maybeSendTurnPush } from './turn-push';
 
 /**
  * The single mutation pipeline: read -> sweep (timers/bots/next-hand) ->
@@ -78,6 +79,7 @@ export async function withGame(
     state.version = entry.version + 1;
     const newVersion = await kv.cas(gameId, entry.version, state);
     if (newVersion !== 0) {
+      void maybeSendTurnPush(entry.state, state);
       if (userError) return { ok: false, status: userError.status ?? 400, error: userError };
       return { ok: true, state, version: newVersion };
     }
@@ -138,5 +140,6 @@ export async function createNewGame(opts: {
   state.version = 1;
   const version = await kv.cas(gameId, 0, state);
   if (version === 0) throw new Error('Failed to create game (id collision?)');
+  void maybeSendTurnPush(null, state);
   return { gameId, hostId, state };
 }

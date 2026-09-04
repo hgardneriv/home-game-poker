@@ -64,3 +64,95 @@ export function leaveToAppHome(): void {
   if (typeof window === 'undefined') return;
   window.location.assign('/');
 }
+
+/** Hex APNs token from Capacitor — same check the register route uses. */
+const DEVICE_TOKEN_RE = /^[0-9a-fA-F]{64,256}$/;
+
+let pushHandlersAttached = false;
+let pushGameId: string | null = null;
+let openGameFromPush: ((gameId: string) => void) | null = null;
+
+function gameIdFromPushData(data: unknown): string | null {
+  if (!data || typeof data !== 'object') return null;
+  const raw = (data as { gameId?: unknown }).gameId;
+  if (typeof raw !== 'string') return null;
+  const id = raw.trim();
+  return id.length > 0 && id.length <= 32 ? id : null;
+}
+
+/**
+ * Listen for APNs registration + notification taps. No-op on the web so
+ * Safari never sees a permission prompt. Safe to call from the root layout
+ * (cold start from a killed app) and again from the table.
+ */
+export async function attachNativePushHandlers(opts?: {
+  onOpenGame?: (gameId: string) => void;
+}): Promise<void> {
+  if (opts?.onOpenGame) openGameFromPush = opts.onOpenGame;
+  if (!isNative() || pushHandlersAttached) return;
+  pushHandlersAttached = true;
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+    await PushNotifications.addListener('registration', (ev) => {
+      const token = ev.value?.trim() ?? '';
+      const gameId = pushGameId;
+      if (!gameId || !DEVICE_TOKEN_RE.test(token)) return;
+      void fetch(`/api/games/${gameId}/push`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ token }),
+      });
+    });
+    await PushNotifications.addListener('registrationError', () => {
+      // permission granted but APNs failed — next sit retries register()
+    });
+    await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+      const gameId = gameIdFromPushData(action.notification.data);
+      if (gameId) openGameFromPush?.(gameId);
+    });
+  } catch {
+    pushHandlersAttached = false;
+  }
+}
+
+/**
+ * Ask for notification permission (native only) and register this seat’s
+ * device token against the existing cookie identity.
+ */
+export async function registerNativeTurnPush(gameId: string): Promise<void> {
+  if (!isNative()) return;
+  pushGameId = gameId;
+  await attachNativePushHandlers();
+  try {
+    const { PushNotifications } = await import('@capacitor/push-notifications');
+    let perm = await PushNotifications.checkPermissions();
+    if (perm.receive === 'prompt') {
+      perm = await PushNotifications.requestPermissions();
+    }
+    if (perm.receive !== 'granted') return;
+    await PushNotifications.register();
+  } catch {
+    // plugin missing — web bundle is unchanged
+  }
+}
+
+export async function clearNativeTurnPush(gameId: string): Promise<void> {
+  if (!isNative()) return;
+  try {
+    await fetch(`/api/games/${gameId}/push`, { method: 'DELETE' });
+  } catch {
+    // ignore — token TTL matches the table
+  }
+  if (pushGameId === gameId) pushGameId = null;
+}
+
+/** Test-only: reset module state between cases. */
+export function resetNativePushForTests(): void {
+  pushHandlersAttached = false;
+  pushGameId = null;
+  openGameFromPush = null;
+}
+
+export function openGamePath(gameId: string): string {
+  return `/game/${gameId}`;
+}

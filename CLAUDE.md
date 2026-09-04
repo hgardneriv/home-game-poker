@@ -21,7 +21,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 
 **Next: iPhone home-screen icon tweaks.** v1 is a glossy black spade on felt with a gold double frame (`brand/home-game-icon-holdem.svg` → `brand/render-icons.sh`). Harry said v1 was “good enough for now” and will specify the tweaks in the new session — **do not invent a restyle**. After editing the SVG, run the render script (needs `rsvg-convert` + Pillow) so iOS `AppIcon`, splash, `src/app/icon.png`, and the 1024 PNG stay in lockstep. RGB, no alpha (Apple rejects transparent icons).
 
-**Parked:** Phase 3 APNs — do not start until Harry says. Do not create the App Store Connect listing yet.
+**In progress: Phase 3 APNs.** Code: Capacitor Push plugin (native-only permission), token tied to the seat cookie, server send on turn-start (no bots; skip if the player’s SSE stream is still touching `fg:{gameId}:{playerId}`). APNs `.p8` via Vercel env only. **Not done** until Harry backgrounds/kills the app at a live production table, gets “Your turn,” taps, and lands on that table. Do not create the App Store Connect listing yet. Do not start Phase 4.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -36,7 +36,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 - **Production alias:** https://home-game-poker-kappa.vercel.app — **as of 2026-08-31 this is `iphone-app` via `vercel deploy --prod`**, not a Git deploy from `master`. Pushing `master` would overwrite the beta. Further `iphone-app` website drops: `vercel deploy --prod` from this branch (Git does not promote `iphone-app`).
 - Vercel project `home-game-poker` under team `hgardnerivs-projects`. GitHub is connected: pushing **`master`** still triggers a production Git deploy. Run tests before pushing. Do **not** also run `vercel deploy --prod` after a `master` Git deploy unless that Git deploy failed.
 - Storage: Upstash Redis via Vercel Marketplace, resource `home-game-poker-redis`, **free plan** — upgrade to pay-as-you-go if game nights hit command limits (each SSE-connected client polls the version key every 500ms server-side).
-- Env vars (values live in Vercel, never in the repo): `SESSION_SECRET` (prod + preview), `KV_REST_API_URL`, `KV_REST_API_TOKEN`. ⚠️ The Marketplace names Redis vars `KV_REST_API_*`, NOT `UPSTASH_REDIS_REST_*` — `src/server/kv.ts` accepts both.
+- Env vars (values live in Vercel, never in the repo): `SESSION_SECRET` (prod + preview), `KV_REST_API_URL`, `KV_REST_API_TOKEN`. ⚠️ The Marketplace names Redis vars `KV_REST_API_*`, NOT `UPSTASH_REDIS_REST_*` — `src/server/kv.ts` accepts both. Phase 3 APNs (never commit the `.p8`): `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_KEY` (PEM; literal `\n` OK), optional `APNS_BUNDLE_ID` (default `app.pokerparty.holdem`), `APNS_PRODUCTION` (`1` only with a Production key; omit for the Sandbox / Xcode proof).
 - Preview deployments sit behind Vercel Authentication (not shareable with friends) — share/test on production.
 - Local dev without Redis env uses an in-memory KV automatically (single-process only). `vercel env pull .env.local` for real Redis locally.
 
@@ -97,6 +97,6 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). App icon v1 is black spade + gold frame — **next:** Harry-specified home-screen tweaks. Still needed before App Store: Phases 3–4 (APNs, screenshots).
-- `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is in.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **implemented, awaiting device proof** (Sandbox `.p8` in Vercel + Xcode rebuild). Still needed before App Store: prove turn-push, then Phase 4 screenshots.
+- `npm run ios` / `npm run ios:sync`. Do not treat a naked WebView as shippable (Guideline 4.2) until push is proven on a phone.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).

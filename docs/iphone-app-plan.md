@@ -78,15 +78,43 @@ Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-qui
 
 ### Phase 3 — APNs turn-push
 
-This is the critical path (gameplay + Guideline 4.2). Needs an active Developer Program membership for a production push key.
+**Implementation on this branch (2026-09-04).** Device proof still needed — do not mark done until Harry sees a live-table notification.
 
-Sketch (refine when implementing; do not invent a second identity system):
+Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/push` is only `{ token }`. No second login.
 
-- Capacitor Push Notifications plugin; request permission in-app.
-- Register device token tied to `playerId` + `gameId` (cookie already identifies the player).
-- Server sends a push when it becomes that player’s turn (and they are not the connected/foreground client, if we can tell).
-- APNs token auth (.p8) via env on Vercel — never commit the key.
-- Handle token invalidation; no push for bots.
+| Piece | Behavior |
+|---|---|
+| Native | `@capacitor/push-notifications`. Permission + `register()` only when `isNative()` and the player is seated. Web no-ops (`src/hooks/native.ts`). |
+| Token store | Redis (or in-memory) `push:{gameId}:{playerId}`, 24h TTL — same lifetime as the table. |
+| Presence | SSE stream touches `fg:{gameId}:{playerId}` (8s TTL) while connected. Skip the push if that key is live. iOS kills SSE in background, so the key expires. |
+| Send | After `withGame` / `createNewGame` persist, if `(handNo, street, toAct)` changed, the new actor is human, not left/kicked, not foreground, and has a token. |
+| APNs | Token auth (.p8) via Vercel env. Default host is **sandbox** (`APNS_PRODUCTION` unset). New Apple keys are environment-specific. |
+| Tap | Payload includes `gameId`. `NativePushRoot` assigns `/game/{id}` (works from a killed app). |
+
+**Harry — Apple portal (do this, then paste env into Vercel, not git):**
+
+1. **Identifiers → App IDs → `app.pokerparty.holdem`:** enable **Push Notifications** if it is not already on. Xcode automatic signing may have created the App ID.
+2. **Keys → + :** only check **Apple Push Notification service (APNs)**. Leave DeviceCheck / Maps / Sign in with Apple / everything else unchecked.
+3. Click **Configure** on APNs (required). For the first Xcode-on-device proof:
+   - **Environment:** Sandbox
+   - **Type:** Topic Specific
+   - **Topic:** `app.pokerparty.holdem`
+4. **Key Name:** `Poker Party Hold'em APNs Sandbox`
+5. **Key Usage Description** (optional): `Turn-push for Texas Hold'em. Sandbox for Xcode device builds.`
+6. Continue → Register → **Download the `.p8` once** (Apple will not show it again). Note the **Key ID**. Team ID is in the portal header (keep it out of git).
+7. Later (TestFlight / App Store): create a **related Production** key for the same topic. Then set `APNS_PRODUCTION=1` and swap the Key ID / `.p8` on Vercel.
+
+**Vercel env (Production — never commit):**
+
+| Name | Value |
+|---|---|
+| `APNS_KEY_ID` | Key ID from the portal |
+| `APNS_TEAM_ID` | Team ID from the portal header |
+| `APNS_KEY` | Full `.p8` PEM (literal `\n` is OK) |
+| `APNS_BUNDLE_ID` | `app.pokerparty.holdem` (optional; this is the default) |
+| `APNS_PRODUCTION` | omit / `0` for the Sandbox key (Xcode Play). `1` only with a Production key. |
+
+After env is set: `vercel deploy --prod` from `iphone-app` (or this PR once merged). Rebuild the iPhone app (`npx cap sync ios` → Xcode Play). Sit at a production table, allow notifications, background or kill the app, have the other side act until it is your turn, tap the banner.
 
 **Done when:** with the app backgrounded or killed, a human at a live production table gets a “your turn” notification, taps it, and returns to the correct table. Web players are unchanged (no permission prompt in Safari).
 
@@ -142,7 +170,7 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** no turn-push (4.2). Phase 2 cookie proof **done**. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
+**Still not submittable:** turn-push is implemented but **not device-proven** (4.2). Phase 2 cookie proof **done**. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
 
 **Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
@@ -161,7 +189,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phases 0–2 **done**. Next: APNs turn-push (Phase 3). Do not create the App Store Connect listing until Phase 3.
+**Harry-parallel blockers:** Phases 0–2 **done**. Phase 3 code is in; listing waits for a live-table push proof. Do not create the App Store Connect listing until that proof.
 
 ---
 
@@ -170,7 +198,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 **Mobile TODOs (Harry, 2026-09-04):**
 1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
 2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
-3. **Phase 3 APNs** — still the App Store 4.2 path. Do not start until Harry says continue.
+3. **Phase 3 APNs** — code is on the feature PR. Waiting on Harry’s Sandbox `.p8` in Vercel + a device proof (background/kill → banner → tap → same table). Do not create the Connect listing yet. Do not start Phase 4 screenshots.
 4. ~~**Try Simulator first, then the phone**~~ Harry installed the icon + **Texas Hold’em** label on device (2026-09-04). Privacy Close still needs the website on production (`vercel deploy --prod` from `iphone-app`).
 5. ~~**README screenshots**~~ **done** (this session). Recaptured `docs/gameplay.png` and the three hand shots against the Poker Party felt. Docs-only; pushed `iphone-app` directly.
 

@@ -9,6 +9,13 @@ import { POST as playerAction } from './[id]/action/route';
 import { GET as getState } from './[id]/state/route';
 import { GET as getStream } from './[id]/stream/route';
 import { POST as rigTable } from './[id]/rig/route';
+import { POST as registerPush, DELETE as deletePush } from './[id]/push/route';
+import {
+  createMemoryPushKV,
+  getDeviceToken,
+  isPlayerForeground,
+  setPushKVForTests,
+} from '@/server/push-store';
 
 /**
  * Black-box HTTP acceptance: call the exported route handlers with Request
@@ -76,10 +83,12 @@ async function stateOf(gameId: string, cookie?: string | null) {
 
 beforeEach(() => {
   globalThis.__gameKV = new MemoryKV();
+  setPushKVForTests(createMemoryPushKV());
 });
 
 afterEach(() => {
   globalThis.__gameKV = undefined;
+  setPushKVForTests(undefined);
   setLimiterForTests(undefined);
   vi.unstubAllEnvs();
 });
@@ -518,6 +527,7 @@ describe('GET /api/games/:id/stream', () => {
     assertRedacted(payload);
     expect(payload.state.yourId).toBeTruthy();
     expect(payload.state.id).toBe(gameId);
+    expect(await isPlayerForeground(gameId!, payload.state.yourId as string)).toBe(true);
 
     const anonAc = new AbortController();
     const anon = await getStream(
@@ -562,6 +572,72 @@ describe('GET /api/games/:id/stream', () => {
       assertRedacted(JSON.parse(line.slice(6)));
     }
   }, 10_000);
+});
+
+describe('POST /api/games/:id/push', () => {
+  const token = 'ab'.repeat(32);
+
+  it('401s without the seat cookie and never stores a token', async () => {
+    const { gameId } = await create({ name: 'Ada', quickPlay: true });
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { token }),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(401);
+    expect(await getDeviceToken(gameId!, 'anyone')).toBeNull();
+  });
+
+  it('rejects a non-hex token', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { token: 'not-a-token' }, cookie),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(400);
+  });
+
+  it('stores the token against the cookie identity and DELETE removes it', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const { state } = await stateOf(gameId!, cookie);
+    const playerId = state!.yourId as string;
+
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { token }, cookie),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(200);
+    expect(await getDeviceToken(gameId!, playerId)).toBe(token);
+
+    const del = await deletePush(
+      new Request(`http://localhost/api/games/${gameId}/push`, {
+        method: 'DELETE',
+        headers: { cookie: cookie! },
+      }),
+      ctx(gameId!)
+    );
+    expect(del.status).toBe(200);
+    expect(await getDeviceToken(gameId!, playerId)).toBeNull();
+  });
+
+  it('DELETE 401s without the seat cookie', async () => {
+    const { gameId } = await create({ name: 'Ada', quickPlay: true });
+    const del = await deletePush(
+      new Request(`http://localhost/api/games/${gameId}/push`, { method: 'DELETE' }),
+      ctx(gameId!)
+    );
+    expect(del.status).toBe(401);
+  });
+
+  it('429s when the mutate limiter denies register', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    setLimiterForTests({ limit: async () => ({ success: false }) });
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { token }, cookie),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(429);
+    expect(await res.json()).toMatchObject({ error: { code: 'rate-limited' } });
+  });
 });
 
 describe('POST /api/games/:id/rig', () => {

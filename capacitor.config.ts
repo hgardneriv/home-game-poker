@@ -10,6 +10,12 @@ const config: CapacitorConfig = {
     contentInset: 'never',
     scrollEnabled: false,
   },
+  plugins: {
+    PushNotifications: {
+      // Show the banner if a turn-push races a backgrounding SSE drop.
+      presentationOptions: ['banner', 'sound', 'list'],
+    },
+  },
   server: {
     // Official host (DNS live 2026-09-04). Same Vercel project as the
     // kappa alias. A physical iPhone cannot reach this Mac's localhost.
