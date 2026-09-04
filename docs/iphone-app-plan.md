@@ -78,7 +78,7 @@ Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-qui
 
 ### Phase 3 — APNs turn-push
 
-**Implementation on this branch (2026-09-04).** Device proof still needed — do not mark done until Harry sees a live-table notification.
+**Code on `iphone-app` (PR #9 merged 2026-09-04) and on the live site** (Harry: Vercel Production redeploy + CLI deploy). Device proof still needed — do not mark done until Harry sees a live-table notification.
 
 Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/push` is only `{ token }`. No second login.
 
@@ -196,7 +196,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 **Mobile TODOs (Harry, 2026-09-04):**
 1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
 2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
-3. **Phase 3 APNs** — code is on the feature PR. Waiting on Harry’s Sandbox `.p8` in Vercel + a device proof (background/kill → banner → tap → same table). Do not create the Connect listing yet. Do not start Phase 4 screenshots.
+3. **Phase 3 APNs** — code + keys are on production. Still needed: enable Push on the App ID if Xcode complains, rebuild the phone app (`npx cap sync ios` → Xcode Play), then device proof (background/kill → banner → tap → same table). Do not create the Connect listing yet. Do not start Phase 4 screenshots.
 4. ~~**Try Simulator first, then the phone**~~ Harry installed the icon + **Texas Hold’em** label on device (2026-09-04). Privacy Close still needs the website on production (`vercel deploy --prod` from `iphone-app`).
 5. ~~**README screenshots**~~ **done** (this session). Recaptured `docs/gameplay.png` and the three hand shots against the Poker Party felt. Docs-only; pushed `iphone-app` directly.
 
