@@ -12,25 +12,25 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 
 | Decision | Choice |
 |---|---|
-| Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **On `iphone-app` (Phase 2+):** production `https://home-game-poker-kappa.vercel.app`. Localhost was simulator-only (Phase 1). |
+| Architecture | **Path A** — Capacitor WKWebView wrapping the Next site. Not a React Native rewrite. **Official host:** `https://holdem.pokerparty.app`. The `kappa` Vercel alias still works. Localhost was simulator-only (Phase 1). |
 | Bundle id | **Locked:** `app.pokerparty.holdem` (Hold’em) / `app.pokerparty.dealerschoice` (Dealer’s Choice). Reverse-DNS of `{game}.pokerparty.app`. Do not change a bundle id after the first App Store Connect record. |
 | Web vs native | Same Next bundle. `@capacitor/*` is dynamically imported from `src/hooks/native.ts` and **no-ops in the browser**. |
 | Native value for App Store 4.2 | Turn-push (APNs) is required. Share sheet + haptic already exist; they are not enough alone. |
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
-| Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Web: `{game}.pokerparty.app`. iPhone: brand first, game second. Live site is still the Vercel alias until Harry points DNS. |
+| Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Hold’em web **live:** `https://holdem.pokerparty.app` (confirmed 2026-09-04). Dealer’s Choice host reserved: `dealerschoice.pokerparty.app`. iPhone: brand first, game second. |
 | App names | Hold’em: **Poker Party - Texas Hold’em** at `holdem.pokerparty.app`. Dealer’s Choice: **Poker Party - Dealer’s Choice** at `dealerschoice.pokerparty.app`. |
 
-**Mental model:** Friends beta-test on **production**. The Capacitor WebView now loads that same production URL (needed for a physical iPhone). `npx next dev -p 3020` is still the website for browser/sim work if you temporarily point `server.url` back at localhost. Engine/server changes for push will land on this branch and must stay web-safe.
+**Mental model:** Friends beta-test on **production**. The Capacitor WebView loads `https://holdem.pokerparty.app` (`capacitor.config.ts`). `npx next dev` is still the website for browser work. Engine/server changes for push must stay web-safe.
 
-**Felt / chrome (Hold’em, local first):** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon:** black spade on felt with gold frame (`brand/home-game-icon-holdem.svg`); Dealer’s Choice uses the same chrome with a chip. House glyph retired.
+**Felt / chrome:** party felt + gold serif wordmark (Harry signed off 2026-09-01). **Icon (v1 shipped):** black spade on felt with gold frame — **TODO:** Harry wants desktop-icon tweaks (details later). Dealer’s Choice uses the same chrome with a chip. House glyph retired.
 
 ---
 
 ## Already done (on `iphone-app`)
 
 - Capacitor 8 iOS project (`ios/`, `capacitor.config.ts`, `npm run ios` / `ios:sync`)
-- Native config points at **production** (`https://home-game-poker-kappa.vercel.app`) for the physical-device cookie proof
+- Native config points at **`https://holdem.pokerparty.app`** (official host; kappa alias remains)
 - Table shell is locked to the visual viewport (`h-dvh overflow-hidden`); Capacitor `ios.scrollEnabled: false` so the phone cannot pan a canvas larger than the screen
 - `useGame` resync on Capacitor `appStateChange` (iOS kills SSE in background)
 - Native share on invite; haptic on your-turn
@@ -94,7 +94,7 @@ Sketch (refine when implementing; do not invent a second identity system):
 
 Upload and screenshots still wait for Phases 2–3. Draft artifacts started **2026-08-31** so Apple has a privacy URL and listing copy ready; **do not claim turn-push in Connect until Phase 3**.
 
-- Privacy policy URL (required): **live** at `https://home-game-poker-kappa.vercel.app/privacy`.
+- Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy` (kappa alias also serves `/privacy`).
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
 - **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
@@ -167,4 +167,9 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 ## Next session
 
-**Phase 3 next** (APNs turn-push). Do not start until Harry says continue. Do not reopen engine mutation hunting. Do not push `master` while the live alias is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands.
+**Mobile TODOs (Harry, 2026-09-04):**
+1. **Official URL** — Capacitor `server.url` is `https://holdem.pokerparty.app`. After this lands, Harry rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow; that is expected.
+2. **iPhone home-screen icon tweaks** — v1 (black spade + gold frame) is “good enough for now.” Harry will specify changes later. Do not restyle until he does.
+3. **Phase 3 APNs** — still the App Store 4.2 path. Do not start until Harry says continue.
+
+Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. Do not create the App Store Connect listing until Phase 3 lands.
