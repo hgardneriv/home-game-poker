@@ -88,7 +88,7 @@ Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/
 | Token store | Redis (or in-memory) `push:{gameId}:{playerId}`, 24h TTL — same lifetime as the table. |
 | Presence | SSE stream touches `fg:{gameId}:{playerId}` (8s TTL) while connected. Skip the push if that key is live. iOS kills SSE in background, so the key expires. |
 | Send | After `withGame` / `createNewGame` persist, if `(handNo, street, toAct)` changed, the new actor is human, not left/kicked, not foreground, and has a token. |
-| APNs | Token auth (.p8) via Vercel env. Default host is **sandbox** (`APNS_PRODUCTION` unset). New Apple keys are environment-specific. |
+| APNs | Token auth (.p8) via Vercel env. Default host is **sandbox** (`APNS_PRODUCTION` unset). Dual-env keys are team-scoped; the server still sends to one host at a time. |
 | Tap | Payload includes `gameId`. `NativePushRoot` assigns `/game/{id}` (works from a killed app). |
 
 **Harry — Apple portal (do this, then paste env into Vercel, not git):**
