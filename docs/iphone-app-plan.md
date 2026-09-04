@@ -97,7 +97,7 @@ Identity is the existing `hg_{gameId}` cookie. The body of `POST /api/games/:id/
 2. **Keys → + :** only check **Apple Push Notification service (APNs)**. Leave DeviceCheck / Maps / Sign in with Apple / everything else unchecked.
 3. Click **Configure** on APNs (required; locked after Save):
    - **Environment:** **Sandbox & Production** — one key covers Xcode Play (sandbox tokens) and later TestFlight / App Store (production tokens). The server picks the host with `APNS_PRODUCTION`.
-   - **Key Restriction:** **Topic Specific**, topic `app.pokerparty.holdem`. If that topic is missing, enable Push Notifications on the App ID first; otherwise **Team Scoped (All Topics)** is fine on this individual team.
+   - **Key Restriction:** **Team Scoped (All Topics)**. Apple only offers Topic Specific on a single-environment key; dual-env is team-scoped. Fine on this individual team (Hold’em now; Dealer’s Choice later would share the key).
 4. **Key Name:** `Poker Party Hold'em APNs`
 5. **Key Usage Description** (optional): `Turn-push for Texas Hold'em (app.pokerparty.holdem).`
 6. Save → Continue → Register → **Download the `.p8` once** (Apple will not show it again). Note the **Key ID**. Team ID is in the portal header (keep it out of git).
