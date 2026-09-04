@@ -21,7 +21,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 
 **Next: iPhone home-screen icon tweaks.** v1 is a glossy black spade on felt with a gold double frame (`brand/home-game-icon-holdem.svg` → `brand/render-icons.sh`). Harry said v1 was “good enough for now” and will specify the tweaks in the new session — **do not invent a restyle**. After editing the SVG, run the render script (needs `rsvg-convert` + Pillow) so iOS `AppIcon`, splash, `src/app/icon.png`, and the 1024 PNG stay in lockstep. RGB, no alpha (Apple rejects transparent icons).
 
-**In progress: Phase 3 APNs.** Code: Capacitor Push plugin (native-only permission), token tied to the seat cookie, server send on turn-start (no bots; skip if the player’s SSE stream is still touching `fg:{gameId}:{playerId}`). APNs `.p8` via Vercel env only. **Not done** until Harry backgrounds/kills the app at a live production table, gets “Your turn,” taps, and lands on that table. Do not create the App Store Connect listing yet. Do not start Phase 4.
+**In progress: Phase 3 APNs.** PR #9 is on `iphone-app` and the live site has the code + Vercel APNs env. **Not done** until Harry rebuilds the iPhone app and backgrounds/kills it at a live production table, gets “Your turn,” taps, and lands on that table. Do not create the App Store Connect listing yet. Do not start Phase 4.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
