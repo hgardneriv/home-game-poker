@@ -158,7 +158,7 @@ describe('maybeSendTurnPush', () => {
     expect(sender).not.toHaveBeenCalled();
   });
 
-  it('skips a human who still has a live SSE foreground key', async () => {
+  it('skips a human who is still looking at the table', async () => {
     setPushKVForTests(createMemoryPushKV());
     stubApnsEnv();
     const sender = vi.fn(async () => ({ status: 200, invalidate: false }));
@@ -167,6 +167,12 @@ describe('maybeSendTurnPush', () => {
     await markPlayerForeground('g1', 'p1');
     await maybeSendTurnPush(null, state({ toAct: 'p1' }));
     expect(sender).not.toHaveBeenCalled();
+    const { getLastPush } = await import('./push-store');
+    expect(await getLastPush('g1', 'p1')).toMatchObject({
+      outcome: 'skipped',
+      skip: 'foreground',
+      via: 'turn-start',
+    });
   });
 
   it('sends a your-turn alert and drops an invalidated token', async () => {
@@ -177,8 +183,9 @@ describe('maybeSendTurnPush', () => {
     await saveDeviceToken('g1', 'p1', 'b'.repeat(64));
     await maybeSendTurnPush(state({ toAct: 'p2' }), state({ toAct: 'p1' }));
     expect(sender).toHaveBeenCalledTimes(1);
-    const { getDeviceToken } = await import('./push-store');
+    const { getDeviceToken, getLastPush } = await import('./push-store');
     expect(await getDeviceToken('g1', 'p1')).toBeNull();
+    expect(await getLastPush('g1', 'p1')).toMatchObject({ via: 'turn-start', outcome: 'error' });
   });
 
   it('swallows APNs transport errors so a game write cannot fail', async () => {

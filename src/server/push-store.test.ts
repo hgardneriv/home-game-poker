@@ -9,6 +9,8 @@ import {
   getPushKV,
   isPlayerForeground,
   markPlayerForeground,
+  applyPlayerPresence,
+  presenceSeqKey,
   saveDeviceToken,
   setPushKVForTests,
   tokenKey,
@@ -24,6 +26,7 @@ describe('push-store keys', () => {
   it('scopes tokens and presence to game + player', () => {
     expect(tokenKey('g1', 'p1')).toBe('push:g1:p1');
     expect(foregroundKey('g1', 'p1')).toBe('fg:g1:p1');
+    expect(presenceSeqKey('g1', 'p1')).toBe('fgseq:g1:p1');
   });
 });
 
@@ -47,6 +50,16 @@ describe('memory token + presence', () => {
     vi.setSystemTime(1_000_000 + FOREGROUND_TTL_SECONDS * 1000 - 1);
     expect(await isPlayerForeground('g1', 'p1')).toBe(true);
     vi.setSystemTime(1_000_000 + FOREGROUND_TTL_SECONDS * 1000);
+    expect(await isPlayerForeground('g1', 'p1')).toBe(false);
+  });
+
+  it('ignores a stale presence write so swipe-away wins the race', async () => {
+    setPushKVForTests(createMemoryPushKV());
+    expect(await applyPlayerPresence('g1', 'p1', true, 1)).toBe('applied');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(true);
+    expect(await applyPlayerPresence('g1', 'p1', false, 2)).toBe('applied');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(false);
+    expect(await applyPlayerPresence('g1', 'p1', true, 1)).toBe('stale');
     expect(await isPlayerForeground('g1', 'p1')).toBe(false);
   });
 

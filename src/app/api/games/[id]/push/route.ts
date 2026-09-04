@@ -2,12 +2,11 @@ import { playerIdFromRequest } from '@/server/identity';
 import { json, readJson } from '@/server/api';
 import { rateLimited } from '@/server/ratelimit';
 import {
-  clearPlayerForeground,
+  applyPlayerPresence,
   deleteDeviceToken,
   getDeviceToken,
   getLastPush,
   isPlayerForeground,
-  markPlayerForeground,
   saveDeviceToken,
 } from '@/server/push-store';
 import { apnsConfigured, apnsProduction } from '@/server/apns';
@@ -35,20 +34,24 @@ export async function POST(
   if (blocked) return blocked;
 
   const body = await readJson(req);
+  const seq = presenceSeqOf(body);
   if (body.active === true) {
-    await markPlayerForeground(gameId, playerId);
-    return json({ ok: true });
+    const presence = await applyPlayerPresence(gameId, playerId, true, seq);
+    return json({ ok: true, presence });
   }
   if (body.active === false) {
-    await clearPlayerForeground(gameId, playerId);
+    const presence = await applyPlayerPresence(gameId, playerId, false, seq);
     const attempt = await remindTurnIfActing(gameId, playerId);
-    return json({ ok: true, attempt });
+    return json({ ok: true, presence, attempt });
   }
   if (body.test === true) {
-    await clearPlayerForeground(gameId, playerId);
+    await applyPlayerPresence(gameId, playerId, false);
     const entry = await getKV().read(gameId);
     if (!entry) return json({ error: { code: 'not-found', message: 'Game not found' } }, 404);
-    const attempt = await sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
+    const attempt = await sendTurnPushToPlayer(entry.state, playerId, {
+      ignoreForeground: true,
+      via: 'test',
+    });
     return json({ ok: true, attempt });
   }
 
@@ -82,6 +85,11 @@ export async function GET(
     foreground,
     last,
   });
+}
+
+function presenceSeqOf(body: Record<string, unknown>): number | undefined {
+  const n = Number(body.seq);
+  return Number.isInteger(n) && n > 0 ? n : undefined;
 }
 
 export async function DELETE(

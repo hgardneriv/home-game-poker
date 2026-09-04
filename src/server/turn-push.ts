@@ -49,12 +49,15 @@ function skipped(skip: NonNullable<PushAttempt['skip']>): PushAttempt {
 export async function sendTurnPushToPlayer(
   state: GameState,
   playerId: string,
-  opts?: { ignoreForeground?: boolean }
+  opts?: { ignoreForeground?: boolean; via?: PushAttempt['via'] }
 ): Promise<PushAttempt> {
   const player = state.players[playerId];
+  const via = opts?.via;
   const record = async (attempt: PushAttempt) => {
-    await saveLastPush(state.id, playerId, attempt);
-    return attempt;
+    const tagged = via ? { ...attempt, via } : attempt;
+    await saveLastPush(state.id, playerId, tagged);
+    console.info('turn-push', state.id, tagged);
+    return tagged;
   };
   if (!player || player.isBot) return record(skipped('bot'));
   if (player.status === 'left' || player.status === 'kicked') return record(skipped('left'));
@@ -88,7 +91,7 @@ export async function maybeSendTurnPush(
 ): Promise<void> {
   const playerId = turnJustStarted(before, after);
   if (!playerId) return;
-  await sendTurnPushToPlayer(after, playerId);
+  await sendTurnPushToPlayer(after, playerId, { via: 'turn-start' });
 }
 
 /** iPhone backgrounded: if it is already this seat's turn, send now. */
@@ -97,9 +100,9 @@ export async function remindTurnIfActing(gameId: string, playerId: string): Prom
   if (!entry) return skipped('not-acting');
   const acting = turnActor(entry.state);
   if (!acting || acting.playerId !== playerId) {
-    const attempt = skipped('not-acting');
+    const attempt = { ...skipped('not-acting'), via: 'remind' as const };
     await saveLastPush(gameId, playerId, attempt);
     return attempt;
   }
-  return sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true });
+  return sendTurnPushToPlayer(entry.state, playerId, { ignoreForeground: true, via: 'remind' });
 }
