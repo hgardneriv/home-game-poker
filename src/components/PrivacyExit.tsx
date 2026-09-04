@@ -1,8 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { isNative, leaveToAppHome } from '@/hooks/native';
+
+/** Capacitor does not appear after first paint — no subscription needed. */
+function subscribeNative() {
+  return () => {};
+}
 
 /**
  * Web: Home link (App Router).
@@ -11,11 +16,7 @@ import { isNative, leaveToAppHome } from '@/hooks/native';
  * Next.js Link is easy to miss and often a no-op.
  */
 export function PrivacyExit() {
-  const [native, setNative] = useState(false);
-
-  useEffect(() => {
-    setNative(isNative());
-  }, []);
+  const native = useSyncExternalStore(subscribeNative, isNative, () => false);
 
   if (native) {
     return (

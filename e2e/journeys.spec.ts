@@ -128,8 +128,8 @@ test('privacy Home returns to the landing page', async ({ page }) => {
   await page.getByRole('link', { name: 'Privacy' }).click();
   await expect(page).toHaveURL(/\/privacy$/);
   await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Home' })).toBeVisible();
-  await page.getByRole('link', { name: 'Home' }).click();
+  await expect(page.getByRole('link', { name: 'Home', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Home', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await expect(page.getByRole('heading', { name: 'Poker Party' })).toBeVisible();
 });
