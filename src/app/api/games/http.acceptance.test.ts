@@ -528,7 +528,8 @@ describe('GET /api/games/:id/stream', () => {
     assertRedacted(payload);
     expect(payload.state.yourId).toBeTruthy();
     expect(payload.state.id).toBe(gameId);
-    expect(await isPlayerForeground(gameId!, payload.state.yourId as string)).toBe(true);
+    // Stream keeps the sweep alive; it must not count as "looking."
+    expect(await isPlayerForeground(gameId!, payload.state.yourId as string)).toBe(false);
 
     const anonAc = new AbortController();
     const anon = await getStream(
@@ -629,6 +630,19 @@ describe('POST /api/games/:id/push', () => {
     expect(del.status).toBe(401);
   });
 
+  it('marks foreground when the native app reports it is looking', async () => {
+    const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
+    const { state } = await stateOf(gameId!, cookie);
+    const playerId = state!.yourId as string;
+    expect(await isPlayerForeground(gameId!, playerId)).toBe(false);
+    const res = await registerPush(
+      jsonReq(`http://localhost/api/games/${gameId}/push`, { active: true }, cookie),
+      ctx(gameId!)
+    );
+    expect(res.status).toBe(200);
+    expect(await isPlayerForeground(gameId!, playerId)).toBe(true);
+  });
+
   it('clears foreground presence when the native app reports background', async () => {
     const { cookie, gameId } = await create({ name: 'Ada', quickPlay: true });
     const { state } = await stateOf(gameId!, cookie);
@@ -660,6 +674,7 @@ describe('POST /api/games/:id/push', () => {
     expect(data).toMatchObject({
       ok: true,
       hasToken: true,
+      foreground: false,
       apnsConfigured: false,
       apnsProduction: false,
     });

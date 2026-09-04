@@ -8,8 +8,11 @@ import { redisCreds } from './kv';
  */
 
 export const TOKEN_TTL_SECONDS = 24 * 60 * 60;
-/** Slightly longer than a couple of missed SSE ticks; iOS kills the stream in background. */
-export const FOREGROUND_TTL_SECONDS = 8;
+/**
+ * "Looking at the table" — native `{ active: true }` + heartbeat, not SSE.
+ * Long enough to survive a missed beat; `{ active: false }` clears immediately.
+ */
+export const FOREGROUND_TTL_SECONDS = 90;
 
 export interface PushKV {
   set(key: string, value: string, ttlSec: number): Promise<void>;
@@ -124,7 +127,7 @@ export async function isPlayerForeground(gameId: string, playerId: string): Prom
   return (await getPushKV().get(foregroundKey(gameId, playerId))) !== null;
 }
 
-/** Native app went to the background — SSE may still be open for a few seconds. */
+/** Native app went to the background — the stream may stay open so bots still act. */
 export async function clearPlayerForeground(gameId: string, playerId: string): Promise<void> {
   await getPushKV().del(foregroundKey(gameId, playerId));
 }

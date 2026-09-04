@@ -33,7 +33,21 @@ export async function onNativeAppState(handler: (isActive: boolean) => void): Pr
   }
 }
 
-/** Clear the SSE "looking at the table" key and nudge APNs if it is already our turn. */
+/** Looking at the table — skip turn-push while the app is in the foreground. */
+export async function reportNativeForeground(gameId: string): Promise<void> {
+  if (!isNative() || !gameId) return;
+  try {
+    await fetch(`/api/games/${gameId}/push`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ active: true }),
+    });
+  } catch {
+    // next action still works
+  }
+}
+
+/** Not looking — clear presence and nudge APNs if it is already our turn. */
 export async function reportNativeBackground(gameId: string): Promise<void> {
   if (!isNative() || !gameId) return;
   try {
@@ -151,6 +165,7 @@ export async function registerNativeTurnPush(gameId: string): Promise<void> {
   if (!isNative()) return;
   pushGameId = gameId;
   await attachNativePushHandlers();
+  void reportNativeForeground(gameId);
   try {
     const { PushNotifications } = await import('@capacitor/push-notifications');
     let perm = await PushNotifications.checkPermissions();

@@ -11,6 +11,7 @@ import {
   openGamePath,
   reportNativeBackground,
   registerNativeTurnPush,
+  reportNativeForeground,
   resetNativePushForTests,
 } from './native';
 
@@ -155,6 +156,7 @@ describe('native turn-push (web / node)', () => {
     await registerNativeTurnPush('game1');
     await clearNativeTurnPush('game1');
     await reportNativeBackground('game1');
+    await reportNativeForeground('game1');
     expect(checkPermissions).not.toHaveBeenCalled();
     expect(requestPermissions).not.toHaveBeenCalled();
     expect(register).not.toHaveBeenCalled();
@@ -217,6 +219,13 @@ describe('native turn-push (web / node)', () => {
       '/api/games/game1/push',
       expect.objectContaining({
         method: 'POST',
+        body: JSON.stringify({ active: true }),
+      })
+    );
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/games/game1/push',
+      expect.objectContaining({
+        method: 'POST',
         body: JSON.stringify({ token: 'ab'.repeat(32) }),
       })
     );
@@ -239,6 +248,24 @@ describe('native turn-push (web / node)', () => {
     await attachNativePushHandlers({ onOpenGame: opened });
     listeners.get('pushNotificationActionPerformed')?.({ notification: { data: {} } });
     expect(opened).not.toHaveBeenCalled();
+  });
+
+  it('reports foreground so the server treats the player as looking', async () => {
+    stubNative();
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: async () => '{"ok":true}',
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    await reportNativeForeground('game1');
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/games/game1/push',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ active: true }),
+      })
+    );
   });
 
   it('reports background so the server can clear presence and nudge APNs', async () => {
