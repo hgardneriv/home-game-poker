@@ -33,12 +33,19 @@ export async function onNativeAppState(handler: (isActive: boolean) => void): Pr
   }
 }
 
-let presenceSeq = 0;
+let lastPresenceAt = 0;
 let foregroundAbort: AbortController | null = null;
 
+/**
+ * Wall-clock seq so a cold start (kill → notification tap) still counts as
+ * looking. A 1, 2, 3… counter reset to 0 in a new JS heap and lost to the
+ * leftover Redis seq from the previous session — every later turn then
+ * notified while the app was open, until the counter caught up.
+ */
 function nextPresenceSeq(): number {
-  presenceSeq += 1;
-  return presenceSeq;
+  const now = Date.now();
+  lastPresenceAt = now <= lastPresenceAt ? lastPresenceAt + 1 : now;
+  return lastPresenceAt;
 }
 
 /** Looking at the table — skip turn-push while the app is in the foreground. */
@@ -205,7 +212,7 @@ export function resetNativePushForTests(): void {
   pushHandlersAttached = false;
   pushGameId = null;
   openGameFromPush = null;
-  presenceSeq = 0;
+  lastPresenceAt = 0;
   foregroundAbort = null;
 }
 
