@@ -51,6 +51,10 @@ function stubNative() {
   });
 }
 
+function postBody(call: unknown[]): Record<string, unknown> {
+  return JSON.parse((call[1] as { body: string }).body) as Record<string, unknown>;
+}
+
 describe('native bridges (web / node)', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -149,6 +153,7 @@ describe('native turn-push (web / node)', () => {
     requestPermissions.mockReset();
     register.mockReset();
     pushAddListener.mockReset();
+    vi.useRealTimers();
   });
 
   it('never touches the Push plugin or permission APIs off native', async () => {
@@ -219,7 +224,7 @@ describe('native turn-push (web / node)', () => {
       '/api/games/game1/push',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ active: true, seq: 1 }),
+        body: expect.stringContaining('"active":true'),
       })
     );
     expect(fetchMock).toHaveBeenCalledWith(
@@ -258,14 +263,10 @@ describe('native turn-push (web / node)', () => {
       text: async () => '{"ok":true}',
     });
     vi.stubGlobal('fetch', fetchMock);
+    vi.useFakeTimers();
+    vi.setSystemTime(1_700_000_000_000);
     await reportNativeForeground('game1');
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/games/game1/push',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ active: true, seq: 1 }),
-      })
-    );
+    expect(postBody(fetchMock.mock.calls[0])).toEqual({ active: true, seq: 1_700_000_000_000 });
   });
 
   it('increments presence seq so swipe-away beats an in-flight looking ping', async () => {
@@ -276,14 +277,12 @@ describe('native turn-push (web / node)', () => {
       text: async () => '{"ok":true}',
     });
     vi.stubGlobal('fetch', fetchMock);
+    vi.useFakeTimers();
+    vi.setSystemTime(1_700_000_000_000);
     await reportNativeForeground('game1');
     await reportNativeBackground('game1');
-    expect(fetchMock.mock.calls[0][1]).toEqual(
-      expect.objectContaining({ body: JSON.stringify({ active: true, seq: 1 }) })
-    );
-    expect(fetchMock.mock.calls[1][1]).toEqual(
-      expect.objectContaining({ body: JSON.stringify({ active: false, seq: 2 }) })
-    );
+    expect(postBody(fetchMock.mock.calls[0])).toEqual({ active: true, seq: 1_700_000_000_000 });
+    expect(postBody(fetchMock.mock.calls[1])).toEqual({ active: false, seq: 1_700_000_000_001 });
   });
 
   it('reports background so the server can clear presence and nudge APNs', async () => {
@@ -294,14 +293,10 @@ describe('native turn-push (web / node)', () => {
       text: async () => '{"ok":true}',
     });
     vi.stubGlobal('fetch', fetchMock);
+    vi.useFakeTimers();
+    vi.setSystemTime(1_700_000_000_000);
     await reportNativeBackground('game1');
-    expect(fetchMock).toHaveBeenCalledWith(
-      '/api/games/game1/push',
-      expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ active: false, seq: 1 }),
-      })
-    );
+    expect(postBody(fetchMock.mock.calls[0])).toEqual({ active: false, seq: 1_700_000_000_000 });
   });
 
   it('notifies the app-state handler for both background and foreground', async () => {

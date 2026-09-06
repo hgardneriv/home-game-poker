@@ -139,7 +139,9 @@ export async function clearPlayerForeground(gameId: string, playerId: string): P
 
 /**
  * Apply looking / away. Client `seq` is last-write-wins so an in-flight
- * `{ active: true }` cannot undo a later swipe-away.
+ * `{ active: true }` cannot undo a later swipe-away. The native client
+ * sends `Date.now()` (not a 1-based counter) so a new JS heap after
+ * force-quit still beats the leftover Redis seq.
  */
 export async function applyPlayerPresence(
   gameId: string,

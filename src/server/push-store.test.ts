@@ -53,6 +53,16 @@ describe('memory token + presence', () => {
     expect(await isPlayerForeground('g1', 'p1')).toBe(false);
   });
 
+  it('accepts a later session wall-clock seq after a leftover 1-based counter', async () => {
+    setPushKVForTests(createMemoryPushKV());
+    expect(await applyPlayerPresence('g1', 'p1', false, 80)).toBe('applied');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(false);
+    expect(await applyPlayerPresence('g1', 'p1', true, 1)).toBe('stale');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(false);
+    expect(await applyPlayerPresence('g1', 'p1', true, 1_700_000_000_000)).toBe('applied');
+    expect(await isPlayerForeground('g1', 'p1')).toBe(true);
+  });
+
   it('ignores a stale presence write so swipe-away wins the race', async () => {
     setPushKVForTests(createMemoryPushKV());
     expect(await applyPlayerPresence('g1', 'p1', true, 1)).toBe('applied');
