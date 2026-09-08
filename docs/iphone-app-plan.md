@@ -49,7 +49,7 @@ Check off in this file as work completes. Each phase has a **done when**. Stop a
 
 ### Phase 0 — Apple Developer (Harry, parallel / later)
 
-**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing until Harry starts Phase 4.** Team ID stays local (not in git).
+**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Phase 4 started 2026-09-08** — create the Connect listing from [app-store-listing.md](app-store-listing.md). Team ID stays local (not in git).
 
 ### Phase 1 — Simulator smoke
 
@@ -116,14 +116,14 @@ After env is set: `vercel deploy --prod` from `iphone-app`. Rebuild the iPhone a
 
 ### Phase 4 — Store-ready shell
 
-Upload and screenshots wait for Phase 4. Draft artifacts started **2026-08-31**. Phase 3 turn-push is device-proven — listing copy may claim it when Harry starts Connect.
+**Started 2026-09-08.** Paste pack: [app-store-listing.md](app-store-listing.md). Harry creates the Connect record, takes 6.9″ shots, and archives for TestFlight. Do not Submit for Review until production APNs is proven on a TestFlight install.
 
-- Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy` (kappa alias also serves `/privacy`).
-- Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md). Phase 3 is proven — claim APNs when Harry starts Connect.
+- Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy`.
+- Listing / age rating / privacy nutrition / 4.2 notes: [app-store-listing.md](app-store-listing.md).
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
-- **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade + white Poker Party wordmark on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`; SpringBoard name **Texas Hold’em**). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
-- Screenshots from a device or sim at required sizes — not started. **iPhone only** (Harry, 2026-09-08): `TARGETED_DEVICE_FAMILY = 1`. Take the **6.9″** iPhone set; do not upload iPad shots.
-- 4.2 in review notes: share + haptic + APNs turn-push (device-proven).
+- ~~Capacitor default App Icon~~ **done**. **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`).
+- Screenshots at 6.9″ — **Harry** (shot list in the listing doc).
+- TestFlight + `APNS_PRODUCTION=1` — **Harry**. Xcode Play stays sandbox.
 
 **Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Capacitor already points at production.
 
@@ -186,13 +186,13 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phases 0–3 **done** (turn-push signed off 2026-09-08). Phase 4 screenshots + Connect listing next. Do not create the App Store Connect listing until Harry says start Phase 4.
+**Harry-parallel blockers:** Phases 0–3 **done**. Phase 4 **started** — Connect listing + 6.9″ screenshots + TestFlight. Harry owns those clicks.
 
 ---
 
 ## Next session
 
-**Start here (2026-09-08):** Phase 4 — store-ready shell. Do not reopen Phase 3 APNs unless a new device bug shows up.
+**Start here (2026-09-08):** Phase 4 — Harry creates the Connect app and takes 6.9″ screenshots ([app-store-listing.md](app-store-listing.md)). Do not reopen Phase 3 APNs unless a new device bug shows up. Do not Submit for Review until TestFlight production push works.
 
 **Done through this session:**
 1. ~~Official URL~~ (PR #6). Capacitor loads `https://holdem.pokerparty.app`.
@@ -200,10 +200,10 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 3. ~~Phase 3 APNs~~ (PRs #9–#15). Harry happy 2026-09-08: on-turn swipe-away, become-your-turn-while-away, kill→tap without later in-app banners (wall-clock presence `seq`). Debug probes stripped.
 4. ~~README gameplay screenshots~~ against the Poker Party felt.
 
-**Phase 4 when Harry is ready:**
-- Screenshots: iPhone **6.9″** set only (device or sim). Binary is iPhone-only.
-- Create the App Store Connect listing; claim turn-push in 4.2 notes ([app-store-listing.md](app-store-listing.md)).
-- Signed upload. Do not submit until he says go (Phase 5).
+**Phase 4 in progress:**
+- Screenshots: iPhone **6.9″** set (Harry, phone or 16/17 Pro Max sim).
+- Create the App Store Connect listing from [app-store-listing.md](app-store-listing.md).
+- TestFlight archive with `APNS_PRODUCTION=1`. Do not Submit for Review until that push proof lands (Phase 5).
 
 Website/server changes: `vercel deploy --prod` from `iphone-app` (no Xcode rebuild). Native/plugin/entitlements: `npx cap sync ios` → Xcode Play. `APNS_PRODUCTION` unset for Xcode Play.
 
