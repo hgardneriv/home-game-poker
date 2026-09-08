@@ -47,7 +47,9 @@ If the bundle id is missing from the dropdown, the App ID is not in this team â€
 
 ## Version / listing copy (Version 1.0)
 
-**Subtitle** (30): `Play-money Hold'em with friends`
+**Subtitle** (30): `Play-money holdem with friends`
+
+(The first draft `Play-money Hold'em with friends` is 31. Dropping the apostrophe keeps play-money and friends. Store name already has Hold'em.)
 
 **Promotional text** (170, optional, you can edit anytime):
 
