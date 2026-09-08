@@ -89,14 +89,16 @@ Connect’s 1.0 page is asking for **iPhone 6.5″**. Ready files (1284×2778 po
 
 | Upload order | File | What it is |
 |---|---|---|
-| 1 | `01-home.png` | Home + play-money line |
-| 2 | `02-table-flop.png` | Live flop, your turn, Fold / Call / Raise |
-| 3 | `03-made-hand.png` | Full house on the felt |
-| 4 | `04-invite.png` | Host lobby + **Invite** (web). Native share sheet still needs a phone shot |
+| 1 | `02-table-flop.png` | Live flop, your turn, Fold / Call / Raise |
+| 2 | `03-made-hand.png` | Full house on the felt |
+| 3 | `01-home.png` | Home + Play now + play-money line |
+| 4 | `01b-host-setup.png` | Home + **Host a game** (blinds / buy-in / bots) |
+| 5 | `04-invite.png` | Host lobby + **Invite** |
+| 6 | `05-share-sheet.png` | Invite → native iOS share sheet (personal suggested contacts removed) |
 
-Drag those four onto the **iPhone 6.5″** slot. Do not add iPad or Watch. No preview video.
+First three appear on the install sheet. Drag all six onto the **iPhone 6.5″** slot. Do not add iPad or Watch. No preview video.
 
-Optional extra from the phone: Invite → iOS share sheet (4.2). If you take it, it must also be 1284×2778 or another size Connect lists.
+`05-share-sheet.png` is your phone capture with the three suggested people taken out. Your MacBook / AirDrop row stays. The copy that landed in chat is 360px wide, so this export is a bit soft at 6.5″ — if Connect looks mushy, AirDrop the original Photos screenshot and we can replace it.
 
 ---
 
