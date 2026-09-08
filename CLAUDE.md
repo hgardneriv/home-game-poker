@@ -23,7 +23,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 - Kill → tap banner → keep playing: later turns stay quiet while the app is open (PR #15 wall-clock presence `seq`; a leftover 1-based Redis seq used to keep notifying).
 - Tap lands on `/game/{id}`. Web/Safari unchanged (no permission prompt).
 
-**Next: Phase 4 — store-ready shell** (screenshots at Apple sizes, Connect listing, claim APNs in review notes). **Do not create the App Store Connect listing until Harry says start Phase 4.** Do not invent icon restyles.
+**Next: Phase 4 — store-ready shell** (iPhone-only binary; 6.9″ screenshots, Connect listing, claim APNs in review notes). **Do not create the App Store Connect listing until Harry says start Phase 4.** Do not invent icon restyles. No iPad target until Harry has a device to test.
 
 **Website JS + server** ship with `vercel deploy --prod` from `iphone-app`. Rebuild Xcode only when native/plugin/entitlements change. `APNS_PRODUCTION` stays **unset** for Xcode Play (sandbox tokens).
 
@@ -101,7 +101,7 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). Still needed before App Store: Phase 4 screenshots + Connect listing.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). v1 is **iPhone-only** (`TARGETED_DEVICE_FAMILY = 1`). Still needed before App Store: Phase 4 6.9″ screenshots + Connect listing.
 - **Turn-push (do not reinvent):** cookie identity; `POST /api/games/:id/push` `{ token }` / `{ active: true|false, seq }`. `seq` is `Date.now()` (last-write-wins). `fg:` = app in front (not SSE). SSE stays open in background so bots can act. `withGame` **awaits** `maybeSendTurnPush`. Remind on swipe-away-if-acting; turn-start send when the actor changes. Dual-env APNs key; default host sandbox.
 - `npm run ios` / `npm run ios:sync`.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
