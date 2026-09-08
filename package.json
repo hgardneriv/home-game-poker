@@ -12,7 +12,8 @@
     "coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "ios": "npx cap open ios",
-    "ios:sync": "npx cap sync ios"
+    "ios:sync": "npx cap sync ios",
+    "ios:store-shots": "node scripts/capture-app-store-screenshots.mjs"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
