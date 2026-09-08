@@ -19,7 +19,7 @@ Related background: [2026-08-24 audit §4](audits/2026-08-24-code-security-mobil
 | Money | Play-money only. Keep that copy in-app and in the store listing (Guideline 5.3 / simulated gambling). |
 | Public lobby | Still deferred. Not part of v1 iPhone. |
 | Brand / domains | **Poker Party** family. One domain: `pokerparty.app`. Hold’em web **live:** `https://holdem.pokerparty.app` (confirmed 2026-09-04). Dealer’s Choice host reserved: `dealerschoice.pokerparty.app`. Home-screen icon is the brand; the SpringBoard label is the game. |
-| App names | Hold’em: App Store **Poker Party - Texas Hold’em**; SpringBoard label **Texas Hold’em**; icon wordmark **POKER PARTY**. Dealer’s Choice sibling: label **Dealer’s Choice** (not shipped). |
+| App names | Hold’em: App Store **pokerparty.app Hold'em** (locked 2026-09-08; `Poker Party - Texas Hold'em` was taken); SpringBoard label **Texas Hold’em**; icon wordmark **POKER PARTY**. Dealer’s Choice sibling: label **Dealer’s Choice** (not shipped). |
 
 **Mental model:** Friends beta-test on **production**. The Capacitor WebView loads `https://holdem.pokerparty.app` (`capacitor.config.ts`). `npx next dev` is still the website for browser work. Engine/server changes for push must stay web-safe.
 

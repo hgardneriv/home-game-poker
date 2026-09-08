@@ -31,13 +31,17 @@ App Store Connect → **Apps** → **+** → **New App**
 | Field | Value |
 |---|---|
 | Platforms | **iOS** only |
-| Name | `Poker Party - Texas Hold'em` (30-character cap; this fits) |
+| Name | **`pokerparty.app Hold'em`** (locked 2026-09-08). The first choice `Poker Party - Texas Hold'em` was already taken. |
 | Primary language | English (U.S.) |
 | Bundle ID | **`app.pokerparty.holdem`** (explicit App ID from Phase 3 — do not pick the XC Wildcard) |
 | SKU | `holdem` |
 | User access | Full Access (just you) |
 
 If the bundle id is missing from the dropdown, the App ID is not in this team — fix that in the Apple Developer portal before continuing. Do not create a second bundle id.
+
+---
+
+**Store name locked:** `pokerparty.app Hold'em`. SpringBoard stays **Texas Hold'em**. Bundle id stays `app.pokerparty.holdem`. Do not create a second Connect app.
 
 ---
 
