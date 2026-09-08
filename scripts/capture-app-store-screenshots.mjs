@@ -94,6 +94,10 @@ async function main() {
   await page.getByText('Play money only', { exact: false }).waitFor();
   await shot(page, '01-home.png');
 
+  await page.getByRole('button', { name: /host a game/i }).click();
+  await page.getByText('Starting coins').waitFor();
+  await shot(page, '01b-host-setup.png');
+
   const flopId = await createGame(page, { name: 'Harry', quickPlay: true });
   await page.goto(`${BASE}/game/${flopId}`, { waitUntil: 'networkidle' });
   await page.getByText('Poker Party', { exact: false }).first().waitFor({ timeout: 15_000 });
