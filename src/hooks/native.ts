@@ -91,11 +91,13 @@ export async function reportNativeBackground(gameId: string): Promise<void> {
  * again through the bridge and trip Next's dev overlay (`user-script`
  * / `returnResult`).
  */
-export async function nativeShare(title: string, text: string, url: string): Promise<boolean> {
+export async function nativeShare(title: string, text: string, url?: string): Promise<boolean> {
   if (!isNative()) return false;
   try {
     const { Share } = await import('@capacitor/share');
-    await Share.share({ title, text, url });
+    // A standalone `url` becomes the first Messages item (preview, then text).
+    const body = url ? `${text}\n${url}` : text;
+    await Share.share({ title, text: body });
   } catch {
     // "Share canceled", "already sharing", missing activity types, etc.
   }

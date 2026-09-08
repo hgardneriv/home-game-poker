@@ -75,7 +75,7 @@ describe('native bridges (web / node)', () => {
     });
     detach();
     expect(addListener).not.toHaveBeenCalled();
-    expect(await nativeShare('t', 'x', 'http://example.com')).toBe(false);
+    expect(await nativeShare('t', 'x\nhttp://example.com')).toBe(false);
     expect(share).not.toHaveBeenCalled();
     await expect(nativeTurnHaptic()).resolves.toBeUndefined();
     expect(impact).not.toHaveBeenCalled();
@@ -88,15 +88,19 @@ describe('native bridges (web / node)', () => {
     expect(await nativeShare('t', 'x', 'http://example.com')).toBe(true);
     expect(share).toHaveBeenCalledWith({
       title: 't',
-      text: 'x',
-      url: 'http://example.com',
+      text: 'x\nhttp://example.com',
     });
+    expect(share.mock.calls[0][0]).not.toHaveProperty('url');
   });
 
   it('returns true after a successful native share', async () => {
     stubNative();
     share.mockResolvedValueOnce({ activityType: 'com.apple.UIKit.activity.CopyToPasteboard' });
-    expect(await nativeShare('t', 'x', 'http://example.com')).toBe(true);
+    expect(await nativeShare('t', 'Join my Texas Hold’em table:\nhttp://example.com')).toBe(true);
+    expect(share).toHaveBeenCalledWith({
+      title: 't',
+      text: 'Join my Texas Hold’em table:\nhttp://example.com',
+    });
   });
 
   it('fires the resume handler only when the native app becomes active', async () => {
