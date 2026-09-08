@@ -1,9 +1,8 @@
 # App Store listing draft (not submitted)
 
-Copy for App Store Connect when Harry is ready to upload. **Do not paste this
-into Connect until Phase 2 cookie proof and Phase 3 turn-push are done.** This
-file is a draft so listing work can start without claiming native features we
-do not ship yet.
+Copy for App Store Connect when Harry starts Phase 4. Phases 2–3 are **done**
+(cookie proof + turn-push device-proven, Harry signed off 2026-09-08). Do not
+create the Connect record until he says start the listing.
 
 Privacy policy URL (required): `https://holdem.pokerparty.app/privacy`
 (also on the `kappa` Vercel alias; contact `homegamesupport@gmail.com`).
@@ -21,9 +20,9 @@ Poker Party is a private Texas Hold'em table for friends. Share a link,
 take a seat, and play chips that have **no cash value**.
 
 Host a table or jump into a quick game with optional bots. The iPhone app
-wraps the same play-money game: native invite (share sheet) and a haptic when
-it is your turn. There is no real-money gambling, no in-app purchases, and no
-accounts.
+wraps the same play-money game: native invite (share sheet), a haptic when
+it is your turn, and a “Your turn” notification if you leave the table.
+There is no real-money gambling, no in-app purchases, and no accounts.
 
 Play money only — chips have no cash value.
 
@@ -45,24 +44,22 @@ poker, hold'em, texas holdem, poker party, play money, chips, friends, table
 
 ## Review notes template (Guideline 4.2)
 
-Phase 3 turn-push is **device-proven** (2026-09-04). Claim it in Connect when
-Harry starts the listing (Phase 4). Until then the draft copy below still
-omits push so a premature paste cannot over-claim.
+Phase 3 turn-push is **device-proven** (Harry signed off 2026-09-08). Use the
+notes below when he starts the Connect listing.
 
 ```
 This is a play-money Texas Hold'em table (chips have no cash value; no IAP).
 
-Native value today:
+Native value:
 - Capacitor WKWebView shell (bundle id `app.pokerparty.holdem`)
 - Native share sheet for table invites
 - Haptic on your turn
-
-Not in this build:
-- Push / APNs (planned after we prove httpOnly seat cookies survive
-  force-quit on a physical iPhone)
+- APNs “Your turn” when the app is backgrounded or killed (tap returns
+  to that table)
 
 Demo: open the app → Play now (or host) → sit. Invite uses the iOS share
-sheet. There is no login. Test account: none required.
+sheet. Background or kill the app; when it becomes your turn you get a
+banner. There is no login. Test account: none required.
 ```
 
 ## Assets still needed before submit

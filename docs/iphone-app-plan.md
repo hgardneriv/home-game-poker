@@ -49,7 +49,7 @@ Check off in this file as work completes. Each phase has a **done when**. Stop a
 
 ### Phase 0 — Apple Developer (Harry, parallel / later)
 
-**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing yet** — wait for Phase 3 APNs. Team ID stays local (not in git).
+**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Do not create the Connect listing until Harry starts Phase 4.** Team ID stays local (not in git).
 
 ### Phase 1 — Simulator smoke
 
@@ -78,7 +78,7 @@ Identity is an httpOnly cookie `hg_{gameId}`. If WKWebView drops it on force-qui
 
 ### Phase 3 — APNs turn-push
 
-**Done (2026-09-04).** Device-proven: swipe-away on your turn, and swipe-away before it becomes your turn (phone + another seat). Web/Safari unchanged (no permission prompt).
+**Done (2026-09-08).** Harry signed off on a live table. Device-proven: swipe-away on your turn; swipe-away before it becomes your turn (phone + another seat); kill → tap banner → later turns stay quiet while the app is open (PR #15). PRs **#9–#15** on `iphone-app`. Web/Safari unchanged (no permission prompt). Debug `console.info` probes removed (PR #14).
 
 Identity is the existing `hg_{gameId}` cookie. `POST /api/games/:id/push` is `{ token }` to register, `{ active: true }` while the native app is looking at the table, or `{ active: false }` when it backgrounds. No second login.
 
@@ -119,13 +119,13 @@ After env is set: `vercel deploy --prod` from `iphone-app`. Rebuild the iPhone a
 Upload and screenshots wait for Phase 4. Draft artifacts started **2026-08-31**. Phase 3 turn-push is device-proven — listing copy may claim it when Harry starts Connect.
 
 - Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy` (kappa alias also serves `/privacy`).
-- Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md) (no push claim).
+- Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md). Phase 3 is proven — claim APNs when Harry starts Connect.
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
 - **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade + white Poker Party wordmark on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`; SpringBoard name **Texas Hold’em**). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
 - Screenshots from a device or sim at required sizes — not started.
-- 4.2 in review notes: share + haptic today; add APNs only after Phase 3.
+- 4.2 in review notes: share + haptic + APNs turn-push (device-proven).
 
-**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Still **not submittable** until Phase 3 push. Capacitor already points at production.
+**Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Capacitor already points at production.
 
 ### Phase 5 — Submit and review
 
@@ -185,17 +185,25 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phases 0–3 **done** (turn-push device-proven 2026-09-04). Listing / Phase 4 screenshots next. Do not create the App Store Connect listing until Harry is ready for Phase 4.
+**Harry-parallel blockers:** Phases 0–3 **done** (turn-push signed off 2026-09-08). Phase 4 screenshots + Connect listing next. Do not create the App Store Connect listing until Harry says start Phase 4.
 
 ---
 
 ## Next session
 
-**Mobile TODOs (Harry, 2026-09-04):**
-1. ~~**Official URL**~~ **done** (PR #6). Capacitor loads `https://holdem.pokerparty.app`. Harry still rebuilds on device (`npx cap sync ios` → Xcode Play). Seat cookies on the old `kappa` host will not follow.
-2. ~~**iPhone home-screen icon tweaks**~~ **done** (this session). White **POKER PARTY** on the icon; SpringBoard label **Texas Hold’em**. Privacy uses **Close** in the native app (hard nav to `/`) because the old Home link sat under the status bar and Next.js soft-nav was a no-op in WKWebView.
-3. ~~**Phase 3 APNs**~~ **done** (2026-09-04). Swipe-away on your turn and “it became my turn” both banner on a live table. Do not create the Connect listing until Phase 4.
-4. ~~**Try Simulator first, then the phone**~~ Harry installed the icon + **Texas Hold’em** label on device (2026-09-04). Privacy Close still needs the website on production (`vercel deploy --prod` from `iphone-app`).
-5. ~~**README screenshots**~~ **done** (this session). Recaptured `docs/gameplay.png` and the three hand shots against the Poker Party felt. Docs-only; pushed `iphone-app` directly.
+**Start here (2026-09-08):** Phase 4 — store-ready shell. Do not reopen Phase 3 APNs unless a new device bug shows up.
+
+**Done through this session:**
+1. ~~Official URL~~ (PR #6). Capacitor loads `https://holdem.pokerparty.app`.
+2. ~~Icon + SpringBoard **Texas Hold’em**~~. Privacy **Close** in the native app (hard nav to `/`).
+3. ~~Phase 3 APNs~~ (PRs #9–#15). Harry happy 2026-09-08: on-turn swipe-away, become-your-turn-while-away, kill→tap without later in-app banners (wall-clock presence `seq`). Debug probes stripped.
+4. ~~README gameplay screenshots~~ against the Poker Party felt.
+
+**Phase 4 when Harry is ready:**
+- Screenshots at Apple’s required sizes (device or sim).
+- Create the App Store Connect listing; claim turn-push in 4.2 notes ([app-store-listing.md](app-store-listing.md)).
+- Signed upload. Do not submit until he says go (Phase 5).
+
+Website/server changes: `vercel deploy --prod` from `iphone-app` (no Xcode rebuild). Native/plugin/entitlements: `npx cap sync ios` → Xcode Play. `APNS_PRODUCTION` unset for Xcode Play.
 
 Do not reopen engine mutation hunting. Do not push `master` while the live site is the `iphone-app` CLI beta. **Docs-only: push `iphone-app` directly — no PR.**

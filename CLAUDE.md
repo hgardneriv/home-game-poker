@@ -4,12 +4,12 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
-## Next session pickup (2026-09-04)
+## Next session pickup (2026-09-08)
 
 **iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done**; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
 
 **Git**
-- Branch: **`iphone-app`** (pushed, includes PR #6). Do **not** merge to `master` until Harry asks.
+- Branch: **`iphone-app`**. Do **not** merge to `master` until Harry asks.
 - **`master` is still the Git production branch** (vercel[bot] on push). The **live site is `iphone-app`**, shipped with `vercel deploy --prod`. Official host: **https://holdem.pokerparty.app** (kappa alias still works). **Do not push `master`.**
 - **Docs-only changes: push straight to `iphone-app`. Do not open a PR.** Code / config / native / engine changes still get a PR.
 - Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
@@ -17,11 +17,15 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 
 **Live site:** https://holdem.pokerparty.app — Poker Party felt (signed off), play-money copy, `/privacy`, table-fit lock, last-table resume. Same Redis as before.
 
-**Done this pass:** Capacitor `server.url` is `https://holdem.pokerparty.app` (PR #6 merged). Harry still needs `npx cap sync ios` + Xcode Play on a physical iPhone. Seat cookies from the old `kappa` host will not follow.
+**Phases 0–3 done.** Phase 3 turn-push is device-proven (Harry signed off 2026-09-08). Proven on a live table:
+- Swipe away **on** your turn → banner.
+- Swipe away **before** it becomes your turn (phone + another seat / bots with a live sweep) → banner.
+- Kill → tap banner → keep playing: later turns stay quiet while the app is open (PR #15 wall-clock presence `seq`; a leftover 1-based Redis seq used to keep notifying).
+- Tap lands on `/game/{id}`. Web/Safari unchanged (no permission prompt).
 
-**Next: iPhone home-screen icon tweaks.** v1 is a glossy black spade on felt with a gold double frame (`brand/home-game-icon-holdem.svg` → `brand/render-icons.sh`). Harry said v1 was “good enough for now” and will specify the tweaks in the new session — **do not invent a restyle**. After editing the SVG, run the render script (needs `rsvg-convert` + Pillow) so iOS `AppIcon`, splash, `src/app/icon.png`, and the 1024 PNG stay in lockstep. RGB, no alpha (Apple rejects transparent icons).
+**Next: Phase 4 — store-ready shell** (screenshots at Apple sizes, Connect listing, claim APNs in review notes). **Do not create the App Store Connect listing until Harry says start Phase 4.** Do not invent icon restyles.
 
-**Phase 3 APNs device-proven (2026-09-04).** Swipe-away on your turn and “it became my turn” both banner. Do not create the App Store Connect listing yet. Phase 4 (screenshots / listing) waits for Harry.
+**Website JS + server** ship with `vercel deploy --prod` from `iphone-app`. Rebuild Xcode only when native/plugin/entitlements change. `APNS_PRODUCTION` stays **unset** for Xcode Play (sandbox tokens).
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -97,6 +101,7 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (2026-09-04). Still needed before App Store: Phase 4 screenshots + Connect listing.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). Still needed before App Store: Phase 4 screenshots + Connect listing.
+- **Turn-push (do not reinvent):** cookie identity; `POST /api/games/:id/push` `{ token }` / `{ active: true|false, seq }`. `seq` is `Date.now()` (last-write-wins). `fg:` = app in front (not SSE). SSE stays open in background so bots can act. `withGame` **awaits** `maybeSendTurnPush`. Remind on swipe-away-if-acting; turn-start send when the actor changes. Dual-env APNs key; default host sandbox.
 - `npm run ios` / `npm run ios:sync`.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
