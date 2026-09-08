@@ -75,7 +75,7 @@ poker,hold'em,texas holdem,poker party,play money,chips,friends,table,home game
 
 **Support URL:** `https://holdem.pokerparty.app/privacy`
 **Marketing URL** (optional): `https://holdem.pokerparty.app`
-**Copyright:** `2026 Harry Gardner`
+**Copyright:** `2026 Harry Gardner IV`
 
 **Category:** Games → **Card**. Do not pick Casino as primary (reviewers sometimes map poker there; Card + play-money copy is the safer pair).
 
@@ -83,25 +83,20 @@ poker,hold'em,texas holdem,poker party,play money,chips,friends,table,home game
 
 ---
 
-## Screenshots (you take these)
+## Screenshots
 
-Required: one **6.9″ iPhone** set, portrait. Accepted sizes: **1320×2868**, **1290×2796**, or **1260×2736**. Apple scales the rest. No iPad shots (binary is iPhone-only).
+Connect’s 1.0 page is asking for **iPhone 6.5″**. Ready files (1284×2778 portrait) are in `docs/app-store/`:
 
-**Best source:** iPhone 16/17 Pro Max (native 1320×2868) or Xcode Simulator → iPhone 16 Pro Max / 17 Pro Max. On a smaller phone, AirDrop the shots and we can letterbox later — Connect will reject the wrong pixel size.
-
-Capture **3–5** portraits. Every shot must look play-money (chips, no cash, no “buy”).
-
-| # | Shot | Why |
+| Upload order | File | What it is |
 |---|---|---|
-| 1 | Home (`Poker Party` + “Play money only — chips have no cash value.”) | 5.3 |
-| 2 | Live flop / table with the gold wordmark and hole cards | Gameplay |
-| 3 | Your turn — action bar (Check / Bet / Fold) | Gameplay |
-| 4 | **Invite → iOS share sheet** | 4.2 native value |
-| 5 | Optional: showdown or “Your turn” banner | Nice, not required |
+| 1 | `01-home.png` | Home + play-money line |
+| 2 | `02-table-flop.png` | Live flop, your turn, Fold / Call / Raise |
+| 3 | `03-made-hand.png` | Full house on the felt |
+| 4 | `04-invite.png` | Host lobby + **Invite** (web). Native share sheet still needs a phone shot |
 
-Power-button + volume-up to screenshot. Do not crop the status bar off if the pixel size then misses the list above.
+Drag those four onto the **iPhone 6.5″** slot. Do not add iPad or Watch. No preview video.
 
-Drop the PNGs in a reply or into `docs/app-store/` if you want them in git. Do not screenshot the privacy page as a store shot.
+Optional extra from the phone: Invite → iOS share sheet (4.2). If you take it, it must also be 1284×2778 or another size Connect lists.
 
 ---
 
