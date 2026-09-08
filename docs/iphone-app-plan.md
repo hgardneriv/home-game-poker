@@ -49,7 +49,7 @@ Check off in this file as work completes. Each phase has a **done when**. Stop a
 
 ### Phase 0 — Apple Developer (Harry, parallel / later)
 
-**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect and sees Add App. **Phase 4 started 2026-09-08** — create the Connect listing from [app-store-listing.md](app-store-listing.md). Team ID stays local (not in git).
+**Done (2026-09-01).** Individual membership Active; Harry can sign in to App Store Connect. **Phase 4 Connect paperwork done 2026-09-08** — [app-store-listing.md](app-store-listing.md). Team ID stays local (not in git).
 
 ### Phase 1 — Simulator smoke
 
@@ -116,14 +116,15 @@ After env is set: `vercel deploy --prod` from `iphone-app`. Rebuild the iPhone a
 
 ### Phase 4 — Store-ready shell
 
-**Started 2026-09-08.** Paste pack: [app-store-listing.md](app-store-listing.md). Harry creates the Connect record, takes 6.9″ shots, and archives for TestFlight. Do not Submit for Review until production APNs is proven on a TestFlight install.
+**Connect paperwork done 2026-09-08** (record, 6.5″ shots, 18+ age rating, privacy nutrition, free worldwide pricing, review notes, manual release). Record: [app-store-listing.md](app-store-listing.md).
 
-- Privacy policy URL (required): **live** at `https://holdem.pokerparty.app/privacy`.
-- Listing / age rating / privacy nutrition / 4.2 notes: [app-store-listing.md](app-store-listing.md).
+Still open: Harry’s remaining product change, then TestFlight + `APNS_PRODUCTION=1`. Do not Submit for Review until that production push is proven. Xcode Play stays sandbox.
+
+- Privacy policy URL: **live** at `https://holdem.pokerparty.app/privacy` and saved in Connect.
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
 - ~~Capacitor default App Icon~~ **done**. **iPhone only** (`TARGETED_DEVICE_FAMILY = 1`).
-- Screenshots at 6.9″ — **Harry** (shot list in the listing doc).
-- TestFlight + `APNS_PRODUCTION=1` — **Harry**. Xcode Play stays sandbox.
+- ~~Screenshots~~ **done** (`docs/app-store/`, iPhone 6.5″).
+- TestFlight + `APNS_PRODUCTION=1` — **next session**.
 
 **Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Capacitor already points at production.
 
@@ -167,7 +168,7 @@ Calendar: **~1.5–3 weeks** if enrollment and a phone are ready and sessions st
 
 Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**, not Stryker.
 
-**Still not submittable:** Phase 3 turn-push is device-proven; Phase 4 screenshots + Connect listing are not started. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
+**Still not submittable:** Phase 4 Connect paperwork is in; TestFlight production APNs is not. Capacitor points at production. Play-money copy **is** on the live alias (CLI prod from this branch).
 
 **Coverage** (`npm test` 358 passed after extract; `npm run coverage` at quality-pass start): statements **96.87** / branches **90.79** / functions **97.90** / lines **98.03** (floors 93 / 82 / 90 / 94).
 
@@ -186,23 +187,23 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 
 **Friend beta:** production alias is this branch (`vercel deploy --prod`). Git production branch remains `master` — do not push it during the beta.
 
-**Harry-parallel blockers:** Phases 0–3 **done**. Phase 4 **started** — Connect listing + 6.9″ screenshots + TestFlight. Harry owns those clicks.
+**Harry-parallel blockers:** Phases 0–3 **done**. Phase 4 Connect listing is filled. Remaining: one product change, then TestFlight. Harry owns those clicks.
 
 ---
 
 ## Next session
 
-**Start here (2026-09-08):** Phase 4 — Harry creates the Connect app and takes 6.9″ screenshots ([app-store-listing.md](app-store-listing.md)). Do not reopen Phase 3 APNs unless a new device bug shows up. Do not Submit for Review until TestFlight production push works.
+**Start here (next session):** Harry’s remaining product change, then Phase 4 TestFlight. Do not reopen Phase 3 APNs unless a new device bug shows up. Do not Submit for Review until TestFlight production push works. Connect listing field values: [app-store-listing.md](app-store-listing.md).
 
 **Done through this session:**
 1. ~~Official URL~~ (PR #6). Capacitor loads `https://holdem.pokerparty.app`.
 2. ~~Icon + SpringBoard **Texas Hold’em**~~. Privacy **Close** in the native app (hard nav to `/`).
 3. ~~Phase 3 APNs~~ (PRs #9–#15). Harry happy 2026-09-08: on-turn swipe-away, become-your-turn-while-away, kill→tap without later in-app banners (wall-clock presence `seq`). Debug probes stripped.
 4. ~~README gameplay screenshots~~ against the Poker Party felt.
+5. ~~Phase 4 Connect paperwork~~ (2026-09-08). App record, 6.5″ shots, 18+ age rating, privacy nutrition, free worldwide, review notes, manual release.
 
-**Phase 4 in progress:**
-- Screenshots: iPhone **6.9″** set (Harry, phone or 16/17 Pro Max sim).
-- Create the App Store Connect listing from [app-store-listing.md](app-store-listing.md).
+**Phase 4 remaining:**
+- Harry’s remaining product change (new session).
 - TestFlight archive with `APNS_PRODUCTION=1`. Do not Submit for Review until that push proof lands (Phase 5).
 
 Website/server changes: `vercel deploy --prod` from `iphone-app` (no Xcode rebuild). Native/plugin/entitlements: `npx cap sync ios` → Xcode Play. `APNS_PRODUCTION` unset for Xcode Play.

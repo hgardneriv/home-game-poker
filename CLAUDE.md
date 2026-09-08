@@ -23,7 +23,7 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 - Kill → tap banner → keep playing: later turns stay quiet while the app is open (PR #15 wall-clock presence `seq`; a leftover 1-based Redis seq used to keep notifying).
 - Tap lands on `/game/{id}`. Web/Safari unchanged (no permission prompt).
 
-**Phase 4 started (2026-09-08).** Harry creates the Connect listing and 6.9″ screenshots from [docs/app-store-listing.md](docs/app-store-listing.md). Do not Submit for Review until a TestFlight build proves production APNs (`APNS_PRODUCTION=1`). Do not invent icon restyles. No iPad target.
+**Phase 4 Connect paperwork done (2026-09-08).** Listing, 6.5″ shots, 18+ age rating, privacy, free pricing, review notes are in Connect ([docs/app-store-listing.md](docs/app-store-listing.md)). Next session: Harry’s remaining product change, then TestFlight with `APNS_PRODUCTION=1`. Do not Submit for Review until that production push is proven. Do not invent icon restyles. No iPad target.
 
 **Website JS + server** ship with `vercel deploy --prod` from `iphone-app`. Rebuild Xcode only when native/plugin/entitlements change. `APNS_PRODUCTION` stays **unset** for Xcode Play (sandbox tokens).
 
@@ -101,7 +101,7 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). v1 is **iPhone-only**. Phase 4 **started** — listing paste pack in `docs/app-store-listing.md`; Harry takes 6.9″ shots + TestFlight.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). v1 is **iPhone-only**. Phase 4 Connect paperwork **done** (2026-09-08) — `docs/app-store-listing.md`. Next: remaining product change, then TestFlight.
 - **Turn-push (do not reinvent):** cookie identity; `POST /api/games/:id/push` `{ token }` / `{ active: true|false, seq }`. `seq` is `Date.now()` (last-write-wins). `fg:` = app in front (not SSE). SSE stays open in background so bots can act. `withGame` **awaits** `maybeSendTurnPush`. Remind on swipe-away-if-acting; turn-start send when the actor changes. Dual-env APNs key; default host sandbox.
 - `npm run ios` / `npm run ios:sync`.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
