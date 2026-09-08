@@ -122,7 +122,7 @@ Upload and screenshots wait for Phase 4. Draft artifacts started **2026-08-31**.
 - Listing / 5.3 / 4.2 review-notes draft: [app-store-listing.md](app-store-listing.md). Phase 3 is proven — claim APNs when Harry starts Connect.
 - `ITSAppUsesNonExemptEncryption` = false in `ios/App/App/Info.plist`.
 - **Replace before submit:** ~~Capacitor default App Icon~~ **done** (black spade + white Poker Party wordmark on felt + gold frame in `brand/`; iOS `AppIcon` + splash + `src/app/icon.png`; SpringBoard name **Texas Hold’em**). Dealer’s Choice chip sibling is the same chrome, not shipped here. Screenshots at Apple’s required sizes — not started.
-- Screenshots from a device or sim at required sizes — not started.
+- Screenshots from a device or sim at required sizes — not started. **iPhone only** (Harry, 2026-09-08): `TARGETED_DEVICE_FAMILY = 1`. Take the **6.9″** iPhone set; do not upload iPad shots.
 - 4.2 in review notes: share + haptic + APNs turn-push (device-proven).
 
 **Done when:** a signed build is uploaded to App Store Connect and Harry is ready to submit. Submission waits for his go-ahead. Capacitor already points at production.
@@ -138,6 +138,7 @@ Harry submits. Possible extra questions because it looks like poker. If rejected
 ## Out of scope (v1)
 
 - Dealer’s choice iOS app
+- iPad / universal binary (v1 is iPhone-only; no device to test)
 - Public lobby / matchmaking
 - Android
 - Offline play
@@ -200,7 +201,7 @@ Not a substitute for App Store review. Apple scores Guideline **4.2** / **5.3**,
 4. ~~README gameplay screenshots~~ against the Poker Party felt.
 
 **Phase 4 when Harry is ready:**
-- Screenshots at Apple’s required sizes (device or sim).
+- Screenshots: iPhone **6.9″** set only (device or sim). Binary is iPhone-only.
 - Create the App Store Connect listing; claim turn-push in 4.2 notes ([app-store-listing.md](app-store-listing.md)).
 - Signed upload. Do not submit until he says go (Phase 5).
 

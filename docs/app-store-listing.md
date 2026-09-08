@@ -13,6 +13,7 @@ Privacy policy URL (required): `https://holdem.pokerparty.app/privacy`
 - **Subtitle:** Play-money Hold'em with friends
 - **Bundle id:** `app.pokerparty.holdem` (Dealer’s Choice sibling: `app.pokerparty.dealerschoice`)
 - **Host:** `https://holdem.pokerparty.app` (live 2026-09-04). iPhone name is brand-first; the subdomain is game-first.
+- **Devices:** **iPhone only** for v1 (`TARGETED_DEVICE_FAMILY = 1`). No iPad listing, no 13″ iPad screenshots. Revisit iPad when there is a device to test.
 
 ## Description
 
@@ -64,6 +65,6 @@ banner. There is no login. Test account: none required.
 
 ## Assets still needed before submit
 
-- Device or simulator screenshots at Apple's required sizes.
+- **iPhone 6.9″ screenshots** (required set): 1320×2868, 1290×2796, or 1260×2736 portrait. Apple scales the smaller iPhone sizes from this set. iPad screenshots are not required because the binary is iPhone-only.
 - `ITSAppUsesNonExemptEncryption` is already `false` in Info.plist (HTTPS + HMAC cookie only).
 - App icon / splash: black spade + white Poker Party wordmark on felt with gold frame (`brand/home-game-icon-holdem.svg`). SpringBoard label is **Texas Hold'em**. Same chrome + a chip is the Dealer's Choice sibling (source in `brand/`, not this app).
