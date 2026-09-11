@@ -775,6 +775,35 @@ describe('hosted rematch', () => {
     expect(remainingBots.every((p) => p.status === 'seated')).toBe(true);
   });
 
+  it('Play Again after humansOut on an invited Play Now table reseats the guest', () => {
+    const t = new Table(1, { config: { topUps: 0 }, hosted: false });
+    t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h2' });
+    t.apply({ type: 'addBot', byId: 'p0' });
+    const botId = t.state.seats[2]!;
+    t.start();
+    t.rig(
+      { p0: ['2c', '7d'], h2: ['3c', '8d'], [botId]: ['As', 'Ah'] },
+      ['4h', '9s', 'Jd', 'Qc', '6h']
+    );
+    t.act('p0', 'raise', 20);
+    t.act('h2', 'call');
+    t.act(botId, 'call');
+    expect(t.state.phase).toBe('ended');
+    expect(t.state.endedReason).toBe('humansOut');
+    expect(t.state.players['p0'].status).toBe('busted');
+    expect(t.state.players['h2'].status).toBe('busted');
+
+    t.apply({ type: 'playAgain', playerId: 'p0' });
+    expect(t.state.phase).toBe('lobby');
+    expect(t.state.hosted).toBe(true);
+    expect(t.state.players['h2'].status).toBe('seated');
+    expect(t.seatOf('h2')).not.toBeNull();
+    expect(t.stack('h2')).toBe(20);
+    expect(t.stack('p0')).toBe(20);
+    expect(t.state.players[botId].status).toBe('seated');
+  });
+
   it('Play Again still rematches a pre-fix Play Now table that already seated a guest', () => {
     const t = playNowFullOfBots();
     t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
