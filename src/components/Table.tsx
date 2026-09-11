@@ -163,8 +163,8 @@ const FELT_SUITS: { suit: 's' | 'h' | 'd' | 'c'; red: boolean }[] = [
   { suit: 'c', red: false },
 ];
 
-/** Glossy suit — SVG gradients only, no CSS filter. Kept small so Callin
- *  Carl / the top seat keep a clear lane of felt above the wordmark. */
+/** Glossy suit — SVG gradients only, no CSS filter. Sized with the
+ *  wordmark; leave a lane of felt under Callin Carl / the top seat. */
 function FeltSuit({
   suit,
   red,
@@ -176,7 +176,7 @@ function FeltSuit({
 }) {
   const fill = `${gid}-fill`;
   return (
-    <span className="relative inline-flex h-5 w-5 items-center justify-center sm:h-7 sm:w-7">
+    <span className="relative inline-flex h-6 w-6 items-center justify-center sm:h-8 sm:w-8">
       <span
         className="absolute inset-[-30%] rounded-full"
         style={{
@@ -230,7 +230,7 @@ function FeltLogo() {
   return (
     <div className="pointer-events-none relative select-none text-center">
       <div
-        className="absolute left-1/2 top-[62%] h-36 w-[24rem] max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
+        className="absolute left-1/2 top-[62%] h-44 w-[28rem] max-w-[80vw] -translate-x-1/2 -translate-y-1/2"
         style={{
           background:
             'radial-gradient(closest-side, rgba(255,214,110,0.26) 0%, rgba(216,180,92,0) 100%)',
@@ -242,20 +242,20 @@ function FeltLogo() {
         ))}
       </div>
       <div
-        className="relative mt-0.5 whitespace-nowrap bg-gradient-to-b from-[#fff6d0] via-[#e4c05c] to-[#9a7020] bg-clip-text text-[1.3rem] font-bold tracking-[0.14em] text-transparent sm:text-[1.85rem] sm:tracking-[0.18em]"
+        className="relative mt-0.5 whitespace-nowrap bg-gradient-to-b from-[#fff6d0] via-[#e4c05c] to-[#9a7020] bg-clip-text text-[1.55rem] font-bold tracking-[0.14em] text-transparent sm:text-[2.2rem] sm:tracking-[0.18em]"
         style={word}
       >
         POKER PARTY
       </div>
       <div className="relative mt-0.5 flex items-center justify-center gap-2 whitespace-nowrap">
-        <span className="h-px w-8 bg-gradient-to-r from-transparent to-amber-200/55 sm:w-14" />
+        <span className="h-px w-10 bg-gradient-to-r from-transparent to-amber-200/55 sm:w-16" />
         <span
-          className="text-[9px] tracking-[0.38em] text-amber-100/70 sm:text-[11px] sm:tracking-[0.42em]"
+          className="text-[11px] tracking-[0.38em] text-amber-100/70 sm:text-[13px] sm:tracking-[0.42em]"
           style={{ paddingLeft: '0.38em' }}
         >
           TEXAS HOLD&apos;EM
         </span>
-        <span className="h-px w-8 bg-gradient-to-l from-transparent to-amber-200/55 sm:w-14" />
+        <span className="h-px w-10 bg-gradient-to-l from-transparent to-amber-200/55 sm:w-16" />
       </div>
     </div>
   );
@@ -332,16 +332,16 @@ export function Table({ game }: { game: GameApi }) {
         style={{ borderRadius: 'inherit' }}
       />
 
-      {/* Board + pot. Wordmark hangs just above the slots (out of flow) so
-          logo→cards stays tight while cards→pot keeps a real gap — same
-          stack on phone, narrow, and full-screen. Winner copy overlays the
-          mark (does not move it): one line covers TEXAS HOLD'EM, extra
-          winners grow up over POKER PARTY. */}
+      {/* Board + pot. Wordmark hangs above the slots (out of flow) toward
+          the top seat; cards→pot keeps a real gap — same stack on phone,
+          narrow, and full-screen. Winner copy overlays the mark (does not
+          move it): one line covers TEXAS HOLD'EM, extra winners grow up
+          over POKER PARTY. */}
       <div
         className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
         style={{ left: `${center.x}%`, top: `${center.y}%` }}
       >
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-0 mb-1 w-max -translate-x-1/2">
+        <div className="pointer-events-none absolute bottom-full left-1/2 z-0 mb-8 w-max -translate-x-1/2 sm:mb-10">
           <FeltLogo />
         </div>
         <AnimatePresence>
@@ -352,7 +352,7 @@ export function Table({ game }: { game: GameApi }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.35 }}
-              className="absolute bottom-full left-1/2 z-30 mb-1 flex w-max max-w-[min(86vw,28rem)] -translate-x-1/2 flex-col items-center"
+              className="absolute bottom-full left-1/2 z-30 mb-8 flex w-max max-w-[min(86vw,28rem)] -translate-x-1/2 flex-col items-center sm:mb-10"
             >
               <div className="flex flex-col items-center rounded-xl border border-amber-400/40 bg-black/80 px-4 py-2 text-center shadow-xl">
                 {winnerLines.map((line) => (
@@ -383,11 +383,11 @@ export function Table({ game }: { game: GameApi }) {
               {[0, 1, 2, 3, 4].map((i) => {
                 const card = hand?.board[i];
                 return card ? (
-                  <PlayingCard key={card} card={card} size="md" dealt />
+                  <PlayingCard key={card} card={card} size="board" dealt />
                 ) : (
                   <div
                     key={`slot${i}`}
-                    className="w-12 aspect-[20/29] rounded-[4px] border border-amber-400/40 bg-[#0c2318]/90 sm:w-14"
+                    className="w-[3.375rem] aspect-[20/29] rounded-[4px] border border-amber-400/40 bg-[#0c2318]/90 sm:w-16"
                     style={{
                       boxShadow:
                         'inset 0 0 0 1px rgba(0,0,0,0.6), inset 0 0 0 3px rgba(216,180,92,0.22)',
