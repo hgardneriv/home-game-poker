@@ -1,12 +1,13 @@
-import type {
-  Action,
-  EngineCtx,
-  EngineResult,
-  GameEvent,
-  GameState,
-  HandState,
-  Player,
-  TableConfig,
+import {
+  isRematchTable,
+  type Action,
+  type EngineCtx,
+  type EngineResult,
+  type GameEvent,
+  type GameState,
+  type HandState,
+  type Player,
+  type TableConfig,
 } from './types';
 import { newDeck, shuffle } from './deck';
 import { computePositions, eligiblePlayers, isEligible } from './seating';
@@ -234,6 +235,9 @@ function applyApproveSeat(m: Mutable, action: Extract<Action, { type: 'approveSe
   const player = state.players[action.playerId];
   player.seat = seat;
   state.seats[seat] = player.id;
+  // Play Now is disposable until a friend sits. Approving them turns
+  // the table into a hosted night so Play Again keeps the humans.
+  state.hosted = true;
   emit(m, 'player-seated', { playerId: player.id, name: player.name, seat });
   return succeed(m);
 }
@@ -484,12 +488,16 @@ function applyPlayAgain(m: Mutable, action: Extract<Action, { type: 'playAgain' 
   if (!player) return fail('unknown-player', 'No such player');
   if (player.isBot || player.status === 'kicked' || player.status === 'left')
     return fail('illegal-move', 'Only players at the table can rematch');
-  if (state.hosted === false) return fail('bad-phase', 'Quick play starts a new table');
+  if (!isRematchTable(state)) return fail('bad-phase', 'Quick play starts a new table');
   if (state.phase === 'lobby') return succeed(m);
   if (state.phase !== 'ended') return fail('bad-phase', 'Game is still going');
 
   // Same table, same setup: blinds, top-ups, stacks, timers stay as the
-  // host configured them. Seated bots stay; only chips and phase reset.
+  // host configured them. Who sits: every player who is not kicked or
+  // left — host, approved humans (including busted), and remaining bots.
+  // Evicted / kicked seats stay empty. Play Now that seated a guest is
+  // persisted as hosted so the next night uses this same rematch path.
+  state.hosted = true;
   const buyIn = state.config.startingStack;
   for (const p of Object.values(state.players)) {
     if (p.status === 'kicked' || p.status === 'left') continue;

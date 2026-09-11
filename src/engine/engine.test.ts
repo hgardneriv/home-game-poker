@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Table, expectError, legalFor } from './test-utils';
-import { reviewingLastHand } from './types';
+import { isRematchTable, reviewingLastHand } from './types';
 
 // Default layout with zeroRand: button seat 0 (p0), SB seat 1 (p1), BB seat 2 (p2).
 // Preflop order (3-handed): p0 (button/UTG), p1 (SB), p2 (BB).
@@ -668,11 +668,12 @@ describe('hosted rematch', () => {
     t.apply({ type: 'playAgain', playerId: 'p1' });
     expect(t.state.phase).toBe('lobby');
 
-    const quick = new Table(2, { config: { topUps: 0 } });
-    quick.state.hosted = false;
+    const quick = new Table(1, { config: { topUps: 0 }, hosted: false });
+    quick.apply({ type: 'addBot', byId: 'p0' });
     quick.start();
     quick.apply({ type: 'endGame', byId: 'p0' });
     expectError(quick.tryApply({ type: 'playAgain', playerId: 'p0' }), 'bad-phase');
+    expect(isRematchTable(quick.state)).toBe(false);
   });
 
   it('keeps the hosted setup: top-ups, bots, and blinds', () => {
@@ -725,7 +726,78 @@ describe('hosted rematch', () => {
     t.apply({ type: 'leave', playerId: 'p1' });
     expectError(t.tryApply({ type: 'playAgain', playerId: 'p1' }), 'illegal-move');
   });
+
+  it('Play Now becomes a rematch table only after an invited human is approved', () => {
+    const t = playNowFullOfBots();
+    expect(t.state.hosted).toBe(false);
+    expect(isRematchTable(t.state)).toBe(false);
+
+    t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
+    expect(t.state.hosted).toBe(false);
+    expect(isRematchTable(t.state)).toBe(false);
+    expect(t.state.players['h2'].seat).toBeNull();
+
+    const evicted = t.state.seats[5]!;
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h2' });
+    expect(t.state.hosted).toBe(true);
+    expect(isRematchTable(t.state)).toBe(true);
+    expect(t.seatOf('h2')).toBeTypeOf('number');
+    expect(t.state.players[evicted].status).toBe('left');
+  });
+
+  it('Play Again after Play Now + invite keeps approved humans and skips kicked / evicted', () => {
+    const t = playNowFullOfBots();
+    const evicted = t.state.seats[5]!;
+    t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h2' });
+    t.apply({ type: 'requestSeat', playerId: 'h3', name: 'Later', seat: 2 });
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h3' });
+    t.apply({ type: 'kick', byId: 'p0', playerId: 'h3' });
+
+    t.start();
+    t.apply({ type: 'endGame', byId: 'p0' });
+    t.apply({ type: 'playAgain', playerId: 'p0' });
+
+    expect(t.state.phase).toBe('lobby');
+    expect(t.state.hosted).toBe(true);
+    expect(t.state.players['h2'].status).toBe('seated');
+    expect(t.seatOf('h2')).not.toBeNull();
+    expect(t.stack('h2')).toBe(t.state.config.startingStack);
+    expect(t.state.seats).toContain('h2');
+    expect(t.state.players['h3'].status).toBe('kicked');
+    expect(t.state.seats).not.toContain('h3');
+    expect(t.state.players[evicted].status).toBe('left');
+    expect(t.state.seats).not.toContain(evicted);
+    const remainingBots = Object.values(t.state.players).filter(
+      (p) => p.isBot && p.status !== 'left' && p.status !== 'kicked'
+    );
+    expect(remainingBots.length).toBeGreaterThan(0);
+    expect(remainingBots.every((p) => p.status === 'seated')).toBe(true);
+  });
+
+  it('Play Again still rematches a pre-fix Play Now table that already seated a guest', () => {
+    const t = playNowFullOfBots();
+    t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h2' });
+    t.state.hosted = false;
+    expect(isRematchTable(t.state)).toBe(true);
+
+    t.start();
+    t.apply({ type: 'endGame', byId: 'p0' });
+    t.apply({ type: 'playAgain', playerId: 'h2' });
+    expect(t.state.phase).toBe('lobby');
+    expect(t.state.hosted).toBe(true);
+    expect(t.seatOf('h2')).not.toBeNull();
+    expect(t.state.players['h2'].status).toBe('seated');
+  });
 });
+
+/** Play Now: host + 5 bots, hosted flag off, still in lobby so tests can invite. */
+function playNowFullOfBots(): Table {
+  const t = new Table(1, { config: { topUps: 0 }, hosted: false });
+  for (let i = 0; i < 5; i++) t.apply({ type: 'addBot', byId: 'p0' });
+  return t;
+}
 
 describe('bots', () => {
   it('host can add bots up to a full table; approving a human evicts the newest bot', () => {

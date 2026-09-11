@@ -179,6 +179,21 @@ describe('players, lobby state, and top-level fields', () => {
     expect(Math.abs(view.now - Date.now())).toBeLessThan(2_000);
   });
 
+  it('Play Now reports hosted only after an invited human is seated', () => {
+    const t = new Table(1, { hosted: false });
+    t.apply({ type: 'addBot', byId: 'p0' });
+    expect(redactForPlayer(t.state, 'p0').hosted).toBe(false);
+
+    t.apply({ type: 'requestSeat', playerId: 'h2', name: 'Guest', seat: 1 });
+    expect(redactForPlayer(t.state, 'p0').hosted).toBe(false);
+
+    t.apply({ type: 'approveSeat', byId: 'p0', playerId: 'h2' });
+    expect(redactForPlayer(t.state, 'p0').hosted).toBe(true);
+
+    t.state.hosted = false;
+    expect(redactForPlayer(t.state, 'p0').hosted).toBe(true);
+  });
+
   it('copies every public player field', () => {
     const t = new Table(2);
     const p = redactForPlayer(t.state, 'p1').players;

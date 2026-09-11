@@ -16,6 +16,22 @@ export function reviewingLastHand(state: {
   return state.phase === 'ended' && !state.resultsShown && state.hand?.result != null;
 }
 
+/**
+ * Play Again rematches this same table when it started as an invite-link
+ * night, or when Play Now later seated an invited human. A pending request
+ * is not enough; kicked / left guests do not count.
+ */
+export function isRematchTable(state: {
+  hosted?: boolean;
+  hostId: string;
+  players: Record<string, { isBot: boolean; seat: number | null }>;
+}): boolean {
+  if (state.hosted !== false) return true;
+  return Object.entries(state.players).some(
+    ([id, p]) => !p.isBot && p.seat !== null && id !== state.hostId
+  );
+}
+
 export type PlayerStatus = 'seated' | 'away' | 'busted' | 'kicked' | 'left';
 
 export interface TableConfig {
@@ -153,8 +169,9 @@ export interface GameState {
   config: TableConfig;
   hostId: string;
   /**
-   * Invite-link night (not quick play). When the game ends, Play again
-   * rematches this same table so friends don't need a new SMS.
+   * Invite-link night, or Play Now after an invited human was approved.
+   * When the game ends, Play again rematches this same table so friends
+   * don't need a new SMS. Solo Play Now stays false (starts a new table).
    */
   hosted: boolean;
   players: Record<string, Player>;

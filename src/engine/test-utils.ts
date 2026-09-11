@@ -50,6 +50,8 @@ export class Table {
       stacks?: number[];
       seats?: number[];
       rand?: (n: number) => number;
+      /** Invite-link night. Default true; Play Now tests pass false. */
+      hosted?: boolean;
     } = {}
   ) {
     this.randInt = opts.rand ?? zeroRand;
@@ -59,6 +61,7 @@ export class Table {
       hostName: 'P0',
       config: opts.config,
       now: this.now,
+      hosted: opts.hosted,
     });
     for (let i = 1; i < numPlayers; i++) {
       const seat = opts.seats?.[i] ?? i;
