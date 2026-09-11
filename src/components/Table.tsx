@@ -242,7 +242,7 @@ function FeltLogo() {
         ))}
       </div>
       <div
-        className="relative mt-0.5 whitespace-nowrap bg-gradient-to-b from-[#fff6d0] via-[#e4c05c] to-[#9a7020] bg-clip-text text-[1.55rem] font-bold tracking-[0.14em] text-transparent sm:text-[2.2rem] sm:tracking-[0.18em]"
+        className="relative mt-0.5 whitespace-nowrap text-[1.55rem] font-bold tracking-[0.14em] text-[#e4c05c] sm:text-[2.2rem] sm:tracking-[0.18em]"
         style={word}
       >
         POKER PARTY
@@ -341,7 +341,7 @@ export function Table({ game }: { game: GameApi }) {
         className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2"
         style={{ left: `${center.x}%`, top: `${center.y}%` }}
       >
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-0 mb-8 w-max -translate-x-1/2 sm:mb-10">
+        <div className="pointer-events-none absolute bottom-full left-1/2 z-0 mb-[18px] w-max -translate-x-1/2 sm:mb-[22px]">
           <FeltLogo />
         </div>
         <AnimatePresence>
@@ -352,7 +352,7 @@ export function Table({ game }: { game: GameApi }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.35 }}
-              className="absolute bottom-full left-1/2 z-30 mb-8 flex w-max max-w-[min(86vw,28rem)] -translate-x-1/2 flex-col items-center sm:mb-10"
+              className="absolute bottom-full left-1/2 z-30 mb-[18px] flex w-max max-w-[min(86vw,28rem)] -translate-x-1/2 flex-col items-center sm:mb-[22px]"
             >
               <div className="flex flex-col items-center rounded-xl border border-amber-400/40 bg-black/80 px-4 py-2 text-center shadow-xl">
                 {winnerLines.map((line) => (
