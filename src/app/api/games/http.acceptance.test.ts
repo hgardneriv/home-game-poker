@@ -491,6 +491,52 @@ describe('POST /api/games/:id/action', () => {
     const lobby = (await readJson(again)).state as { phase: string };
     expect(lobby.phase).toBe('lobby');
   });
+
+  it('Play Now + approve converts to hosted; playAgain keeps the invited human', async () => {
+    const { cookie, gameId } = await create({ name: 'Host', quickPlay: true });
+    const { state: created } = await stateOf(gameId!, cookie);
+    expect(created!.hosted).toBe(false);
+
+    const joinRes = await joinGame(
+      jsonReq(`http://localhost/api/games/${gameId}/join`, { name: 'Pat', seat: 1 }),
+      ctx(gameId!)
+    );
+    const guestId = ((await readJson(joinRes)).state as { yourId: string }).yourId;
+
+    const approved = await seatOp(
+      jsonReq(`http://localhost/api/games/${gameId}/seats`, { op: 'approve', playerId: guestId }, cookie),
+      ctx(gameId!)
+    );
+    expect(approved.status).toBe(200);
+    const seated = (await readJson(approved)).state as {
+      hosted: boolean;
+      players: Record<string, { seat: number | null }>;
+    };
+    expect(seated.hosted).toBe(true);
+    expect(seated.players[guestId].seat).toBeTypeOf('number');
+
+    const end = await hostOp(
+      jsonReq(`http://localhost/api/games/${gameId}/host`, { op: 'endGame' }, cookie),
+      ctx(gameId!)
+    );
+    expect(end.status).toBe(200);
+
+    const again = await playerAction(
+      jsonReq(`http://localhost/api/games/${gameId}/action`, { move: 'playAgain' }, cookie),
+      ctx(gameId!)
+    );
+    expect(again.status).toBe(200);
+    const lobby = (await readJson(again)).state as {
+      phase: string;
+      hosted: boolean;
+      players: Record<string, { status: string; seat: number | null }>;
+      seats: (string | null)[];
+    };
+    expect(lobby.phase).toBe('lobby');
+    expect(lobby.hosted).toBe(true);
+    expect(lobby.players[guestId].status).toBe('seated');
+    expect(lobby.seats).toContain(guestId);
+  });
 });
 
 describe('GET /api/games/:id/stream', () => {

@@ -1,15 +1,16 @@
-import type {
-  Card,
-  GameEvent,
-  GamePhase,
-  HandResult,
-  LegalActions,
-  Player,
-  SeatRequest,
-  Street,
-  TableConfig,
+import {
+  isRematchTable,
+  type Card,
+  type GameEvent,
+  type GamePhase,
+  type GameState,
+  type HandResult,
+  type LegalActions,
+  type Player,
+  type SeatRequest,
+  type Street,
+  type TableConfig,
 } from '@/engine/types';
-import type { GameState } from '@/engine/types';
 import { getLegalActions } from '@/engine/betting';
 
 /**
@@ -23,7 +24,7 @@ export interface ClientGameState {
   phase: GamePhase;
   config: TableConfig;
   hostId: string;
-  /** Invite-link night. Play again rematches this table. */
+  /** Invite-link night, or Play Now after an invited human sat. Play again rematches this table. */
   hosted: boolean;
   yourId: string | null;
   players: Record<string, ClientPlayer>;
@@ -128,7 +129,7 @@ export function redactForPlayer(state: GameState, playerId: string | null): Clie
     phase: state.phase,
     config: state.config,
     hostId: state.hostId,
-    hosted: state.hosted !== false,
+    hosted: isRematchTable(state),
     yourId: playerId,
     players,
     seats: [...state.seats],
