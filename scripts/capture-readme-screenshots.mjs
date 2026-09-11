@@ -52,7 +52,7 @@ async function createAndRig(page, setup) {
   if (!created.gameId) throw new Error(`create failed: ${JSON.stringify(created)}`);
 
   await page.goto(`${BASE}/game/${created.gameId}`, { waitUntil: 'networkidle' });
-  await page.getByText('Home Game', { exact: false }).first().waitFor({ timeout: 15_000 });
+  await page.getByText('Poker Party', { exact: false }).first().waitFor({ timeout: 15_000 });
 
   const rigged = await page.evaluate(async ({ gameId, setup }) => {
     const res = await fetch(`/api/games/${gameId}/rig`, {
@@ -79,6 +79,23 @@ async function main() {
       'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
   });
   const page = await context.newPage();
+  // Next.js 16 paints a floating "N" badge over the action bar in `next dev`.
+  await page.addInitScript(() => {
+    const hide = () => {
+      document.querySelectorAll('nextjs-portal, [data-next-badge-root]').forEach((el) => {
+        el.setAttribute('hidden', '');
+      });
+    };
+    const start = () => {
+      hide();
+      new MutationObserver(hide).observe(document.documentElement, { childList: true, subtree: true });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', start);
+    } else {
+      start();
+    }
+  });
 
   for (const shot of SETUPS) {
     await createAndRig(page, shot.setup);

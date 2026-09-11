@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Cinzel, Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { NativePushRoot } from "@/components/NativePushRoot";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +14,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
 export const metadata: Metadata = {
-  title: "Home Game Poker",
+  title: "Poker Party",
   description: "Texas Hold'em with friends — share a link, take a seat.",
+};
+
+/** Capacitor WKWebView (and iOS Safari) paint under the status bar / home
+ *  indicator. Without `cover`, `env(safe-area-inset-*)` stays 0. */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -26,10 +42,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
+        <NativePushRoot />
         <Analytics />
       </body>
     </html>

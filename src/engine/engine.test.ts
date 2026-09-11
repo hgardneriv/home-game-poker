@@ -225,7 +225,7 @@ describe('side pots and refunds', () => {
     expect(t.stack('p0')).toBe(8); // refund only
   });
 
-  it('a folded contributor’s chips stay in the pot but they cannot win', () => {
+  it('a folded contributor?s chips stay in the pot but they cannot win', () => {
     const t = new Table(3, { stacks: [50, 50, 50] });
     t.start();
     t.rig(
@@ -450,7 +450,7 @@ describe('mid-orbit joiner', () => {
   });
 
   it('a joiner between the button and the due SB waits out the blind arc', () => {
-    // Players at seats 0, 1, 3 — seat 2 is an empty gap.
+    // Players at seats 0, 1, 3 ? seat 2 is an empty gap.
     const t = new Table(3, { seats: [0, 1, 3] });
     t.start(); // hand 1: button 0, sb 1, bb 3
     expect(t.hand.bbSeat).toBe(3);
@@ -461,7 +461,7 @@ describe('mid-orbit joiner', () => {
     t.foldAround();
 
     // Hand 2: button 1, SB due at 3, BB seat 0. Seat 2 sits in [button, bb):
-    // dealing p9 in would hand them the button before any blind — they wait.
+    // dealing p9 in would hand them the button before any blind ? they wait.
     t.nextHand();
     expect(t.hand.buttonSeat).toBe(1);
     expect(t.hand.sbSeat).toBe(3);
@@ -469,7 +469,7 @@ describe('mid-orbit joiner', () => {
     expect(t.hand.inHand).not.toContain('p9');
 
     t.foldAround();
-    // Hand 3: button 3, SB due 0, BB 1 — seat 2 is past the arc; p9 plays.
+    // Hand 3: button 3, SB due 0, BB 1 ? seat 2 is past the arc; p9 plays.
     t.nextHand();
     expect(t.hand.inHand).toContain('p9');
   });
@@ -577,7 +577,7 @@ describe('host ends the game', () => {
     expect(t.state.phase).toBe('ended');
     expect(t.state.endedReason).toBe('host');
     expect(t.state.hand).toBeNull();
-    // Everyone got their committed chips back — full buy-ins restored.
+    // Everyone got their committed chips back ? full buy-ins restored.
     expect(t.stack('p0')).toBe(20);
     expect(t.stack('p1')).toBe(20);
     expect(t.stack('p2')).toBe(20);
@@ -708,11 +708,22 @@ describe('hosted rematch', () => {
     t.apply({ type: 'kick', byId: 'p0', playerId: 'p1' });
     t.apply({ type: 'endGame', byId: 'p0' });
     expectError(t.tryApply({ type: 'playAgain', playerId: botId }), 'illegal-move');
+    expectError(t.tryApply({ type: 'playAgain', playerId: 'p1' }), 'illegal-move');
+    expectError(t.tryApply({ type: 'playAgain', playerId: 'ghost' }), 'unknown-player');
     t.apply({ type: 'playAgain', playerId: 'p0' });
     expect(t.state.players['p1'].status).toBe('kicked');
     expect(t.state.seats[1]).toBeNull();
     expect(t.state.players[botId].status).toBe('seated');
     expect(t.stack(botId)).toBe(20);
+  });
+
+  it('refuses a left player and refuses while a hand is still going', () => {
+    const t = new Table(2, { config: { topUps: 0 } });
+    t.start();
+    expectError(t.tryApply({ type: 'playAgain', playerId: 'p0' }), 'bad-phase');
+    t.apply({ type: 'endGame', byId: 'p0' });
+    t.apply({ type: 'leave', playerId: 'p1' });
+    expectError(t.tryApply({ type: 'playAgain', playerId: 'p1' }), 'illegal-move');
   });
 });
 

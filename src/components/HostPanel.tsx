@@ -21,11 +21,11 @@ export function HostPanel({ game }: { game: GameApi }) {
   const seated = state.seats.filter(Boolean).length;
 
   return (
-    <div className="border-t border-white/10 bg-zinc-950 text-white">
+    <div className="relative z-20 shrink-0 border-t border-white/10 bg-zinc-950 text-white">
       {/* Pending seat requests always surface immediately. */}
       {requests.map((r) => (
         <div key={r.playerId} className="flex items-center gap-2 px-4 py-2">
-          <span className="flex-1 text-sm">
+          <span className="min-w-0 flex-1 truncate text-sm">
             🙋 <b>{r.name}</b> wants to join
           </span>
           <button
@@ -67,7 +67,7 @@ export function HostPanel({ game }: { game: GameApi }) {
       </div>
 
       {open && (
-        <div className="flex flex-col gap-2 px-4 pb-3 text-sm">
+        <div className="absolute bottom-full left-0 right-0 z-20 flex max-h-[40dvh] flex-col gap-2 overflow-y-auto border-t border-white/10 bg-zinc-950/95 px-4 py-3 text-sm">
           <div className="flex flex-wrap gap-2">
             {state.phase === 'paused' ? (
               <button

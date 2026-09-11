@@ -27,6 +27,7 @@
 # misc
 .DS_Store
 *.pem
+*.p8
 
 # debug
 npm-debug.log*
@@ -50,3 +51,11 @@ next-env.d.ts
 # mutation testing artifacts
 reports/
 .stryker-tmp/
+
+# Capacitor / Xcode (keep the ios project, ignore derived junk)
+ios/App/Pods
+ios/App/Podfile.lock
+ios/App/App/public
+ios/capacitor-cordova-ios-plugins
+*.xcuserstate
+xcuserdata/

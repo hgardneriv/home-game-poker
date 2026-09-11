@@ -20,6 +20,7 @@ const STREAM_LIFETIME_MS = 240_000;
  * version counter (cheap); on change — or when a timer/bot action is due —
  * it runs the full sweep pipeline and pushes the new state with the version
  * as the SSE event id, so reconnects resume seamlessly via Last-Event-ID.
+ * Does not mark the player "looking" — that is `{ active: true }` on /push.
  */
 export async function GET(
   req: Request,

@@ -13,6 +13,8 @@ import { ToastProvider, useToast } from './Toast';
 import { GameOverScreen } from './GameOverScreen';
 import type { GameApi } from '@/hooks/useGame';
 import { reviewingLastHand } from '@/engine/types';
+import { clearNativeTurnPush, nativeTurnHaptic, registerNativeTurnPush } from '@/hooks/native';
+import { clearLastGameId, writeLastGameId } from '@/hooks/lastGame';
 
 /** Announces table events (players leaving/being kicked) to everyone else. */
 function EventNotices({ game }: { game: GameApi }) {
@@ -73,6 +75,9 @@ function useTurnPing(isMyTurn: boolean) {
 
   useEffect(() => {
     const audio = sharedAudio;
+    if (isMyTurn && !wasMyTurn.current) {
+      void nativeTurnHaptic();
+    }
     if (isMyTurn && !wasMyTurn.current && audio && audio.state === 'running') {
       try {
         const osc = audio.createOscillator();
@@ -101,6 +106,45 @@ export function GameRoom({ gameId }: { gameId: string }) {
   useTurnPing(
     !!state?.yourId && state.phase === 'playing' && state.hand?.toAct === state.yourId
   );
+
+  // Remember this table so the iPhone app can reopen it after a force-quit.
+  // Identity is still the httpOnly cookie; this is only the last URL.
+  useEffect(() => {
+    if (error) {
+      clearLastGameId();
+      return;
+    }
+    if (!state) return;
+    const me = state.yourId ? state.players[state.yourId] : null;
+    if (state.phase === 'ended' && !reviewingLastHand(state)) {
+      clearLastGameId();
+      return;
+    }
+    if (me && (me.status === 'left' || me.status === 'kicked')) {
+      clearLastGameId();
+      return;
+    }
+    if (
+      me &&
+      (me.seat !== null || state.seatRequests.some((r) => r.playerId === me.id))
+    ) {
+      writeLastGameId(gameId);
+    }
+  }, [error, state, gameId]);
+
+  // Native-only: bind this seat’s APNs token to the cookie identity.
+  // Web registerNativeTurnPush is a no-op (no permission prompt in Safari).
+  const pushPlayerId = state?.yourId ?? null;
+  const pushSeat = pushPlayerId ? (state?.players[pushPlayerId]?.seat ?? null) : null;
+  const pushStatus = pushPlayerId ? state?.players[pushPlayerId]?.status : undefined;
+  useEffect(() => {
+    if (!pushPlayerId || pushSeat === null) return;
+    if (pushStatus === 'left' || pushStatus === 'kicked') {
+      void clearNativeTurnPush(gameId);
+      return;
+    }
+    void registerNativeTurnPush(gameId);
+  }, [gameId, pushPlayerId, pushSeat, pushStatus]);
 
   if (error) {
     return (
@@ -181,22 +225,26 @@ export function GameRoom({ gameId }: { gameId: string }) {
   return (
     <ToastProvider>
       <EventNotices game={game} />
-      <main className="relative flex h-dvh flex-col bg-zinc-950">
-        <header className="flex items-center justify-between gap-2 px-4 py-2 text-sm text-white">
-          <div className="flex items-baseline gap-2">
-            <span className="font-semibold">🃏 Home Game</span>
-            <span className="text-xs text-white/50">
+      <LockViewport />
+      {/* h-dvh + overflow-hidden: the felt must fit the phone. Any 1px of
+          page overflow makes iOS WKWebView expand the layout viewport and
+          the table becomes a pannable canvas. */}
+      <main className="relative flex h-dvh max-h-dvh w-full max-w-full flex-col overflow-hidden overscroll-none bg-zinc-950">
+        <header className="relative z-20 flex min-w-0 shrink-0 items-center justify-between gap-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] pr-[max(1rem,env(safe-area-inset-right,0px))] pb-2 pl-[max(1rem,env(safe-area-inset-left,0px))] text-sm text-white">
+          <div className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden">
+            <span className="shrink-0 font-semibold">🃏 Poker Party</span>
+            <span className="truncate text-xs text-white/50">
               ${state.config.smallBlind}/${state.config.bigBlind}
               {state.hand ? ` · hand #${state.hand.handNo}` : ''}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-2">
             <HistoryDrawer game={game} />
             <InviteButton gameId={gameId} />
           </div>
         </header>
 
-        <div className="relative min-h-0 flex-1">
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <Table game={game} />
         </div>
 
@@ -205,4 +253,36 @@ export function GameRoom({ gameId }: { gameId: string }) {
       </main>
     </ToastProvider>
   );
+}
+
+/** While seated at the table, the document itself must not scroll. Join /
+ *  standings screens keep normal page scroll. */
+function LockViewport() {
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      htmlHeight: html.style.height,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+      bodyHeight: body.style.height,
+      bodyOverscroll: body.style.overscrollBehavior,
+    };
+    html.style.overflow = 'hidden';
+    html.style.height = '100%';
+    html.style.overscrollBehavior = 'none';
+    body.style.overflow = 'hidden';
+    body.style.height = '100%';
+    body.style.overscrollBehavior = 'none';
+    return () => {
+      html.style.overflow = prev.htmlOverflow;
+      html.style.height = prev.htmlHeight;
+      html.style.overscrollBehavior = prev.htmlOverscroll;
+      body.style.overflow = prev.bodyOverflow;
+      body.style.height = prev.bodyHeight;
+      body.style.overscrollBehavior = prev.bodyOverscroll;
+    };
+  }, []);
+  return null;
 }

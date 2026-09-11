@@ -214,6 +214,19 @@ describe('timeout', () => {
     expectError(t.tryApply({ type: 'timeout' }), 'bad-phase');
   });
 
+  it('is rejected before the deadline, and when toAct or the deadline is missing', () => {
+    const t = new Table(3);
+    t.start();
+    expectError(t.tryApply({ type: 'timeout' }), 'not-expired');
+
+    t.hand.round.actionDeadline = null;
+    expectError(t.tryApply({ type: 'timeout' }), 'not-expired');
+
+    t.hand.round.toAct = null;
+    t.hand.round.actionDeadline = t.now + 1;
+    expectError(t.tryApply({ type: 'timeout' }), 'not-expired');
+  });
+
   it('fires exactly at the deadline: bank arms once with payload, then auto-folds', () => {
     const t = new Table(3);
     t.start();

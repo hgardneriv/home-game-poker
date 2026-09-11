@@ -1,31 +1,35 @@
 'use client';
 
 import { useState } from 'react';
+import { inviteSharePayload } from '@/hooks/invite';
+import { nativeShare } from '@/hooks/native';
 
 export function InviteButton({ gameId }: { gameId: string }) {
   const [copied, setCopied] = useState(false);
 
   const invite = async () => {
     const url = `${window.location.origin}/game/${gameId}`;
-    // Native share sheet on phones (SMS, WhatsApp, etc.); clipboard elsewhere.
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Poker night!',
-          text: 'Join my Texas Hold’em table:',
-          url,
-        });
-        return;
-      } catch {
-        // user dismissed the sheet — fall through to clipboard
-      }
-    }
+    const share = inviteSharePayload(url);
     try {
-      await navigator.clipboard.writeText(url);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (await nativeShare(share.title, share.text)) return;
+      // Browser / Safari: Web Share when present, clipboard otherwise.
+      if (navigator.share) {
+        try {
+          await navigator.share(share);
+          return;
+        } catch {
+          // user dismissed the sheet — fall through to clipboard
+        }
+      }
+      try {
+        await navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch {
+        prompt('Copy this link:', url);
+      }
     } catch {
-      prompt('Copy this link:', url);
+      // keep the tap from becoming an unhandled rejection (Next overlay)
     }
   };
 

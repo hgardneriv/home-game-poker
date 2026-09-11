@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRememberedName } from '@/hooks/useRememberedName';
+import { useLastGameId } from '@/hooks/lastGame';
 
 export function CreateGame() {
   const router = useRouter();
+  const lastGameId = useLastGameId();
   const [name, setName] = useRememberedName();
   const [mode, setMode] = useState<'quick' | 'friends'>('quick');
+  const [startingFresh, setStartingFresh] = useState(false);
   // Numeric fields stay as raw strings while editing (so the field can be
   // emptied on mobile); they're parsed with defaults on submit.
   const [stack, setStack] = useState('20');
@@ -66,6 +69,21 @@ export function CreateGame() {
 
   const field =
     'w-full rounded-lg border border-black/15 bg-transparent px-3 py-2 dark:border-white/20';
+
+  // Play now always creates a new table. After force-quit the cookie test is
+  // "return to the last table", not another create (which also burns the
+  // hourly create budget).
+  if (lastGameId && !startingFresh) {
+    return (
+      <button
+        type="button"
+        className="text-center text-sm opacity-60 underline"
+        onClick={() => setStartingFresh(true)}
+      >
+        Start a different table
+      </button>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

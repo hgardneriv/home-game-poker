@@ -1,8 +1,8 @@
-# 🃏 Home Game Poker
+# 🃏 Poker Party
 
 Texas Hold'em with friends — share a link, take a seat.
 
-**Live:** https://home-game-poker-kappa.vercel.app
+**Live:** https://holdem.pokerparty.app
 
 A polished, mobile-first multiplayer poker table with a hidden automated dealer. No accounts: the host creates a table, shares the link (native share sheet on phones), and approves who sits down. Everyone buys in with $1 coins, blinds post automatically, and a freshly CSPRNG-shuffled 52-card deck is dealt every hand. Play solo against 5 computer players with one click, or host a friends game with 0–5 bots filling the empty seats.
 
@@ -22,11 +22,11 @@ A polished, mobile-first multiplayer poker table with a hidden automated dealer.
 
 ## Screenshots
 
-Live gameplay on a phone. The wordmark sits with the board; your made hand is named on the felt above the cards; the dealer button and street bets sit beside the hole cards so a long caption never covers them.
+Live gameplay on a phone. The gold **POKER PARTY** wordmark sits with the board; your made hand is named on the felt above the cards; the dealer button and street bets sit beside the hole cards so a long caption never covers them.
 
 | Betting | Pair of Twos | Three of a Kind, Kings | Full House, Aces over Kings |
 | :---: | :---: | :---: | :---: |
-| <img src="docs/gameplay.png" alt="Hold'em flop — Pair of Twos, facing a $4 bet with chips out at two seats" width="160"> | <img src="docs/hand-label-closeup.png" alt="Hero seat — Pair of Twos labeled above 4♥ 2♣, dealer button to the right" width="160"> | <img src="docs/hand-three-kings.png" alt="Flop trips — pocket kings plus a king, $4 bet and D beside the cards, opponent called" width="160"> | <img src="docs/hand-full-house.png" alt="Flop full house — pocket aces with ace-king-king, $6 bet and D beside the cards" width="160"> |
+| <img src="docs/gameplay.png" alt="Poker Party flop — gold wordmark above Pair of Twos, facing a $4 bet" width="160"> | <img src="docs/hand-label-closeup.png" alt="Hero seat — Pair of Twos labeled above 4♥ 2♣, dealer button to the right" width="160"> | <img src="docs/hand-three-kings.png" alt="Poker Party flop trips — pocket kings plus a king, $4 bet and D beside the cards" width="160"> | <img src="docs/hand-full-house.png" alt="Poker Party flop full house — pocket aces with ace-king-king, $6 bet and D beside the cards" width="160"> |
 | Hole 4♥ 2♣, flop T♣ 2♠ K♣. Facing $4. | Same hand, close on the hero seat. | Pocket kings, flop K♣ 7♠ 4♦. $4 out. | Pocket aces, flop A♣ K♥ K♦. $6 out. |
 
 ## Stack
@@ -49,12 +49,15 @@ Required env in production: `SESSION_SECRET`, plus `KV_REST_API_URL` / `KV_REST_
 
 ## Deploy
 
-Pushing `master` deploys production via Vercel’s GitHub integration. Confirm at https://home-game-poker-kappa.vercel.app.
+**Live:** https://holdem.pokerparty.app
 
-If a Git deploy does not start, fall back to:
+The friend-beta site is the `iphone-app` branch, shipped with `vercel deploy --prod`. Git still treats `master` as production — **do not push `master`** while the beta is live, or it will overwrite holdem.pokerparty.app.
 
 ```bash
+git checkout iphone-app
 vercel deploy --prod
 ```
+
+The iPhone app is a Capacitor shell around that same host (`app.pokerparty.holdem`). Home-screen icon is the Poker Party brand; the label under the icon is **Texas Hold'em**.
 
 See `CLAUDE.md` for the architecture deep-dive and contributor notes.
