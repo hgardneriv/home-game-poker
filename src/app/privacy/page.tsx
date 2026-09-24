@@ -31,6 +31,16 @@ export default function PrivacyPage() {
           <code className="text-xs">hg:playerName</code> in localStorage) so the
           next table can prefill it. You can clear that in the browser.
         </p>
+        <p>
+          Aggregate play-money stats (hands, calls, made-hand counts, chip
+          net) persist in Redis without a table TTL so the shareable{' '}
+          <a className="underline" href="/stats">
+            /stats
+          </a>{' '}
+          page can accumulate. The player leaderboard key is the display name
+          you typed: same name, add to that row; new name, new row. No
+          accounts. Seats that never took a card are omitted.
+        </p>
         <h2 className="text-lg font-semibold">Analytics</h2>
         <p>
           The website uses Vercel Analytics for aggregated page traffic. It is

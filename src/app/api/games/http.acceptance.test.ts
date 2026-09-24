@@ -17,6 +17,9 @@ import {
   markPlayerForeground,
   setPushKVForTests,
 } from '@/server/push-store';
+import { createMemoryStatsKV, setStatsKVForTests } from '@/server/stats-store';
+import { GET as getStats } from '../stats/route';
+import { GET as getBotStats } from '../stats/bots/[slug]/route';
 
 /**
  * Black-box HTTP acceptance: call the exported route handlers with Request
@@ -85,11 +88,13 @@ async function stateOf(gameId: string, cookie?: string | null) {
 beforeEach(() => {
   globalThis.__gameKV = new MemoryKV();
   setPushKVForTests(createMemoryPushKV());
+  setStatsKVForTests(createMemoryStatsKV());
 });
 
 afterEach(() => {
   globalThis.__gameKV = undefined;
   setPushKVForTests(undefined);
+  setStatsKVForTests(undefined);
   setLimiterForTests(undefined);
   vi.unstubAllEnvs();
 });
@@ -798,5 +803,69 @@ describe('POST /api/games/:id/rig', () => {
     assertRedacted(state);
     expect(state.hand?.myCards).toBeTruthy();
     expect(state.hand?.street).toBe('flop');
+  });
+});
+
+describe('GET /api/stats', () => {
+  it('returns empty house totals, bots, and a 15-cap player board', async () => {
+    const res = await getStats();
+    expect(res.status).toBe(200);
+    const data = await readJson(res);
+    expect(data.house).toMatchObject({
+      handsPlayed: 0,
+      cardsDealt: 0,
+      cardsPlayed: 0,
+    });
+    expect(data.bots).toEqual([]);
+    expect(data.players).toEqual([]);
+    expect(data.toleranceNote).toMatch(/1\.5pp/);
+  });
+
+  it('records display-name rows after a fold-win and 404s unknown bots', async () => {
+    const host = await create({ name: 'Ada' });
+    const gameId = host.gameId!;
+    const join = await joinGame(
+      jsonReq(`http://localhost/api/games/${gameId}/join`, { name: 'Pat', seat: 1 }),
+      ctx(gameId)
+    );
+    const guest = (await readJson(join)).state as { yourId: string };
+    const guestCookie = cookieFrom(join);
+    await seatOp(
+      jsonReq(
+        `http://localhost/api/games/${gameId}/seats`,
+        { op: 'approve', playerId: guest.yourId },
+        host.cookie
+      ),
+      ctx(gameId)
+    );
+    await hostOp(jsonReq(`http://localhost/api/games/${gameId}/host`, { op: 'start' }, host.cookie), ctx(gameId));
+
+    const cookieFor = (playerId: string) =>
+      playerId === guest.yourId ? guestCookie : host.cookie;
+
+    const started = await stateOf(gameId, host.cookie);
+    const first = (started.state!.hand as { toAct: string }).toAct;
+    await playerAction(
+      jsonReq(`http://localhost/api/games/${gameId}/action`, { move: 'call' }, cookieFor(first)),
+      ctx(gameId)
+    );
+    const mid = await stateOf(gameId, host.cookie);
+    const next = (mid.state!.hand as { toAct: string }).toAct;
+    await playerAction(
+      jsonReq(`http://localhost/api/games/${gameId}/action`, { move: 'fold' }, cookieFor(next)),
+      ctx(gameId)
+    );
+
+    const data = await readJson(await getStats());
+    expect(data.house).toMatchObject({ handsPlayed: 1 });
+    const rows = data.players as { id: string; name: string; calls: number }[];
+    expect(rows.map((p) => p.id).sort()).toEqual(['Ada', 'Pat']);
+    expect(rows.every((p) => p.id === p.name)).toBe(true);
+    expect(rows.some((p) => p.calls === 1)).toBe(true);
+
+    const missing = await getBotStats(getReq('http://localhost/api/stats/bots/no-such-bot'), {
+      params: Promise.resolve({ slug: 'no-such-bot' }),
+    });
+    expect(missing.status).toBe(404);
   });
 });

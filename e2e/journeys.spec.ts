@@ -123,6 +123,21 @@ test('iPhone-sized table fits the screen without page scroll', async ({ browser 
   await context.close();
 });
 
+test('stats page is shareable from a footer link, not homepage chrome', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'House totals' })).toHaveCount(0);
+  await page.getByRole('link', { name: 'Stats' }).click();
+  await expect(page).toHaveURL(/\/stats$/);
+  await expect(page.getByRole('heading', { name: 'House stats' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'House totals' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Bots' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Players' })).toBeVisible();
+  await expect(page.getByText(/hand detail and calls/i)).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Home', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Home', exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+});
+
 test('privacy Home returns to the landing page', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('link', { name: 'Privacy' }).click();

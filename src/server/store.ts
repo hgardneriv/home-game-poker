@@ -5,6 +5,7 @@ import { applyAction, createGame, normalizeConfig } from '@/engine/engine';
 import type { TableConfig } from '@/engine/types';
 import { getKV } from './kv';
 import { dueSweepAction } from './sweep';
+import { extractStatsDelta, persistStatsDeltas, type StatsDelta } from './stats';
 import { maybeSendTurnPush } from './turn-push';
 
 /**
@@ -41,6 +42,7 @@ export async function withGame(
 
     let state = entry.state;
     let dirty = false;
+    const statsDeltas: StatsDelta[] = [];
 
     // Run due server actions (bot turns chain until the next one isn't due yet).
     for (let i = 0; i < MAX_SWEEPS_PER_CALL; i++) {
@@ -49,6 +51,8 @@ export async function withGame(
       if (!due) break;
       const res = applyAction(state, due, c);
       if (!res.ok) break; // e.g. lost a race with a player action; harmless
+      const delta = extractStatsDelta(state, res.state);
+      if (delta) statsDeltas.push(delta);
       state = res.state;
       dirty = true;
     }
@@ -62,6 +66,8 @@ export async function withGame(
       } else if (built) {
         const res = applyAction(state, built, ctx());
         if (res.ok) {
+          const delta = extractStatsDelta(state, res.state);
+          if (delta) statsDeltas.push(delta);
           state = res.state;
           dirty = true;
         } else {
@@ -81,6 +87,11 @@ export async function withGame(
     if (newVersion !== 0) {
       // Await: a detached send dies when the action route returns (Vercel).
       await maybeSendTurnPush(entry.state, state);
+      try {
+        await persistStatsDeltas(statsDeltas);
+      } catch {
+        // House totals must never fail a table write.
+      }
       if (userError) return { ok: false, status: userError.status ?? 400, error: userError };
       return { ok: true, state, version: newVersion };
     }

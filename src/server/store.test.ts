@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { GameState } from '@/engine/types';
 import { MemoryKV, type GameKV } from './kv';
 import { createNewGame, withGame } from './store';
+import { createMemoryStatsKV, setStatsKVForTests } from './stats-store';
 
 /**
  * KV wrapper that delays reads so two concurrent withGame() calls both read
@@ -30,6 +31,11 @@ describe('store CAS pipeline', () => {
   beforeEach(() => {
     kv = new SlowReadKV(new MemoryKV());
     globalThis.__gameKV = kv;
+    setStatsKVForTests(createMemoryStatsKV());
+  });
+
+  afterEach(() => {
+    setStatsKVForTests(undefined);
   });
 
   it('two concurrent conflicting writes: one CAS conflict, both eventually apply', async () => {

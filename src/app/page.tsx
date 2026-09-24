@@ -15,6 +15,10 @@ export default function Home() {
       <ResumeTable />
       <CreateGame />
       <footer className="text-center text-xs opacity-50">
+        <Link href="/stats" className="underline">
+          Stats
+        </Link>
+        {' · '}
         <Link href="/privacy" className="underline">
           Privacy
         </Link>
