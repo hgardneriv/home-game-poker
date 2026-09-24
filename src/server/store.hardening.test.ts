@@ -3,6 +3,7 @@ import type { GameState } from '@/engine/types';
 import { Table } from '@/engine/test-utils';
 import { getKV, MemoryKV, type GameKV } from './kv';
 import { createNewGame, withGame } from './store';
+import { createMemoryStatsKV, setStatsKVForTests } from './stats-store';
 
 /**
  * Hardening tests for the KV layer and the withGame CAS pipeline: retry
@@ -16,10 +17,12 @@ let kv: MemoryKV;
 beforeEach(() => {
   kv = new MemoryKV();
   globalThis.__gameKV = kv;
+  setStatsKVForTests(createMemoryStatsKV());
 });
 
 afterEach(() => {
   globalThis.__gameKV = undefined;
+  setStatsKVForTests(undefined);
   vi.unstubAllEnvs();
 });
 
