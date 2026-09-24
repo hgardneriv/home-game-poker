@@ -174,10 +174,10 @@ describe('persist + snapshot', () => {
   });
 
   it('accumulates when the display name exists, else creates a row', async () => {
-    const hand = (name: string, fp: string, net: number, calls = 0): StatsDelta => ({
+    const hand = (name: string, fp: string, net: number, callSeq = 0): StatsDelta => ({
       gameId: 'night',
-      calls: calls
-        ? [{ playerId: 'ignored', name, isBot: false, seq: calls, at: 1 }]
+      calls: callSeq
+        ? [{ playerId: 'ignored', name, isBot: false, seq: callSeq, at: callSeq }]
         : [],
       hand: {
         fingerprint: fp,
@@ -187,7 +187,7 @@ describe('persist + snapshot', () => {
       },
     });
     await persistStatsDeltas([hand('Harry', 'h:1', 4, 1)]);
-    await persistStatsDeltas([hand('Harry', 'h:2', -2, 1)]);
+    await persistStatsDeltas([hand('Harry', 'h:2', -2, 2)]);
     await persistStatsDeltas([hand('Pat', 'h:3', 6)]);
 
     const snap = await readStatsSnapshot();
