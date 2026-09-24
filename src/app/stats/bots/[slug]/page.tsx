@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { BotStatsView } from '@/components/StatsView';
 import { PrivacyExit } from '@/components/PrivacyExit';
+import { maybeSeedDemoStats } from '@/server/stats-seed';
 import { readBotStats, readStatsSnapshot } from '@/server/stats';
 
 export const dynamic = 'force-dynamic';
@@ -12,6 +13,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  await maybeSeedDemoStats();
   const bot = await readBotStats(slug);
   return {
     title: bot ? `${bot.name} — House stats` : 'Bot stats — Poker Party',
@@ -23,6 +25,7 @@ export async function generateMetadata({
 
 export default async function BotStatsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  await maybeSeedDemoStats();
   const [bot, snapshot] = await Promise.all([readBotStats(slug), readStatsSnapshot()]);
   if (!bot) {
     return (

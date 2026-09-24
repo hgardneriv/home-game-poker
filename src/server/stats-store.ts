@@ -106,10 +106,18 @@ export function setStatsKVForTests(kv: StatsKV | undefined): void {
 
 export function getStatsKV(): StatsKV {
   if (!globalThis.__statsKV) {
-    const creds = redisCreds();
-    globalThis.__statsKV = creds
-      ? new RedisStatsKV(new Redis({ ...creds, automaticDeserialization: false }))
-      : new MemoryStatsKV();
+    // STATS_SEED never attaches Redis — demo totals cannot hit live keys.
+    if (process.env.STATS_SEED === '1') {
+      if (redisCreds()) {
+        console.warn('[stats] STATS_SEED=1: ignoring Redis creds — demo totals stay in memory');
+      }
+      globalThis.__statsKV = new MemoryStatsKV();
+    } else {
+      const creds = redisCreds();
+      globalThis.__statsKV = creds
+        ? new RedisStatsKV(new Redis({ ...creds, automaticDeserialization: false }))
+        : new MemoryStatsKV();
+    }
   }
   return globalThis.__statsKV;
 }

@@ -184,6 +184,11 @@ export function StatsView({ snapshot }: { snapshot: StatsSnapshot }) {
       <header>
         <h1 className="text-3xl font-bold">House stats</h1>
         <p className="mt-1 text-sm opacity-70">Play-money Texas Hold&apos;em — chips have no cash value.</p>
+        {process.env.STATS_SEED === '1' ? (
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+            Demo seed — in-memory only, not production Redis.
+          </p>
+        ) : null}
       </header>
       <HouseBlock house={snapshot.house} snapshot={snapshot} />
       <BotList bots={snapshot.bots} />
