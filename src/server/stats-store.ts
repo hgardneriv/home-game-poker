@@ -17,6 +17,35 @@ export interface StatsKV {
   setnx(key: string, value: string): Promise<boolean>;
 }
 
+/**
+ * Upstash + `automaticDeserialization: false` returns HGETALL as a flat
+ * [field, value, field, value] array. Treating that as an object made
+ * `/stats` show all zeros while Redis actually held the counts.
+ */
+export function normalizeHgetall(raw: unknown): Record<string, string> {
+  if (raw == null) return {};
+  if (Array.isArray(raw)) {
+    const out: Record<string, string> = {};
+    for (let i = 0; i < raw.length - 1; i += 2) {
+      const key = raw[i];
+      if (key == null) continue;
+      out[String(key)] = raw[i + 1] == null ? '' : String(raw[i + 1]);
+    }
+    return out;
+  }
+  if (typeof raw !== 'object') return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    out[k] = v == null ? '' : String(v);
+  }
+  return out;
+}
+
+/** SET NX / SETNX: Upstash may return "OK", true, or 1. */
+export function setnxSucceeded(result: unknown): boolean {
+  return result === 'OK' || result === true || result === 1 || result === '1';
+}
+
 class MemoryStatsKV implements StatsKV {
   private hashes = new Map<string, Record<string, string>>();
   private sets = new Map<string, Set<string>>();
@@ -56,8 +85,18 @@ class MemoryStatsKV implements StatsKV {
   }
 }
 
+/** Minimal Redis surface used by house stats (for a fake REST client in tests). */
+export interface StatsRedis {
+  hincrby(key: string, field: string, n: number): Promise<unknown>;
+  hset(key: string, fields: Record<string, string>): Promise<unknown>;
+  hgetall(key: string): Promise<unknown>;
+  sadd(key: string, member: string): Promise<unknown>;
+  smembers(key: string): Promise<unknown>;
+  set(key: string, value: string, opts: { nx: true }): Promise<unknown>;
+}
+
 class RedisStatsKV implements StatsKV {
-  constructor(private redis: Redis) {}
+  constructor(private redis: StatsRedis) {}
 
   async incrBy(key: string, field: string, n: number) {
     if (n === 0) return;
@@ -70,11 +109,7 @@ class RedisStatsKV implements StatsKV {
   }
 
   async hgetall(key: string) {
-    const raw = await this.redis.hgetall<Record<string, string>>(key);
-    if (!raw) return {};
-    const out: Record<string, string> = {};
-    for (const [k, v] of Object.entries(raw)) out[k] = v == null ? '' : String(v);
-    return out;
+    return normalizeHgetall(await this.redis.hgetall(key));
   }
 
   async sadd(key: string, member: string) {
@@ -83,12 +118,11 @@ class RedisStatsKV implements StatsKV {
 
   async smembers(key: string) {
     const members = await this.redis.smembers(key);
-    return (members ?? []).map(String);
+    return (Array.isArray(members) ? members : []).map(String);
   }
 
   async setnx(key: string, value: string) {
-    const result = await this.redis.set(key, value, { nx: true });
-    return result === 'OK';
+    return setnxSucceeded(await this.redis.set(key, value, { nx: true }));
   }
 }
 
@@ -98,6 +132,11 @@ declare global {
 
 export function createMemoryStatsKV(): StatsKV {
   return new MemoryStatsKV();
+}
+
+/** Test seam — same wrapper as production Redis, with a fake REST client. */
+export function createRedisStatsKV(redis: StatsRedis): StatsKV {
+  return new RedisStatsKV(redis);
 }
 
 export function setStatsKVForTests(kv: StatsKV | undefined): void {
@@ -114,8 +153,10 @@ export function getStatsKV(): StatsKV {
       globalThis.__statsKV = new MemoryStatsKV();
     } else {
       const creds = redisCreds();
+      // Default deserialization: HGETALL must become a map, not a flat array.
+      // (Game KV keeps automaticDeserialization: false for raw JSON state.)
       globalThis.__statsKV = creds
-        ? new RedisStatsKV(new Redis({ ...creds, automaticDeserialization: false }))
+        ? new RedisStatsKV(new Redis({ ...creds }))
         : new MemoryStatsKV();
     }
   }
