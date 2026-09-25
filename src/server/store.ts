@@ -89,8 +89,9 @@ export async function withGame(
       await maybeSendTurnPush(entry.state, state);
       try {
         await persistStatsDeltas(statsDeltas);
-      } catch {
+      } catch (err) {
         // House totals must never fail a table write.
+        console.error('[stats] persist failed', err);
       }
       if (userError) return { ok: false, status: userError.status ?? 400, error: userError };
       return { ok: true, state, version: newVersion };
