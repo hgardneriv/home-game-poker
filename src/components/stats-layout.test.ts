@@ -5,20 +5,18 @@ import {
   STATS_TABLE_WRAP_CLASS,
 } from './stats-layout';
 
-const OVERFLOW_SCROLLPORTS =
-  /overflow-(?:x|y)-(?:auto|scroll|hidden)|overscroll-contain/;
-
 describe('stats page overflow', () => {
-  it('uses the document as the only scrollport', () => {
-    expect(STATS_PAGE_MAIN_CLASS).not.toMatch(OVERFLOW_SCROLLPORTS);
-    expect(STATS_TABLE_WRAP_CLASS).not.toMatch(OVERFLOW_SCROLLPORTS);
-    expect(STATS_TABLE_CLASS).not.toMatch(OVERFLOW_SCROLLPORTS);
+  it('uses a bounded inner scrollport so Capacitor can scroll with WKWebView locked', () => {
+    expect(STATS_PAGE_MAIN_CLASS.split(/\s+/)).toEqual(
+      expect.arrayContaining(['h-dvh', 'max-h-dvh', 'overflow-y-auto', 'overscroll-contain', 'min-w-0']),
+    );
+    expect(STATS_PAGE_MAIN_CLASS).not.toMatch(/\bmin-h-dvh\b/);
+    expect(STATS_PAGE_MAIN_CLASS).not.toMatch(/overflow-x-(?:auto|scroll)/);
   });
 
-  it('lets flex children shrink so html overflow-x hidden cannot clip tables', () => {
-    expect(STATS_PAGE_MAIN_CLASS.split(/\s+/)).toEqual(
-      expect.arrayContaining(['min-w-0', 'w-full', 'max-w-2xl']),
-    );
+  it('does not put a nested scrollport on tables (wheel-steal / clip)', () => {
+    expect(STATS_TABLE_WRAP_CLASS).not.toMatch(/overflow-/);
+    expect(STATS_TABLE_CLASS).not.toMatch(/overflow-/);
     expect(STATS_TABLE_WRAP_CLASS.split(/\s+/)).toContain('min-w-0');
     expect(STATS_TABLE_CLASS.split(/\s+/)).toEqual(
       expect.arrayContaining(['w-full', 'table-fixed']),
