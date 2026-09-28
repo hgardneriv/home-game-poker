@@ -4,6 +4,9 @@ import { PrivacyExit } from '@/components/PrivacyExit';
 import { ShareLink } from '@/components/ShareLink';
 import {
   STATS_PAGE_MAIN_CLASS,
+  STATS_PLAYER_CARD_GRID_CLASS,
+  STATS_PLAYER_STAT_LABELS,
+  STATS_PLAYER_STAT_TITLES,
   STATS_TABLE_CLASS,
   STATS_TABLE_WRAP_CLASS,
 } from '@/components/stats-layout';
@@ -14,9 +17,9 @@ function fmt(n: number): string {
 }
 
 function money(n: number): string {
-  if (n > 0) return `+$${fmt(n)}`;
-  if (n < 0) return `−$${fmt(-n)}`;
-  return '$0';
+  if (n > 0) return `+${fmt(n)}`;
+  if (n < 0) return `−${fmt(-n)}`;
+  return '0';
 }
 
 function pct(n: number): string {
@@ -149,31 +152,32 @@ function Leaderboard({ players }: { players: PlayerStats[] }) {
         <>
           <ul className="space-y-2 sm:hidden">
             {players.map((p) => (
-              <li key={p.id} className="min-w-0 rounded-xl border border-current/10 px-3 py-2 text-sm">
-                <div className="flex items-baseline justify-between gap-3">
-                  <span className="min-w-0 truncate font-medium">{p.name}</span>
-                  <span className={`shrink-0 tabular-nums ${moneyClass(p.money)}`}>{money(p.money)}</span>
-                </div>
-                <dl className="mt-1 grid grid-cols-5 gap-1 text-center text-[11px] opacity-70">
-                  <div>
-                    <dt>Games</dt>
+              <li key={p.id} className="min-w-0 rounded-xl border border-current/10 px-2.5 py-2 text-sm">
+                <div className="truncate font-medium">{p.name}</div>
+                <dl className={STATS_PLAYER_CARD_GRID_CLASS}>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.games}>{STATS_PLAYER_STAT_LABELS.games}</dt>
                     <dd className="tabular-nums">{fmt(p.gamesPlayed)}</dd>
                   </div>
-                  <div>
-                    <dt>Hands</dt>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.hands}>{STATS_PLAYER_STAT_LABELS.hands}</dt>
                     <dd className="tabular-nums">{fmt(p.handsDealt)}</dd>
                   </div>
-                  <div>
-                    <dt>Won</dt>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.won}>{STATS_PLAYER_STAT_LABELS.won}</dt>
                     <dd className="tabular-nums">{fmt(p.handsWon)}</dd>
                   </div>
-                  <div>
-                    <dt>Folded</dt>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.folded}>{STATS_PLAYER_STAT_LABELS.folded}</dt>
                     <dd className="tabular-nums">{fmt(p.handsFolded)}</dd>
                   </div>
-                  <div>
-                    <dt>Calls</dt>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.calls}>{STATS_PLAYER_STAT_LABELS.calls}</dt>
                     <dd className="tabular-nums">{fmt(p.calls)}</dd>
+                  </div>
+                  <div className="min-w-0">
+                    <dt title={STATS_PLAYER_STAT_TITLES.money}>{STATS_PLAYER_STAT_LABELS.money}</dt>
+                    <dd className={`tabular-nums ${moneyClass(p.money)}`}>{money(p.money)}</dd>
                   </div>
                 </dl>
               </li>
@@ -184,24 +188,36 @@ function Leaderboard({ players }: { players: PlayerStats[] }) {
               <thead className="text-xs uppercase opacity-60">
                 <tr>
                   <th className="w-[28%] px-2 py-2 font-medium">Player</th>
-                  <th className="px-1.5 py-2 font-medium text-right">Games</th>
-                  <th className="px-1.5 py-2 font-medium text-right">Hands</th>
-                  <th className="px-1.5 py-2 font-medium text-right">Won</th>
-                  <th className="px-1.5 py-2 font-medium text-right">Folded</th>
-                  <th className="px-1.5 py-2 font-medium text-right">Calls</th>
-                  <th className="px-2 py-2 font-medium text-right">Money</th>
+                  <th className="px-1 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.games}>
+                    {STATS_PLAYER_STAT_LABELS.games}
+                  </th>
+                  <th className="px-1 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.hands}>
+                    {STATS_PLAYER_STAT_LABELS.hands}
+                  </th>
+                  <th className="px-1 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.won}>
+                    {STATS_PLAYER_STAT_LABELS.won}
+                  </th>
+                  <th className="px-1 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.folded}>
+                    {STATS_PLAYER_STAT_LABELS.folded}
+                  </th>
+                  <th className="px-1 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.calls}>
+                    {STATS_PLAYER_STAT_LABELS.calls}
+                  </th>
+                  <th className="px-1.5 py-2 font-medium text-right" title={STATS_PLAYER_STAT_TITLES.money}>
+                    {STATS_PLAYER_STAT_LABELS.money}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {players.map((p) => (
                   <tr key={p.id} className="border-t border-current/10">
                     <td className="truncate px-2 py-1.5 font-medium">{p.name}</td>
-                    <td className="px-1.5 py-1.5 text-right tabular-nums">{fmt(p.gamesPlayed)}</td>
-                    <td className="px-1.5 py-1.5 text-right tabular-nums">{fmt(p.handsDealt)}</td>
-                    <td className="px-1.5 py-1.5 text-right tabular-nums">{fmt(p.handsWon)}</td>
-                    <td className="px-1.5 py-1.5 text-right tabular-nums">{fmt(p.handsFolded)}</td>
-                    <td className="px-1.5 py-1.5 text-right tabular-nums">{fmt(p.calls)}</td>
-                    <td className={`px-2 py-1.5 text-right tabular-nums ${moneyClass(p.money)}`}>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{fmt(p.gamesPlayed)}</td>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{fmt(p.handsDealt)}</td>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{fmt(p.handsWon)}</td>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{fmt(p.handsFolded)}</td>
+                    <td className="px-1 py-1.5 text-right tabular-nums">{fmt(p.calls)}</td>
+                    <td className={`px-1.5 py-1.5 text-right tabular-nums ${moneyClass(p.money)}`}>
                       {money(p.money)}
                     </td>
                   </tr>
