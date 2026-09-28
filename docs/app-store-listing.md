@@ -3,20 +3,24 @@
 Privacy policy URL: `https://holdem.pokerparty.app/privacy`
 (contact `homegamesupport@gmail.com`).
 
-**Do not click Submit for Review** until a TestFlight build has proven
-production APNs (`APNS_PRODUCTION=1`).
+**Submitted 2026-09-28.** Version **1.0.1**, build **1.0.1 (2)** attached.
+Status: **Waiting for Review**. Do not submit again. After Apple approves,
+Harry taps **Release this version** (manual — will not auto-go-live).
+Leave `APNS_PRODUCTION=1`. Do not invent icon/listing restyles. iPhone-only.
 
 ---
 
-## Connect status (2026-09-08)
+## Connect status (2026-09-28)
 
-Harry filled the 1.0 paperwork. A later session will land one more product
-change, then TestFlight, then submit.
+**Waiting for Review.** TestFlight 1.0.1 (2) installed; Harry confirmed
+production your-turn banners. Version field is **1.0.1**; build **1.0.1 (2)**
+attached; **Manually release this version**. App Privacy published.
+Content Rights: no third-party content. Submitted for Review.
 
 **Done in App Store Connect**
 
 - App record: `pokerparty.app Hold'em`, bundle `app.pokerparty.holdem`, SKU `holdem`
-- 1.0 copy: subtitle, description, keywords, support + marketing URLs, copyright
+- 1.0 / 1.0.1 copy: subtitle, description, keywords, support + marketing URLs, copyright
 - Category: Games → **Card**
 - iPhone 6.5″ screenshots (six PNGs in `docs/app-store/`; no preview video)
 - Age rating **18+** (Frequent simulated gambling). See answers below.
@@ -27,17 +31,16 @@ change, then TestFlight, then submit.
 - App Review Information (contact + notes paste); sign-in required **off**
 - Version release: **Manually release this version**
 - Game Center **off**; no IAP / subscriptions
+- Content Rights: no third-party content
+- TestFlight **1.0.1 (2)** uploaded, installed, production APNs proven
+- Submitted for Review (2026-09-28) — **Waiting for Review**
 
-**Left for the next session (after Harry’s remaining product change)**
+**Next (after Apple approves — do not submit again)**
 
-1. That product change, then Archive + upload a **distribution** build.
-2. Vercel Production: `APNS_PRODUCTION=1` and redeploy **before** installing TestFlight.
-3. Install TestFlight. Prove swipe-away on your turn; swipe away before your turn; kill → tap banner.
-4. Attach that build to 1.0. Submit for Review (Phase 5).
+1. Wait for Apple (email). Do not submit again.
+2. Harry taps **Release this version** (manual). Leave `APNS_PRODUCTION=1`.
 
-Xcode Play stays sandbox (`APNS_PRODUCTION` unset). Play will stop getting banners while production APNs is on — expected.
-
-Skip if Connect still shows Set Up: encryption upload, server notifications, shared secret, China ICP, Vietnam license, medical device. **Digital Services Act** / **Content Rights** only if a yellow Set Up remains and you want the EU listing live.
+Xcode Play uses sandbox tokens. Play banners stop while production APNs is on (`APNS_PRODUCTION=1`) — expected. Leave production on.
 
 ---
 
@@ -68,7 +71,7 @@ If the bundle id is missing from the dropdown, the App ID is not in this team �
 
 ---
 
-## Version / listing copy (Version 1.0)
+## Version / listing copy (Connect version is now **1.0.1**; copy below is what landed)
 
 **Subtitle** (30): `Play-money holdem with friends`
 
@@ -110,7 +113,7 @@ poker,hold'em,texas holdem,poker party,play money,chips,friends,table,home game
 
 ## Screenshots
 
-Connect’s 1.0 page is asking for **iPhone 6.5″**. Ready files (1284×2778 portrait) are in `docs/app-store/`:
+Connect’s 1.0.1 page used **iPhone 6.5″**. Ready files (1284×2778 portrait) are in `docs/app-store/`:
 
 | Upload order | File | What it is |
 |---|---|---|
@@ -188,16 +191,16 @@ Already in Info.plist: `ITSAppUsesNonExemptEncryption` = false (HTTPS + HMAC coo
 
 ---
 
-## TestFlight archive (next session — after the remaining product change)
+## TestFlight archive (done 2026-09-28)
 
-1. Vercel Production env: set `APNS_PRODUCTION` = `1`. Redeploy production so the server talks to the APNs production host.
-2. On the Mac, `iphone-app` branch, Xcode → Product → **Archive** (Any iOS Device). Signing = **Apple Distribution** / Automatic. Confirm `aps-environment` is **production** on the archived entitlements (Debug Play stays `development`).
-3. Distribute → App Store Connect → upload.
-4. Install the TestFlight build on the phone. **Xcode Play will no longer receive pushes** while `APNS_PRODUCTION=1` (sandbox vs production tokens). That is expected.
-5. Prove: swipe away on your turn; swipe away before it is your turn; kill → tap banner. Later turns quiet while the app is open.
-6. Only then: Submit for Review (Phase 5).
+1. ~~Vercel Production env: set `APNS_PRODUCTION` = `1`. Redeploy production so the server talks to the APNs production host.~~ **Done.** Leave `APNS_PRODUCTION=1`.
+2. ~~On the Mac, Xcode → Product → **Archive** (Any iOS Device). Signing = **Apple Distribution** / Automatic.~~ Build **1.0.1 (2)** uploaded.
+3. ~~Distribute → App Store Connect → upload.~~
+4. ~~Install the TestFlight build on the phone.~~ Harry installed 1.0.1 (2). **Xcode Play will not receive pushes** while `APNS_PRODUCTION=1` (sandbox vs production tokens). That is expected — leave production on.
+5. ~~Prove: swipe away on your turn; swipe away before it is your turn; kill → tap banner.~~ Harry confirmed production your-turn banners.
+6. ~~Submit for Review.~~ Submitted 2026-09-28. Status: **Waiting for Review**. Do not submit again.
 
-To go back to Xcode Play debugging, unset `APNS_PRODUCTION` and redeploy. Do not leave it unset for the store binary.
+Do not unset `APNS_PRODUCTION` for the store binary. After Apple approves, Harry taps **Release this version**.
 
 ---
 
@@ -206,4 +209,4 @@ To go back to Xcode Play debugging, unset `APNS_PRODUCTION` and redeploy. Do not
 - App icon / splash: black spade + white Poker Party wordmark on felt + gold frame (`brand/`). SpringBoard **Texas Hold'em**.
 - iPhone-only binary (`TARGETED_DEVICE_FAMILY = 1`).
 - Play-money copy on the live site and home screen.
-- Connect 1.0 paperwork (2026-09-08) — see status at the top of this file.
+- Connect 1.0 paperwork (2026-09-08) + 1.0.1 (2) Waiting for Review (2026-09-28) — see status at the top of this file.

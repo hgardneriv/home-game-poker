@@ -4,6 +4,8 @@ Texas Hold'em with friends — share a link, take a seat.
 
 **Live:** https://holdem.pokerparty.app
 
+Play money only — chips have no cash value.
+
 A polished, mobile-first multiplayer poker table with a hidden automated dealer. No accounts: the host creates a table, shares the link (native share sheet on phones), and approves who sits down. Everyone buys in with $1 coins, blinds post automatically, and a freshly CSPRNG-shuffled 52-card deck is dealt every hand. Play solo against 5 computer players with one click, or host a friends game with 0–5 bots filling the empty seats.
 
 ## Features
@@ -51,13 +53,8 @@ Required env in production: `SESSION_SECRET`, plus `KV_REST_API_URL` / `KV_REST_
 
 **Live:** https://holdem.pokerparty.app
 
-The friend-beta site is the `iphone-app` branch, shipped with `vercel deploy --prod`. Git still treats `master` as production — **do not push `master`** while the beta is live, or it will overwrite holdem.pokerparty.app.
+Pushing `master` triggers a Vercel production Git deploy. Do not also run `vercel deploy --prod` after that Git deploy unless it failed.
 
-```bash
-git checkout iphone-app
-vercel deploy --prod
-```
-
-The iPhone app is a Capacitor shell around that same host (`app.pokerparty.holdem`). Home-screen icon is the Poker Party brand; the label under the icon is **Texas Hold'em**.
+The iPhone app is a Capacitor shell around that same host (`app.pokerparty.holdem`). Home-screen icon is the Poker Party brand; the label under the icon is **Texas Hold'em**. Play money only. TestFlight **1.0.1 (2)** is installed and production your-turn banners are proven. App Store version **1.0.1** (build 1.0.1 (2) attached, manual release) is **Waiting for Review** (submitted 2026-09-28). Do not submit again. After Apple approves, Harry taps **Release this version**.
 
 See `CLAUDE.md` for the architecture deep-dive and contributor notes.

@@ -4,28 +4,29 @@
 
 Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully working and **deployed to production**. This file is the context a future session needs to continue the work.
 
-## Next session pickup (2026-09-08)
+## Next session pickup (2026-09-28)
 
 **iPhone app is the current product track.** Follow [docs/iphone-app-plan.md](docs/iphone-app-plan.md) — do not improvise a React Native rewrite or start dealer’s-choice iOS. Engine CRAP/mutation extract **done**; remaining `engine.ts` survivors are mostly equivalent fail-message strings — do not reopen a kill-every-mutant campaign.
 
 **Git**
-- Branch: **`iphone-app`**. Do **not** merge to `master` until Harry asks.
-- **`master` is still the Git production branch** (vercel[bot] on push). The **live site is `iphone-app`**, shipped with `vercel deploy --prod`. Official host: **https://holdem.pokerparty.app** (kappa alias still works). **Do not push `master`.**
-- **Docs-only changes: push straight to `iphone-app`. Do not open a PR.** Code / config / native / engine changes still get a PR.
-- Capacitor Path A stays on this branch. Working tree should be clean when switching to `master`.
+- Default / production branch: **`master`** (vercel[bot] on push). Official host: **https://holdem.pokerparty.app** (kappa alias still works).
+- **`iphone-app` is merged** (PR #21). New work is on `master` (or a PR branch).
+- **Docs-only changes: push straight to `master`. Do not open a PR.** Code / config / native / engine changes still get a PR unless Harry says otherwise.
 - Public lobby stays deferred.
 
 **Live site:** https://holdem.pokerparty.app — Poker Party felt (signed off), play-money copy, `/privacy`, table-fit lock, last-table resume. Same Redis as before.
 
-**Phases 0–3 done.** Phase 3 turn-push is device-proven (Harry signed off 2026-09-08). Proven on a live table:
+**Phases 0–4 done.** Phase 3 turn-push is device-proven (Harry signed off 2026-09-08). Proven on a live table:
 - Swipe away **on** your turn → banner.
 - Swipe away **before** it becomes your turn (phone + another seat / bots with a live sweep) → banner.
 - Kill → tap banner → keep playing: later turns stay quiet while the app is open (PR #15 wall-clock presence `seq`; a leftover 1-based Redis seq used to keep notifying).
 - Tap lands on `/game/{id}`. Web/Safari unchanged (no permission prompt).
 
-**Phase 4 Connect paperwork done (2026-09-08).** Listing, 6.5″ shots, 18+ age rating, privacy, free pricing, review notes are in Connect ([docs/app-store-listing.md](docs/app-store-listing.md)). Next session: Harry’s remaining product change, then TestFlight with `APNS_PRODUCTION=1`. Do not Submit for Review until that production push is proven. Do not invent icon restyles. No iPad target.
+**TestFlight proven (2026-09-28).** 1.0.1 (2) installed; Harry confirmed production your-turn banners. Leave `APNS_PRODUCTION=1`.
 
-**Website JS + server** ship with `vercel deploy --prod` from `iphone-app`. Rebuild Xcode only when native/plugin/entitlements change. `APNS_PRODUCTION` stays **unset** for Xcode Play (sandbox tokens).
+**Phase 5 — Waiting for Review (2026-09-28).** Connect version **1.0.1**, build **1.0.1 (2)** attached, **Manually release this version**. App Privacy published. Content Rights: no third-party content. Submitted for Review. Do not submit again. After Apple approves, Harry taps **Release this version** (will not auto-go-live). Do not invent icon/listing restyles. No iPad target. Listing record: [docs/app-store-listing.md](docs/app-store-listing.md).
+
+**Website JS + server** ship with a Git push to `master`. Do not also run `vercel deploy --prod` after that Git deploy unless it failed. Rebuild Xcode only when native/plugin/entitlements change. Leave `APNS_PRODUCTION=1`. Xcode Play uses sandbox tokens, so Play banners stop while production APNs is on — expected.
 
 **Parked:** Next stay on `16.2.12` until **16.3.3**; mutation Phase 3 (kill every engine survivor) skipped.
 
@@ -37,10 +38,10 @@ Link-based multiplayer Texas Hold'em (PokerNow-style) built July 2026. Fully wor
 
 ## Deployment (live)
 
-- **Production alias:** https://home-game-poker-kappa.vercel.app — **as of 2026-08-31 this is `iphone-app` via `vercel deploy --prod`**, not a Git deploy from `master`. Pushing `master` would overwrite the beta. Further `iphone-app` website drops: `vercel deploy --prod` from this branch (Git does not promote `iphone-app`).
-- Vercel project `home-game-poker` under team `hgardnerivs-projects`. GitHub is connected: pushing **`master`** still triggers a production Git deploy. Run tests before pushing. Do **not** also run `vercel deploy --prod` after a `master` Git deploy unless that Git deploy failed.
+- **Production alias:** https://home-game-poker-kappa.vercel.app — Git deploy from **`master`**. Official host **https://holdem.pokerparty.app**. Pushing `master` triggers production. Do **not** also run `vercel deploy --prod` after a `master` Git deploy unless that Git deploy failed.
+- Vercel project `home-game-poker` under team `hgardnerivs-projects`. GitHub is connected: pushing **`master`** triggers a production Git deploy. Run tests before pushing code. Do **not** also run `vercel deploy --prod` after a `master` Git deploy unless that Git deploy failed.
 - Storage: Upstash Redis via Vercel Marketplace, resource `home-game-poker-redis`, **free plan** — upgrade to pay-as-you-go if game nights hit command limits (each SSE-connected client polls the version key every 500ms server-side).
-- Env vars (values live in Vercel, never in the repo): `SESSION_SECRET` (prod + preview), `KV_REST_API_URL`, `KV_REST_API_TOKEN`. ⚠️ The Marketplace names Redis vars `KV_REST_API_*`, NOT `UPSTASH_REDIS_REST_*` — `src/server/kv.ts` accepts both. Phase 3 APNs (never commit the `.p8`): `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_KEY` (PEM; literal `\n` OK), optional `APNS_BUNDLE_ID` (default `app.pokerparty.holdem`), `APNS_PRODUCTION` (`1` only with a Production key; omit for the Sandbox / Xcode proof).
+- Env vars (values live in Vercel, never in the repo): `SESSION_SECRET` (prod + preview), `KV_REST_API_URL`, `KV_REST_API_TOKEN`. ⚠️ The Marketplace names Redis vars `KV_REST_API_*`, NOT `UPSTASH_REDIS_REST_*` — `src/server/kv.ts` accepts both. Phase 3 APNs (never commit the `.p8`): `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_KEY` (PEM; literal `\n` OK), optional `APNS_BUNDLE_ID` (default `app.pokerparty.holdem`), `APNS_PRODUCTION` (**leave `1`** for TestFlight / App Store; omit only if debugging Xcode Play sandbox tokens).
 - Preview deployments sit behind Vercel Authentication (not shareable with friends) — share/test on production.
 - Local dev without Redis env uses an in-memory KV automatically (single-process only). `vercel env pull .env.local` for real Redis locally.
 
@@ -81,19 +82,19 @@ CI: `.github/workflows/ci.yml` runs `tsc --noEmit`, lint, coverage (with floors)
 - `globalThis.__gameKV` singleton survives dev HMR — after editing `kv.ts`, restart `next dev`.
 - `next.config.ts` pins `turbopack.root` (stray lockfile in $HOME confuses inference).
 - All API routes are `dynamic = 'force-dynamic'`, Node runtime (never edge). Stream route sets `maxDuration = 300`.
-- Git-triggered production deploys on push to **`master` only**. The 2026-08-31 friend beta is a CLI prod deploy from `iphone-app`. Run tests before pushing; `vercel deploy --prod` from `iphone-app` to refresh that beta. Do not push `master` during the beta unless reverting.
+- Git-triggered production deploys on push to **`master` only**. Run tests before pushing code. Docs-only may push `master` directly (no PR). Do not also run `vercel deploy --prod` after a `master` Git deploy unless that Git deploy failed.
 - Next stay on `16.2.12` until the **16.3.3** security release (scheduled 2026-08-26); do not bump mid-cycle.
 - `.claude/settings.local.json` is gitignored (personal permissions). `.env.local` / `.vercel` never committed.
 
 ## Roadmap (user-confirmed direction)
 
-0. **iPhone app (Capacitor Path A)** — current track. Plan: [docs/iphone-app-plan.md](docs/iphone-app-plan.md). Poker first; dealer’s choice iOS only after poker is submitted or in review.
+0. **iPhone app (Capacitor Path A)** — current track. Plan: [docs/iphone-app-plan.md](docs/iphone-app-plan.md). Hold'em **1.0.1** is **Waiting for Review**. Dealer’s choice iOS only if Harry asks; this session stays iPhone / Hold'em.
 1. **Public lobby with matchmaking** — architecture is ready: rooms are self-contained under `g:{id}:*`; a lobby is an index (e.g. `lobby:open` sorted set) + a browse page + a create-path flag. Bots need zero changes. The game-over screen's "Play again" is where "Back to lobby" will live.
 2. Possible smaller items: escalating blinds option, run-it-twice, four-color deck, sounds toggle, bot difficulty setting, dimmed "dead button" visual hint when the button sits on an empty/busted seat (user declined for now but may revisit if friends find it confusing). (Top-ups/rebuys: DONE July 2026.)
    **Bot-game auto-end (2026-08-01, user-requested, ported from home-game-dealers-choice)**: when bots are seated and no human can play another hand (every human busted with no rebuy left — instant in quick play's `topUps: 0`), `finishHand` ends the game with `endedReason: 'humansOut'` and crowns the chip-leader bot, instead of making the human watch bots finish. A human with a top-up remaining still holds the table open. Engine `humansAreDone()` + GameOverScreen "Out of chips — game over" copy; tests in `topup-flow.test.ts`.
 3. User play-tests with real friends and reports tweaks — expect rapid small iterations (bot tuning constants, UX affordances). After engine changes, consider a `/mutate`-style hardening pass (see Testing) to keep the kill rate up.
 
-## iPhone (Capacitor Path A — in progress)
+## iPhone (Capacitor Path A — Waiting for Review)
 
 Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). `@capacitor/*` is dynamically imported from [`src/hooks/native.ts`](src/hooks/native.ts) and no-ops in the browser.
 
@@ -101,7 +102,7 @@ Native shell loads **`https://holdem.pokerparty.app`** (`capacitor.config.ts`). 
 - Invite uses the native share sheet when present; your-turn also fires a haptic.
 - In-app copy: "Play money only — chips have no cash value." Privacy: `/privacy`.
 - Phase 1 simulator smoke **done** (2026-08-29). Table header uses `safe-area-inset-top` + `viewport-fit=cover`. Engine extract + store-shell **done** 2026-08-31.
-- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). v1 is **iPhone-only**. Phase 4 Connect paperwork **done** (2026-09-08) — `docs/app-store-listing.md`. Next: remaining product change, then TestFlight.
+- Phase 2 cookie proof **done** (2026-09-01). Official host **done** (PR #6). Icon + SpringBoard label **done**. Phase 3 APNs **device-proven** (Harry happy 2026-09-08). v1 is **iPhone-only**. Phase 4 Connect paperwork **done** (2026-09-08) — `docs/app-store-listing.md`. TestFlight **1.0.1 (2)** proven 2026-09-28. Phase 5: **Waiting for Review** — wait, then Harry taps **Release this version**. Leave `APNS_PRODUCTION=1`.
 - **Turn-push (do not reinvent):** cookie identity; `POST /api/games/:id/push` `{ token }` / `{ active: true|false, seq }`. `seq` is `Date.now()` (last-write-wins). `fg:` = app in front (not SSE). SSE stays open in background so bots can act. `withGame` **awaits** `maybeSendTurnPush`. Remind on swipe-away-if-acting; turn-start send when the actor changes. Dual-env APNs key; default host sandbox.
 - `npm run ios` / `npm run ios:sync`.
 - Xcode — simulator runtime target **iOS 26.5** (not watch/tv/vision).
