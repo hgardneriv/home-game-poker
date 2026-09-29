@@ -1,4 +1,12 @@
-import type { Action, EngineCtx, EngineResult, GameState, LegalActions, PlayerMove } from './types';
+import type {
+  Action,
+  EngineCtx,
+  EngineResult,
+  GameState,
+  HandState,
+  LegalActions,
+  PlayerMove,
+} from './types';
 import { applyAction, createGame } from './engine';
 import { getLegalActions } from './betting';
 
@@ -186,6 +194,40 @@ export class Table {
       const legal = legalFor(this.state, id);
       this.act(id, legal.canCheck ? 'check' : 'call');
     }
+  }
+}
+
+/**
+ * In-hand uniqueness: no card appears twice among holes + board, the deck
+ * is a 52-set, and deck[0..deckPos) is exactly the cards that were dealt.
+ * Same hole cards on the *next* hand must not fail this — that is legal.
+ */
+export function assertLiveHandCards(hand: HandState): void {
+  const holes = hand.inHand.flatMap((id) => {
+    const hole = hand.holeCards[id];
+    if (!hole || hole.length !== 2) {
+      throw new Error(`player ${id} is inHand without two hole cards`);
+    }
+    return hole;
+  });
+  const extras = Object.keys(hand.holeCards).filter((id) => !hand.inHand.includes(id));
+  if (extras.length > 0) {
+    throw new Error(`holeCards extra keys: ${extras.join(',')}`);
+  }
+  const inPlay = [...holes, ...hand.board];
+  if (new Set(inPlay).size !== inPlay.length) {
+    throw new Error(`duplicate card in holes+board: ${inPlay.join(' ')}`);
+  }
+  if (hand.deck.length !== 52 || new Set(hand.deck).size !== 52) {
+    throw new Error(
+      `deck is not 52 unique (${hand.deck.length} cards, ${new Set(hand.deck).size} distinct)`
+    );
+  }
+  const prefix = hand.deck.slice(0, hand.deckPos);
+  if (prefix.length !== inPlay.length || prefix.some((c, i) => c !== inPlay[i])) {
+    throw new Error(
+      `dealt [${inPlay.join(' ')}] does not match deck[0..${hand.deckPos}) [${prefix.join(' ')}]`
+    );
   }
 }
 

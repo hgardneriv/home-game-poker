@@ -3,7 +3,7 @@ import { applyAction, createGame } from './engine';
 import { getLegalActions } from './betting';
 import { decideForBot } from './bot';
 import { topUpAmount } from './topup';
-import { seededRandInt } from './test-utils';
+import { assertLiveHandCards, seededRandInt } from './test-utils';
 import type { EngineCtx, GameState, PlayerMove } from './types';
 
 /**
@@ -15,6 +15,8 @@ import type { EngineCtx, GameState, PlayerMove } from './types';
  *   - buy-ins follow the top-up schedule exactly
  *   - no negative stacks or bets
  *   - every hand terminates
+ *   - cards in a live hand are unique (holes + board; deck is a 52-set;
+ *     deck prefix matches the deal). Same hole on the next hand is legal.
  */
 
 function totalChips(state: GameState): number {
@@ -50,6 +52,7 @@ function checkInvariants(state: GameState): void {
       expect(state.hand.allIn).not.toContain(r.toAct);
     }
   }
+  if (state.hand) assertLiveHandCards(state.hand);
 }
 
 function randomLegalMove(
