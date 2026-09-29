@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { GameApi } from '@/hooks/useGame';
-import { handLabel } from '@/engine/hand-label';
+import { heroHandCaption } from '@/engine/hand-label';
 import { PlayingCard } from './PlayingCard';
 import { faceUpHoleCards } from './seat-cards';
 
@@ -86,10 +86,15 @@ export function Seat({
   // Casino-machine courtesy: name your made hand as it develops. Hero only —
   // opponents have no face-up cards mid-hand, and showdown reveals already
   // get descriptions from the result.
-  const liveLabel =
-    isYou && hand && state.phase === 'playing' && inHand && !folded
-      ? handLabel(hand.myCards ?? [], hand.board)
-      : null;
+  const liveLabel = isYou
+    ? heroHandCaption({
+        phase: state.phase,
+        inHand,
+        folded,
+        myCards: hand?.myCards,
+        board: hand?.board,
+      })
+    : null;
 
   const timerFraction = (() => {
     if (!isActing || !hand?.actionDeadline) return null;

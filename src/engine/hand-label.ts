@@ -1,4 +1,4 @@
-import type { Card } from './types';
+import type { Card, GamePhase } from './types';
 import { rankValue } from './deck';
 import { describe, evaluate5, CATEGORY } from './evaluator';
 
@@ -56,4 +56,20 @@ export function handLabel(cards: Card[], board: Card[] = []): string | null {
   return rankValue(all[0]) === rankValue(all[1])
     ? `Pair of ${PLURALS[rankValue(all[0])]}`
     : null;
+}
+
+/**
+ * Hero-only live caption on the felt. Same predicate Seat uses: playing,
+ * still in the hand, not folded. Folded leftover cards can still make a
+ * monster with the runout — that must stay silent.
+ */
+export function heroHandCaption(input: {
+  phase: GamePhase;
+  inHand: boolean;
+  folded: boolean;
+  myCards?: readonly Card[] | null;
+  board?: readonly Card[];
+}): string | null {
+  if (input.phase !== 'playing' || !input.inHand || input.folded) return null;
+  return handLabel([...(input.myCards ?? [])], [...(input.board ?? [])]);
 }

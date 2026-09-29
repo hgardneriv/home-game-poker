@@ -184,4 +184,28 @@ describe('describeEvent against a settled engine hand', () => {
       'Board: 4h 9s Jd Qc 6h',
     ]);
   });
+
+  it('omits a folder from result hands, descriptions, pot winners, and history (H3)', () => {
+    const t = new Table(3);
+    const tableNames = (id: string) => t.state.players[id]?.name ?? id;
+    t.start();
+    t.rig(
+      { p0: ['Ah', 'Kh'], p1: ['2c', '7d'], p2: ['9s', '9d'] },
+      ['4h', '8c', 'Jd', 'Qc', '2s']
+    );
+    t.act('p0', 'fold');
+    t.act('p1', 'call');
+    t.act('p2', 'check');
+    t.checkDown();
+
+    const result = t.hand.result!;
+    expect(result.hands['p0']).toBeUndefined();
+    expect(result.descriptions['p0']).toBeUndefined();
+    expect(result.pots.flatMap((p) => p.winners)).not.toContain('p0');
+
+    const ev = t.state.events.find((e) => e.type === 'hand-result');
+    const lines = describeEvent(ev!, tableNames).join('\n');
+    expect(lines).not.toMatch(/P0 had/);
+    expect(lines).not.toMatch(/P0 wins/);
+  });
 });

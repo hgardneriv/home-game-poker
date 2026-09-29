@@ -18,6 +18,8 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       'src/engine/fuzz.test.ts',
+      // 20k × 80-hand birthday-rate sim; uniqueness stays in engine/fuzz.
+      'src/engine/birthday-hands.test.ts',
       // HTTP acceptance includes a live SSE read (~1s); multiplying that
       // across mutants would dominate the run. Scenario tests remain the
       // mutation-killing layer; acceptance stays in `npm test`.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Table, expectError, legalFor } from './test-utils';
+import { Table, assertLiveHandCards, expectError, legalFor } from './test-utils';
 import { isRematchTable, reviewingLastHand } from './types';
 
 // Default layout with zeroRand: button seat 0 (p0), SB seat 1 (p1), BB seat 2 (p2).
@@ -48,6 +48,7 @@ describe('game setup and seating flow', () => {
     const all = Object.values(t.hand.holeCards).flat();
     expect(all).toHaveLength(12);
     expect(new Set(all).size).toBe(12);
+    assertLiveHandCards(t.hand);
   });
 });
 
